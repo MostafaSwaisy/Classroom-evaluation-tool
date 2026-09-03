@@ -1,0 +1,45 @@
+# مثال معايير — انسخه وعدّله لكل واجب
+# سمّي الملف باسم الواجب: rubrics/PHP2026_HW03.yaml
+
+assignment: "HW03 — Laravel Routing & Controllers"
+course: PHP2026
+max_points: 10
+
+criteria:
+  - key: routes
+    label: "تعريف المسارات"
+    points: 3
+    checklist:
+      - "المسارات معرّفة في web.php بالـ HTTP verb الصحيح"
+      - "استخدام route names وليس روابط مكتوبة يدوياً"
+      - "استخدام Route::resource حيث يناسب"
+      - "route model binding بدل استقبال id يدوياً"
+
+  - key: controllers
+    label: "الـ Controllers"
+    points: 4
+    checklist:
+      - "كل method بترجّع الـ view أو الـ response الصحيح"
+      - "التحقق من المدخلات عبر Form Request أو validate()"
+      - "لا يوجد منطق أعمال معقّد داخل الـ controller"
+      - "معالجة حالة عدم وجود السجل (404)"
+
+  - key: quality
+    label: "جودة الكود"
+    points: 3
+    checklist:
+      - "تسمية متسقة وواضحة"
+      - "لا يوجد استعلام داخل حلقة (N+1)"
+      - "لا توجد مفاتيح أو كلمات سر مكتوبة في الكود"
+      - "لا يوجد كود مكرر كان يمكن استخراجه"
+
+# خصومات ثابتة (تُطبّق على المجموع)
+penalties:
+  late_submission: 1        # خصم للتسليم المتأخر
+  missing_readme: 0.5
+
+# ملاحظات للمصحح الآلي
+notes: |
+  الطلاب لسه ما أخذوا Service classes، فلا تخصم على وجود منطق
+  بسيط في الـ controller — اخصم فقط لو المنطق معقّد فعلاً.
+  استخدام Blade components اختياري في هذا الواجب.

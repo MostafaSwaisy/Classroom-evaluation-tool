@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python cli.py courses)",
+      "Bash(python cli.py work:*)",
+      "Bash(python cli.py pull:*)",
+      "Bash(python cli.py prepare:*)",
+      "Bash(python cli.py status:*)",
+      "Bash(python tools/write_grades.py:*)",
+      "Read(./submissions/**)",
+      "Read(./rubrics/**)",
+      "Write(./submissions/**/grades.json)",
+      "Write(./rubrics/**)"
+    ],
+    "deny": [
+      "Bash(python cli.py push:*)",
+      "Bash(rm:*)",
+      "Bash(del:*)",
+      "Read(./credentials.json)",
+      "Read(./token.json)",
+      "Write(./config.yaml)",
+      "Write(./submissions/**/_roster.xlsx)"
+    ]
+  }
+}
