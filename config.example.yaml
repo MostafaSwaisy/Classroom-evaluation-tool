@@ -1,0 +1,31 @@
+# classroom-tool configuration
+# انسخ هذا الملف إلى config.yaml وعدّل عليه
+
+# مجلد التحميلات
+output_dir: "D:/UCAS/submissions"
+
+# نمط استخراج الرقم الجامعي من إيميل الجامعة.
+# لازم يحتوي على مجموعة واحدة (group) هي الرقم.
+# أمثلة حسب صيغة إيميلات كليتك:
+#   120210123@students.ucas.edu.ps   ->  '^(\d+)@'
+#   ahmad.120210123@ucas.edu.ps      ->  '\.(\d+)@'
+#   s120210123@ucas.edu.ps           ->  '^s(\d+)@'
+student_id_pattern: '^(\d+)@'
+
+# اختصارات للمساقات — بتكتب `classroom pull SE2026 HW03` بدل الـ ID الطويل
+# اتركها فاضية أول مرة، وشغّل `classroom courses` لتعبئتها
+courses:
+  SE2026: "788123456789"      # Software Engineering - Fall 2026
+  PHP2026: "788987654321"     # PHP / Laravel - INC
+
+# صيغ التصدير لملفات Google (Docs/Slides/Sheets)
+google_export:
+  application/vnd.google-apps.document: pdf
+  application/vnd.google-apps.presentation: pdf
+  application/vnd.google-apps.spreadsheet: xlsx
+
+# تخطي تحميل الملفات الأكبر من هذا الحجم (ميجابايت)
+max_file_mb: 50
+
+# أسماء الملفات بالعربي (الافتراضي) أو منقحرة للاتيني
+latin_filenames: false
