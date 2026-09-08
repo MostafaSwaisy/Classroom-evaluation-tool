@@ -8,15 +8,26 @@ both hazards by construction.
 
 Contract:
   * `BackendWorker` is a QObject moved onto a QThread — it is **not** a QThread
-    subclass. Its `run` slot is invoked via a queued signal, never called directly.
+    subclass. Its `_run` slot is invoked via a queued signal from `BackendThread`,
+    never called directly.
   * A job is `fn(ctx: JobContext) -> object`. `ctx.progress(msg, cur, total)` is
-    throttled to ~15/s (the final tick of a known total always gets through).
-    `ctx.cancelled()` is polled by cooperative backends; raise `OperationCancelled`.
-    `ctx.log(line)` and anything the job prints both go out on the `log` signal.
+    throttled to ~15/s (the final tick of a known total always gets through, and
+    a dropped last tick is flushed when the job ends). `ctx.cancelled()` is polled
+    by cooperative backends; on True they raise `OperationCancelled`.
+    `ctx.log(line)` and anything the job prints/`print`s to stderr both go out on
+    the `log` signal.
+  * Cancellation is **monotonic by generation**: every `submit` gets an
+    increasing generation; `cancel()` marks every generation submitted so far as
+    cancelled and never un-marks. A job whose generation is already cancelled when
+    it reaches the worker is skipped without running. There is no `Event.clear()`,
+    so a cancel requested before a job is dequeued can never be lost.
   * Results/errors come back as signals with copyable payloads only:
-    `finished(job_id, result)` / `failed(job_id, exc_type, message, traceback)`.
-  * `BackendThread.shutdown()` sets cancel, quits, and waits (5 s) — call it from
-    the main window's `closeEvent`.
+    `finished(job_id, result)` / `failed(job_id, exc_type, message, traceback)` /
+    `cancelled(job_id)`. The submitted `fn` must not capture a live service /
+    Credentials object built on the GUI thread, and must not return one.
+  * `BackendThread.shutdown()` marks a shutdown, cancels, quits the event loop and
+    waits (5 s). A `False` return means the thread is still alive: the caller must
+    keep the `BackendThread` referenced and retry (P5-U2 shows a blocking state).
 """
 from __future__ import annotations
 
@@ -28,14 +39,17 @@ import traceback
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QCoreApplication, QObject, QThread, Signal, Slot
+
+from classroom_tool.errors import OperationCancelled
+
+__all__ = ["BackendThread", "BackendWorker", "JobContext", "OperationCancelled"]
 
 _MIN_PROGRESS_INTERVAL = 1.0 / 15.0  # ~15 emits/sec ceiling
 _SHUTDOWN_WAIT_MS = 5000
 
-
-class OperationCancelled(Exception):
-    """Raised by a cooperative job when `ctx.cancelled()` goes True."""
+# GC guard: a running QThread that gets collected crashes the process (§8).
+_LIVE: set[BackendThread] = set()
 
 
 @dataclass(frozen=True)
@@ -46,109 +60,174 @@ class JobContext:
 
 
 class _LogShim(io.TextIOBase):
-    """Routes captured stdout to a callback, line by line."""
+    """Routes captured stdout/stderr to a callback, line by line, thread-safely.
+
+    `redirect_stdout` patches a process-global, so the GUI thread can still write
+    here while a job runs; a lock keeps the buffer consistent.
+    """
+
+    encoding = "utf-8"
 
     def __init__(self, emit: Callable[[str], None]) -> None:
         super().__init__()
         self._emit = emit
         self._buf = ""
+        self._lock = threading.Lock()
 
-    def write(self, s: str) -> int:  # noqa: D102
-        self._buf += s
-        while "\n" in self._buf:
-            line, self._buf = self._buf.split("\n", 1)
-            if line:
-                self._emit(line)
+    def writable(self) -> bool:
+        return True
+
+    def isatty(self) -> bool:
+        return False
+
+    def write(self, s: str) -> int:
+        with self._lock:
+            self._buf += s
+            parts = self._buf.split("\n")
+            self._buf = parts.pop()
+            lines = parts
+        for line in lines:
+            self._emit(line)
         return len(s)
 
-    def flush(self) -> None:  # noqa: D102
-        if self._buf:
-            self._emit(self._buf)
-            self._buf = ""
+    def flush(self) -> None:
+        with self._lock:
+            pending, self._buf = self._buf, ""
+        if pending:
+            self._emit(pending)
 
 
 class BackendWorker(QObject):
     progress = Signal(str, int, int)          # message, current, total
-    log = Signal(str)                         # a stdout / ctx.log line
+    log = Signal(str)                         # a stdout/stderr/ctx.log line
     finished = Signal(str, object)            # job_id, result
     failed = Signal(str, str, str, str)       # job_id, exc_type, message, traceback
+    cancelled = Signal(str)                   # job_id
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
-        self._cancel = threading.Event()
+        # ints assigned atomically under the GIL; no lock needed for these.
+        self._cancel_through = 0      # highest generation marked cancelled
+        self._shutdown = False
+        self._busy = threading.Event()
         self._last_progress = 0.0
+        self._dropped_tick: tuple[str, int, int] | None = None
 
-    # --- cancellation (safe to call from any thread) -----------------------
-    def request_cancel(self) -> None:
-        self._cancel.set()
+    # --- cancellation (safe from any thread) -----------------------------
+    def cancel_through(self, generation: int) -> None:
+        if generation > self._cancel_through:
+            self._cancel_through = generation
 
-    def _reset_cancel(self) -> None:
-        self._cancel.clear()
-        self._last_progress = 0.0
+    def mark_shutdown(self) -> None:
+        self._shutdown = True
 
+    @property
+    def is_busy(self) -> bool:
+        return self._busy.is_set()
+
+    # --- progress -------------------------------------------------------
     def _emit_progress(self, message: str, current: int, total: int) -> None:
+        tick = (str(message), int(current), int(total))
         now = time.monotonic()
         is_final = total > 0 and current >= total
         if is_final or (now - self._last_progress) >= _MIN_PROGRESS_INTERVAL:
             self._last_progress = now
-            self.progress.emit(message, int(current), int(total))
+            self._dropped_tick = None
+            self.progress.emit(*tick)
+        else:
+            self._dropped_tick = tick
 
-    # --- the job runner (executes on the worker thread) ------------------
-    @Slot(str, object)
-    def run(self, job_id: str, fn: Callable[[JobContext], object]) -> None:
-        self._reset_cancel()
+    def _flush_progress(self) -> None:
+        if self._dropped_tick is not None:
+            self.progress.emit(*self._dropped_tick)
+            self._dropped_tick = None
+
+    # --- the job runner (executes on the worker thread) ---------------
+    @Slot(str, object, int)
+    def _run(self, job_id: str, fn: Callable[[JobContext], object], generation: int) -> None:
+        if self._shutdown or generation <= self._cancel_through:
+            self.cancelled.emit(job_id)
+            return
+
+        self._last_progress = 0.0
+        self._dropped_tick = None
         ctx = JobContext(
             progress=self._emit_progress,
-            cancelled=self._cancel.is_set,
+            cancelled=lambda: self._shutdown or generation <= self._cancel_through,
             log=self.log.emit,
         )
         shim = _LogShim(self.log.emit)
+        self._busy.set()
         try:
-            with contextlib.redirect_stdout(shim):
-                result = fn(ctx)
-                shim.flush()
+            with contextlib.redirect_stdout(shim), contextlib.redirect_stderr(shim):
+                try:
+                    result = fn(ctx)
+                finally:
+                    shim.flush()
+                    self._flush_progress()
         except OperationCancelled:
-            self.failed.emit(job_id, "OperationCancelled", "أُلغيت العملية", "")
-        except BaseException as exc:  # noqa: BLE001 — marshalled to the GUI as strings
+            self.cancelled.emit(job_id)
+        except BaseException as exc:  # noqa: BLE001
+            # Must catch BaseException: auth.get_credentials/authorize raise
+            # SystemExit, and letting it escape a C++-invoked slot aborts the
+            # process. Everything is marshalled to the GUI as plain strings.
             self.failed.emit(
                 job_id, type(exc).__name__, str(exc), traceback.format_exc()
             )
         else:
             self.finished.emit(job_id, result)
+        finally:
+            self._busy.clear()
 
 
 class _Submitter(QObject):
-    submit = Signal(str, object)
+    submit = Signal(str, object, int)
 
 
 class BackendThread:
     """Owns the QThread + BackendWorker and the queued connection between them."""
 
     def __init__(self) -> None:
+        if QCoreApplication.instance() is None:
+            raise RuntimeError("BackendThread requires a QApplication to exist first")
+
         self._thread = QThread()
         self._thread.setObjectName("backend-worker")
         self.worker = BackendWorker()
         self.worker.moveToThread(self._thread)
 
-        self._submitter = _Submitter()
-        # queued because sender and receiver live on different threads
-        self._submitter.submit.connect(self.worker.run)
+        self._submitter = _Submitter()          # lives on the GUI thread
+        self._submitter.submit.connect(self.worker._run)   # -> queued (cross-thread)
 
+        self._seq = 0
         self._thread.start()
+        _LIVE.add(self)
 
-    def submit(self, job_id: str, fn: Callable[[JobContext], object]) -> None:
-        """Queue a job. Returns immediately; watch the worker's signals."""
-        self._submitter.submit.emit(job_id, fn)
+    def submit(self, job_id: str, fn: Callable[[JobContext], object]) -> int:
+        """Queue a job. Returns its generation; watch the worker's signals."""
+        self._seq += 1
+        self._submitter.submit.emit(job_id, fn, self._seq)
+        return self._seq
 
     def cancel(self) -> None:
-        self.worker.request_cancel()
+        """Cancel every job submitted so far (running, queued, or not yet dequeued)."""
+        self.worker.cancel_through(self._seq)
 
     def shutdown(self, wait_ms: int = _SHUTDOWN_WAIT_MS) -> bool:
-        """Cancel, quit the event loop, wait. Returns True if the thread stopped."""
-        self.worker.request_cancel()
+        """Mark shutdown, cancel, quit, wait. False => still alive; keep + retry."""
+        self.worker.mark_shutdown()
+        self.worker.cancel_through(self._seq)
         self._thread.quit()
-        return self._thread.wait(wait_ms)
+        stopped = self._thread.wait(wait_ms)
+        if stopped:
+            _LIVE.discard(self)
+        return stopped
 
     @property
     def is_running(self) -> bool:
+        """The worker's event loop is alive. Not the same as 'has work' — see is_busy."""
         return self._thread.isRunning()
+
+    @property
+    def is_busy(self) -> bool:
+        return self.worker.is_busy
