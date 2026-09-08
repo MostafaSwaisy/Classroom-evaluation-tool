@@ -27,7 +27,8 @@ Contract:
     Credentials object built on the GUI thread, and must not return one.
   * `BackendThread.shutdown()` marks a shutdown, cancels, quits the event loop and
     waits (5 s). A `False` return means the thread is still alive: the caller must
-    keep the `BackendThread` referenced and retry (P5-U2 shows a blocking state).
+    keep the `BackendThread` referenced and either retry or refuse to close
+    (`MainWindow.closeEvent` does the latter; a blocking "جاري الإلغاء…" dialog is P5-U4).
 """
 from __future__ import annotations
 
