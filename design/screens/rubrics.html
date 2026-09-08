@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface select-none font-body-md" dir="rtl">
+<!-- Windows Desktop Top Chrome / Application Breadcrumb Bar -->
+<header class="flex items-center justify-between px-space-xl py-space-sm bg-surface-container-lowest shadow-sm">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs bg-surface-container px-space-md py-1 rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">terminal</span>
+<span class="font-label-md text-label-md">Classroom-Tool v3.4.2</span>
+<span class="font-code-sm text-code-sm text-outline">|</span>
+<span class="font-label-md text-label-md text-primary">Qt 6.7 Native (PySide6)</span>
+</div>
+<nav class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant mr-space-sm">
+<span class="hover:text-primary transition-colors cursor-pointer">مساقات Google Classroom</span>
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+<span class="text-on-surface font-title-md text-title-md">PHP2026 — تطوير تطبيقات الويب المتقدمة</span>
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+<span class="text-primary font-headline-sm text-headline-sm">محرر معايير التقييم (Rubrics Editor)</span>
+</nav>
+</div>
+<!-- Live Desktop Services Status Indicators -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1 rounded-full">
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface">Google Classroom API:</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">متصل</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-1 rounded-full">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="font-label-sm text-label-sm text-on-surface">Claude 3.7 Sonnet Grader:</span>
+<span class="font-label-sm text-label-sm text-tertiary font-bold">جاهز للتحليل</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-1 rounded-full text-on-surface-variant hover:text-on-surface cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">dark_mode</span>
+<span class="font-code-sm text-code-sm">Dark (GUI)</span>
+</div>
+</div>
+</header>
+<!-- Screen Action Header Bar -->
+<section class="flex items-center justify-between px-space-xl py-space-md bg-surface-container-low mt-space-2xs shadow-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-md">
+<div class="p-2 bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">rule</span>
+</div>
+<div class="flex items-baseline gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-wide">
+            محرر معايير التقييم وسلالم الدرجات
+          </h1>
+<span class="font-code-sm text-code-sm text-primary dir-ltr">(rubrics/*.yaml)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm mt-1">
+<span class="inline-flex items-center gap-1.5 px-space-md py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+          مسودة محلية آمنة — تُحفظ القوالب كملفات YAML محلية مشفرة بمسار المشروع
+        </span>
+<span class="text-outline font-label-xs text-label-xs">آخر حفظ: اليوم 11:42 ص</span>
+</div>
+</div>
+<!-- Quick Action Toolbars -->
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-space-xs px-space-lg py-2 rounded-full bg-primary text-on-primary font-title-md text-title-md shadow-lg hover:brightness-110 active:scale-95 transition-all" id="btn-save-rubric">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>حفظ معيار التقييم (Ctrl+S)</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-lg py-2 rounded-full bg-surface-container-high text-primary-fixed hover:bg-surface-bright active:scale-95 transition-all font-title-md text-title-md" id="btn-assign-hw">
+<span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+<span>تطبيق على الواجب الحالي (Assign to HW3)</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-full bg-surface-container hover:bg-surface-bright text-on-surface-variant hover:text-on-surface transition-all font-label-md text-label-md" id="btn-export-yaml">
+<span class="material-symbols-outlined text-[18px]">code</span>
+<span>تصدير كود YAML</span>
+</button>
+</div>
+</section>
+<!-- Desktop 3-Column Layout: [Right List: Files] [Center: Form/Criteria Table] [Left: Guidance & Live Code] -->
+<div class="grid grid-cols-12 gap-space-md p-space-md bg-background min-h-[calc(100vh-170px)]">
+<!-- RIGHT PANEL: Rubrics File Explorer (3 cols) -->
+<aside class="col-span-3 flex flex-col gap-space-sm bg-surface-container-low p-space-md rounded-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface font-title-md text-title-md">
+<span class="material-symbols-outlined text-primary text-[20px]">folder_open</span>
+<span>ملفات الـ Rubric المحفوظة</span>
+</div>
+<button class="p-1.5 rounded-full bg-surface-container hover:bg-primary hover:text-on-primary transition-colors text-primary" title="إنشاء ملف معيار جديد">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Rubrics Search Input -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute right-3 top-2 text-outline text-[16px]">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded-lg pr-9 pl-3 py-1.5 focus:outline-none focus:bg-surface-container focus:text-primary transition-colors" placeholder="بحث في المعايير والقوالب..." type="text"/>
+</div>
+<!-- Rubrics File List -->
+<div class="flex flex-col gap-space-xs mt-space-xs overflow-y-auto">
+<!-- Active Selected Rubric Item -->
+<div class="flex flex-col gap-1 p-space-md rounded-xl bg-surface-container-high cursor-pointer shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px]">description</span>
+<span class="font-code-sm text-code-sm text-on-surface font-semibold truncate dir-ltr">hw3_auth_middleware.yaml</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-xs text-label-xs">النشط حالياً</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-xs text-label-xs pt-1">
+<span>واجب 3: المصادقة وJWT</span>
+<span class="font-code-sm font-bold text-primary">20 نقطة</span>
+</div>
+</div>
+<!-- Rubric 2 -->
+<div class="flex flex-col gap-1 p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-outline text-[18px] group-hover:text-primary transition-colors">description</span>
+<span class="font-code-sm text-code-sm text-on-surface truncate dir-ltr">hw2_mvc_rest_api.yaml</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-xs text-label-xs">مكتمل</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-xs text-label-xs pt-1">
+<span>واجب 2: هيكلية الـ REST API</span>
+<span class="font-code-sm font-bold text-outline">15 نقطة</span>
+</div>
+</div>
+<!-- Rubric 3 -->
+<div class="flex flex-col gap-1 p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-outline text-[18px] group-hover:text-primary transition-colors">description</span>
+<span class="font-code-sm text-code-sm text-on-surface truncate dir-ltr">hw1_pdo_database.yaml</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-xs text-label-xs">مكتمل</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-xs text-label-xs pt-1">
+<span>واجب 1: قواعد بيانات PDO</span>
+<span class="font-code-sm font-bold text-outline">10 نقاط</span>
+</div>
+</div>
+<!-- Rubric 4 -->
+<div class="flex flex-col gap-1 p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer group">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-secondary text-[18px]">edit_document</span>
+<span class="font-code-sm text-code-sm text-on-surface truncate dir-ltr">final_ecommerce_project.yaml</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-xs text-label-xs">مسودة</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-xs text-label-xs pt-1">
+<span>المشروع النهائي: متجر إلكتروني</span>
+<span class="font-code-sm font-bold text-secondary">30 نقطة</span>
+</div>
+</div>
+</div>
+<!-- Rubrics Quick Actions Footer -->
+<div class="mt-auto pt-space-md flex flex-col gap-space-xs">
+<button class="w-full flex items-center justify-center gap-space-xs py-2 rounded-full bg-surface-container-high hover:bg-surface-bright text-primary font-label-md text-label-md transition-all shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span>+ معيار جديد (New Rubric)</span>
+</button>
+<button class="w-full flex items-center justify-center gap-space-xs py-1.5 rounded-full bg-transparent hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-all">
+<span class="material-symbols-outlined text-[16px]">folder_special</span>
+<span>استيراد ملف YAML محلي...</span>
+</button>
+</div>
+</aside>
+<!-- CENTER PANEL: Active Rubric Form & Live Criteria Table (6 cols) -->
+<main class="col-span-6 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xl shadow-sm overflow-hidden">
+<!-- Assignment Linking Header Form -->
+<div class="grid grid-cols-12 gap-space-md p-space-md bg-surface-container rounded-xl">
+<div class="col-span-8 flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">الواجب المرتبط من Classroom</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest text-on-surface font-title-md text-title-md rounded-lg pr-3 pl-8 py-1.5 appearance-none focus:outline-none focus:bg-surface-bright transition-colors cursor-pointer">
+<option selected="">واجب 3: بناء نظام المصادقة والـ Middleware (Auth &amp; API Middleware)</option>
+<option>واجب 2: معمارية MVC وتطوير واجهات RESTful</option>
+<option>واجب 1: التعامل الآمن مع MySQL عبر PDO</option>
+</select>
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-outline pointer-events-none text-[18px]">arrow_drop_down</span>
+</div>
+</div>
+<div class="col-span-4 flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">الدرجة القصوى المقررة (Max Points)</label>
+<div class="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-1 rounded-lg">
+<input class="w-full bg-transparent font-headline-sm text-headline-sm text-primary font-bold text-center focus:outline-none" id="max-points-input" max="100" min="1" type="number" value="20"/>
+<span class="font-label-sm text-label-sm text-outline">نقاط</span>
+</div>
+</div>
+<div class="col-span-12 flex flex-col gap-1 mt-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">عنوان معيار التقييم المعتمد (Rubric Title / Label)</label>
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg px-space-md py-1.5 focus:outline-none focus:bg-surface-bright transition-colors" type="text" value="معيار تقييم واجب المصادقة والـ Middleware (JWT &amp; Roles)"/>
+</div>
+</div>
+<!-- LIVE DYNAMIC POINTS VALIDATION BAR -->
+<div class="flex items-center justify-between px-space-lg py-space-sm rounded-xl bg-primary-container text-on-primary-container transition-all shadow-md" id="points-validator-bar">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[22px]" id="validator-icon">check_circle</span>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold" id="validator-heading">
+              مجموع النقاط: <span id="current-sum-label">20</span> / <span id="max-sum-label">20</span> نقطة
+            </span>
+<span class="font-label-xs text-label-xs opacity-90" id="validator-sub">
+              متطابق تماماً مع الدرجة القصوى للواجب المحدد ✓ (Valid Match ready for grading)
+            </span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="w-32 bg-surface-container-lowest h-2.5 rounded-full overflow-hidden p-0.5">
+<div class="h-full rounded-full bg-primary transition-all duration-300 w-full" id="validator-progress"></div>
+</div>
+<span class="font-code-sm text-code-sm font-bold bg-surface-container-lowest text-primary px-2 py-0.5 rounded-md">100%</span>
+</div>
+</div>
+<!-- Criteria Table Container -->
+<div class="flex flex-col flex-1 bg-surface-container rounded-xl overflow-hidden shadow-sm">
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-space-sm bg-surface-container-highest font-label-sm text-label-sm text-on-surface-variant">
+<div class="col-span-1 text-center">ترتيب</div>
+<div class="col-span-3">معرف البند (Key)</div>
+<div class="col-span-6">وصف المعيار للمدرس والذكاء الاصطناعي (Label)</div>
+<div class="col-span-1 text-center">النقاط</div>
+<div class="col-span-1 text-left pl-2">إجراءات</div>
+</div>
+<div class="flex flex-col divide-y divide-transparent overflow-y-auto max-h-[380px]" id="criteria-rows-container">
+<!-- Criterion Row 1 -->
+<div class="criterion-row grid grid-cols-12 gap-space-sm items-center px-space-md py-space-sm hover:bg-surface-container-high transition-colors group">
+<div class="col-span-1 flex items-center justify-center text-outline group-hover:text-primary cursor-grab">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<div class="col-span-3">
+<input class="w-full bg-surface-container-lowest text-primary font-code-sm text-code-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="jwt_generation"/>
+</div>
+<div class="col-span-6">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="توليد توكن JWT بشكل سليم وتضمين الـ Claims والمطالبات الأمنية"/>
+</div>
+<div class="col-span-1">
+<input class="criterion-point w-full bg-surface-container-lowest text-on-surface font-code-sm text-code-sm text-center font-bold px-1 py-1 rounded focus:outline-none focus:bg-surface-bright focus:text-primary" max="20" min="0" type="number" value="4"/>
+</div>
+<div class="col-span-1 flex items-center justify-end gap-1">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors btn-delete-row" title="حذف البند">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Criterion Row 2 -->
+<div class="criterion-row grid grid-cols-12 gap-space-sm items-center px-space-md py-space-sm hover:bg-surface-container-high transition-colors group bg-surface-container-low/40">
+<div class="col-span-1 flex items-center justify-center text-outline group-hover:text-primary cursor-grab">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<div class="col-span-3">
+<input class="w-full bg-surface-container-lowest text-primary font-code-sm text-code-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="middleware_verification"/>
+</div>
+<div class="col-span-6">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="فحص صلاحية التوكن والتعامل مع انتهاء الجلسة 401 Unauthorized"/>
+</div>
+<div class="col-span-1">
+<input class="criterion-point w-full bg-surface-container-lowest text-on-surface font-code-sm text-code-sm text-center font-bold px-1 py-1 rounded focus:outline-none focus:bg-surface-bright focus:text-primary" max="20" min="0" type="number" value="5"/>
+</div>
+<div class="col-span-1 flex items-center justify-end gap-1">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors btn-delete-row" title="حذف البند">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Criterion Row 3 -->
+<div class="criterion-row grid grid-cols-12 gap-space-sm items-center px-space-md py-space-sm hover:bg-surface-container-high transition-colors group">
+<div class="col-span-1 flex items-center justify-center text-outline group-hover:text-primary cursor-grab">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<div class="col-span-3">
+<input class="w-full bg-surface-container-lowest text-primary font-code-sm text-code-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="role_permissions"/>
+</div>
+<div class="col-span-6">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="فحص الصلاحيات والأدوار (Admin / Student) وحماية المسارات 403 Forbidden"/>
+</div>
+<div class="col-span-1">
+<input class="criterion-point w-full bg-surface-container-lowest text-on-surface font-code-sm text-code-sm text-center font-bold px-1 py-1 rounded focus:outline-none focus:bg-surface-bright focus:text-primary" max="20" min="0" type="number" value="4"/>
+</div>
+<div class="col-span-1 flex items-center justify-end gap-1">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors btn-delete-row" title="حذف البند">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Criterion Row 4 -->
+<div class="criterion-row grid grid-cols-12 gap-space-sm items-center px-space-md py-space-sm hover:bg-surface-container-high transition-colors group bg-surface-container-low/40">
+<div class="col-span-1 flex items-center justify-center text-outline group-hover:text-primary cursor-grab">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<div class="col-span-3">
+<input class="w-full bg-surface-container-lowest text-primary font-code-sm text-code-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="code_structure_psr"/>
+</div>
+<div class="col-span-6">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="جودة معمارية الكود، أسماء واضحة، والالتزام بمعايير PSR-12 وتفادي التكرار"/>
+</div>
+<div class="col-span-1">
+<input class="criterion-point w-full bg-surface-container-lowest text-on-surface font-code-sm text-code-sm text-center font-bold px-1 py-1 rounded focus:outline-none focus:bg-surface-bright focus:text-primary" max="20" min="0" type="number" value="4"/>
+</div>
+<div class="col-span-1 flex items-center justify-end gap-1">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors btn-delete-row" title="حذف البند">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Criterion Row 5 -->
+<div class="criterion-row grid grid-cols-12 gap-space-sm items-center px-space-md py-space-sm hover:bg-surface-container-high transition-colors group">
+<div class="col-span-1 flex items-center justify-center text-outline group-hover:text-primary cursor-grab">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<div class="col-span-3">
+<input class="w-full bg-surface-container-lowest text-primary font-code-sm text-code-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="readme_and_tests"/>
+</div>
+<div class="col-span-6">
+<input class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" type="text" value="توثيق واختبارات الوحدة (PHPUnit / Pest) أو مجموعة Postman وملف README"/>
+</div>
+<div class="col-span-1">
+<input class="criterion-point w-full bg-surface-container-lowest text-on-surface font-code-sm text-code-sm text-center font-bold px-1 py-1 rounded focus:outline-none focus:bg-surface-bright focus:text-primary" max="20" min="0" type="number" value="3"/>
+</div>
+<div class="col-span-1 flex items-center justify-end gap-1">
+<button class="p-1 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors btn-delete-row" title="حذف البند">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Add Criterion Button Bar -->
+<div class="p-space-md bg-surface-container-lowest flex items-center justify-between">
+<button class="flex items-center gap-space-xs px-space-lg py-2 rounded-full bg-surface-container-high hover:bg-surface-bright text-primary font-title-md text-title-md transition-all shadow-sm" id="btn-add-criterion">
+<span class="material-symbols-outlined text-[18px]">playlist_add</span>
+<span>+ أضف بنداً جديداً للمعايير (Add Criterion)</span>
+</button>
+<div class="flex items-center gap-space-sm text-outline font-label-xs text-label-xs">
+<span>اختصار: Alt + A لإضافة بند</span>
+<span>•</span>
+<span>يمكن إعادة الترتيب بالسحب والإفلات</span>
+</div>
+</div>
+</div>
+</main>
+<!-- LEFT PANEL: Guidance, PHP/Laravel Rules & Live YAML Preview (3 cols) -->
+<aside class="col-span-3 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xl shadow-sm overflow-hidden">
+<!-- Reference Guidelines Section -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface font-title-md text-title-md">
+<span class="material-symbols-outlined text-tertiary text-[20px]">psychology</span>
+<span>دليل مؤشرات جودة كود PHP / Laravel</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          هذه الإرشادات يُسترشد بها في التقييم اليدوي ويقرأها Claude كموجِّه أثناء صياغة الملاحظات للطلاب:
+        </p>
+</div>
+<!-- Quality Indicator Cards -->
+<div class="flex flex-col gap-space-xs overflow-y-auto max-h-[220px] pr-1">
+<div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-secondary">N+1 Query Detection</span>
+<span class="material-symbols-outlined text-secondary text-[16px]">warning</span>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">
+            تنبيه فوري عند استعلام علاقات Eloquent داخل حلقات التكرار دون استخدام with() أو Eager Loading.
+          </p>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-primary">Proper HTTP Status Codes</span>
+<span class="material-symbols-outlined text-primary text-[16px]">done_all</span>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">
+            التحقق من صحة كود الاستجابة: 200 للنجاح، 201 للإنشاء، 401 للتوكن، 403 للصلاحية، 422 للتحقق.
+          </p>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-tertiary">FormRequest &amp; Validation</span>
+<span class="material-symbols-outlined text-tertiary text-[16px]">verified_user</span>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">
+            عزل قواعد التحقق والمدخلات في أصناف مستقلة وتجنب حشو منطق الفحص داخل توابع الـ Controllers.
+          </p>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-error">Environment Variables (.env)</span>
+<span class="material-symbols-outlined text-error text-[16px]">lock_reset</span>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">
+            منع تضمين مفاتيح JWT والبيانات الحساسة كقيم ثابتة Hardcoded والاعتماد الصارم على env().
+          </p>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Clean Routes Structure</span>
+<span class="material-symbols-outlined text-on-surface text-[16px]">alt_route</span>
+</div>
+<p class="font-label-xs text-label-xs text-on-surface-variant mt-1">
+            تنظيم routes/api.php باستخدام مجموعات الـ Middleware وتسمية المسارات RESTful بوضوح.
+          </p>
+</div>
+</div>
+<!-- Live YAML Mirror Preview Section -->
+<div class="flex flex-col flex-1 bg-surface-container-lowest rounded-xl p-space-sm shadow-inner mt-space-xs overflow-hidden">
+<div class="flex items-center justify-between pb-space-xs border-b border-transparent">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">data_object</span>
+<span class="font-code-sm text-code-sm text-primary font-bold">YAML Live Syntax Preview</span>
+</div>
+<button class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs transition-colors flex items-center gap-1" id="copy-yaml-btn">
+<span class="material-symbols-outlined text-[12px]">content_copy</span>
+<span>نسخ</span>
+</button>
+</div>
+<!-- Raw YAML Code Preview Box -->
+<pre class="font-code-sm text-code-sm text-on-surface-variant p-2 overflow-auto select-text dir-ltr text-left leading-5 max-h-[170px]" id="yaml-code-output">assignment_id: "hw3_auth"
+title: "معيار تقييم واجب المصادقة والـ Middleware (JWT &amp; Roles)"
+max_points: 20
+criteria:
+  - key: "jwt_generation"
+    label: "توليد توكن JWT بشكل سليم وتضمين الـ Claims"
+    points: 4
+  - key: "middleware_verification"
+    label: "فحص صلاحية التوكن والتعامل مع انتهاء الجلسة 401"
+    points: 5
+  - key: "role_permissions"
+    label: "فحص الصلاحيات والأدوار (Admin / Student)"
+    points: 4
+  - key: "code_structure_psr"
+    label: "جودة معمارية الكود والالتزام بـ PSR-12"
+    points: 4
+  - key: "readme_and_tests"
+    label: "توثيق واختبارات الوحدة أو مجموعة Postman"
+    points: 3</pre>
+</div>
+</aside>
+</div>
+<!-- Windows Native Desktop Application Status Bar -->
+<footer class="flex items-center justify-between px-space-lg py-1 bg-surface-container-lowest text-on-surface-variant font-label-xs text-label-xs shadow-inner select-none">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span class="font-code-sm dir-ltr">D:\Grading\rubrics\hw3_auth_middleware.yaml</span>
+</div>
+<span class="text-outline">|</span>
+<span class="text-primary font-bold">ملف محلي متزامن ✓</span>
+</div>
+<div class="flex items-center gap-space-lg font-code-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">check_circle</span>
+<span>YAML 1.2 Syntax: VALID</span>
+</span>
+<span>ترميز: UTF-8 (No BOM)</span>
+<span>نهايات الأسطر: CRLF (Windows)</span>
+<span class="bg-surface-container px-2 py-0.5 rounded text-primary">PySide6 Native GUI</span>
+</div>
+</footer>
+</div>
+<script>
+  (function initRubricEditor() {
+    const maxPointsInput = document.getElementById('max-points-input');
+    const validatorBar = document.getElementById('points-validator-bar');
+    const validatorHeading = document.getElementById('validator-heading');
+    const validatorSub = document.getElementById('validator-sub');
+    const validatorIcon = document.getElementById('validator-icon');
+    const validatorProgress = document.getElementById('validator-progress');
+    const currentSumLabel = document.getElementById('current-sum-label');
+    const maxSumLabel = document.getElementById('max-sum-label');
+    const yamlOutput = document.getElementById('yaml-code-output');
+    const rowsContainer = document.getElementById('criteria-rows-container');
+    const btnAddCriterion = document.getElementById('btn-add-criterion');
+    const btnSaveRubric = document.getElementById('btn-save-rubric');
+    const copyYamlBtn = document.getElementById('copy-yaml-btn');
+
+    function calculateSum() {
+      const pointInputs = rowsContainer.querySelectorAll('.criterion-point');
+      let sum = 0;
+      pointInputs.forEach(input => {
+        const val = parseFloat(input.value) || 0;
+        sum += val;
+      });
+      return sum;
+    }
+
+    function updateLiveValidation() {
+      const currentSum = calculateSum();
+      const maxPoints = parseFloat(maxPointsInput.value) || 0;
+
+      if (currentSumLabel) currentSumLabel.textContent = currentSum;
+      if (maxSumLabel) maxSumLabel.textContent = maxPoints;
+
+      const percentage = maxPoints > 0 ? Math.min(Math.round((currentSum / maxPoints) * 100), 100) : 0;
+      if (validatorProgress) validatorProgress.style.width = percentage + '%';
+
+      if (currentSum === maxPoints) {
+        // Valid State
+        validatorBar.className = "flex items-center justify-between px-space-lg py-space-sm rounded-xl bg-primary-container text-on-primary-container transition-all shadow-md";
+        validatorIcon.textContent = "check_circle";
+        validatorHeading.innerHTML = `مجموع النقاط: ${currentSum} / ${maxPoints} نقطة — متطابق تماماً ✓`;
+        validatorSub.textContent = "متطابق تماماً مع الدرجة القصوى للواجب المحدد (Valid Match ready for grading)";
+        if (validatorProgress) validatorProgress.className = "h-full rounded-full bg-primary transition-all duration-300";
+      } else if (currentSum < maxPoints) {
+        // Deficit Warning State
+        validatorBar.className = "flex items-center justify-between px-space-lg py-space-sm rounded-xl bg-secondary-container text-on-secondary-container transition-all shadow-md";
+        validatorIcon.textContent = "warning";
+        validatorHeading.innerHTML = `تنبيه: مجموع البنود (${currentSum}) أقل من الدرجة القصوى (${maxPoints})`;
+        validatorSub.textContent = `متبقي ${maxPoints - currentSum} نقطة يجب توزيعها على المعايير للوصول للدرجة الكاملة`;
+        if (validatorProgress) validatorProgress.className = "h-full rounded-full bg-secondary-fixed transition-all duration-300";
+      } else {
+        // Overflow Error State
+        validatorBar.className = "flex items-center justify-between px-space-lg py-space-sm rounded-xl bg-error-container text-on-error-container transition-all shadow-md";
+        validatorIcon.textContent = "error";
+        validatorHeading.innerHTML = `خطأ: مجموع البنود (${currentSum}) تجاوز الدرجة القصوى (${maxPoints})`;
+        validatorSub.textContent = `يوجد زيادة بمقدار ${currentSum - maxPoints} نقطة، يُرجى خفض درجات بعض المعايير`;
+        if (validatorProgress) validatorProgress.className = "h-full rounded-full bg-error transition-all duration-300";
+      }
+
+      updateYamlPreview(maxPoints);
+    }
+
+    function updateYamlPreview(maxPoints) {
+      if (!yamlOutput) return;
+      const rows = rowsContainer.querySelectorAll('.criterion-row');
+      let yaml = `assignment_id: "hw3_auth"\n`;
+      yaml += `title: "معيار تقييم واجب المصادقة والـ Middleware (JWT & Roles)"\n`;
+      yaml += `max_points: ${maxPoints}\n`;
+      yaml += `criteria:\n`;
+
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const key = inputs[0]?.value || 'criterion_key';
+        const label = inputs[1]?.value || 'وصف المعيار';
+        const pts = inputs[2]?.value || '0';
+        yaml += `  - key: "${key}"\n`;
+        yaml += `    label: "${label}"\n`;
+        yaml += `    points: ${pts}\n`;
+      });
+
+      yamlOutput.textContent = yaml;
+    }
+
+    // Attach row events
+    function bindRowEvents(row) {
+      const inputs = row.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.addEventListener('input', updateLiveValidation);
+      });
+
+      const delBtn = row.querySelector('.btn-delete-row');
+      if (delBtn) {
+        delBtn.addEventListener('click', () => {
+          if (rowsContainer.querySelectorAll('.criterion-row').length > 1) {
+            row.remove();
+            updateLiveValidation();
+          } else {
+            alert('يجب أن يحتوي معيار التقييم على بند واحد على الأقل.');
+          }
+        });
+      }
+    }
+
+    // Initialize existing rows
+    const existingRows = rowsContainer.querySelectorAll('.criterion-row');
+    existingRows.forEach(bindRowEvents);
+
+    if (maxPointsInput) {
+      maxPointsInput.addEventListener('input', updateLiveValidation);
+    }
+
+    // Add Criterion functionality
+    if (btnAddCriterion) {
+      btnAddCriterion.addEventListener('click', () => {
+        const count = rowsContainer.querySelectorAll('.criterion-row').length + 1;
+        const newRow = document.createElement('div');
+        newRow.className = "criterion-row grid grid-cols-12 gap-space-sm items-center px-space-md py-space-sm hover:bg-surface-container-high transition-colors group";
+        newRow.innerHTML = `
+          <div class="col-span-1 flex items-center justify-center text-outline group-hover:text-primary cursor-grab">
+            <span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+          </div>
+          <div class="col-span-3">
+            <input type="text" value="new_criterion_${count}" class="w-full bg-surface-container-lowest text-primary font-code-sm text-code-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" />
+          </div>
+          <div class="col-span-6">
+            <input type="text" value="معيار تقييم جديد ومؤشرات الأداء" class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm px-2 py-1 rounded focus:outline-none focus:bg-surface-container" />
+          </div>
+          <div class="col-span-1">
+            <input type="number" min="0" max="20" value="2" class="criterion-point w-full bg-surface-container-lowest text-on-surface font-code-sm text-code-sm text-center font-bold px-1 py-1 rounded focus:outline-none focus:bg-surface-bright focus:text-primary" />
+          </div>
+          <div class="col-span-1 flex items-center justify-end gap-1">
+            <button class="p-1 rounded text-outline hover:text-error hover:bg-error-container/30 transition-colors btn-delete-row" title="حذف البند">
+              <span class="material-symbols-outlined text-[16px]">delete</span>
+            </button>
+          </div>
+        `;
+        rowsContainer.appendChild(newRow);
+        bindRowEvents(newRow);
+        updateLiveValidation();
+      });
+    }
+
+    // Save Feedback Simulator
+    if (btnSaveRubric) {
+      btnSaveRubric.addEventListener('click', () => {
+        const originalText = btnSaveRubric.innerHTML;
+        btnSaveRubric.innerHTML = `<span class="material-symbols-outlined text-[18px]">done</span><span>تم الحفظ في hw3_auth_middleware.yaml</span>`;
+        btnSaveRubric.classList.add('bg-primary-container', 'text-on-primary-container');
+        setTimeout(() => {
+          btnSaveRubric.innerHTML = originalText;
+          btnSaveRubric.classList.remove('bg-primary-container', 'text-on-primary-container');
+        }, 1800);
+      });
+    }
+
+    // Copy YAML Code Button
+    if (copyYamlBtn && yamlOutput) {
+      copyYamlBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(yamlOutput.textContent).then(() => {
+          copyYamlBtn.innerHTML = `<span class="material-symbols-outlined text-[12px]">done</span><span>تم النسخ!</span>`;
+          setTimeout(() => {
+            copyYamlBtn.innerHTML = `<span class="material-symbols-outlined text-[12px]">content_copy</span><span>نسخ</span>`;
+          }, 1500);
+        });
+      });
+    }
+
+    // Keyboard shortcut (Ctrl+S) simulator
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        btnSaveRubric?.click();
+      }
+    });
+
+    updateLiveValidation();
+  })();
+</script></main></body></html>

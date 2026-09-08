@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface select-none font-body-md" dir="rtl">
+<!-- Top App Navigation / Breadcrumb Bar (Native Desktop Chrome Header) -->
+<header class="bg-surface-container-low px-space-lg py-space-sm shadow-md flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="flex items-center gap-space-xs text-primary bg-surface-container px-space-sm py-1 rounded-lg">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+<span class="font-code-sm text-code-sm text-primary font-medium tracking-tight">status PHP2026</span>
+</div>
+<nav class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant truncate">
+<span>مساقات Google Classroom</span>
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+<span class="text-on-surface font-medium">PHP2026 — تطوير تطبيقات الويب المتقدمة</span>
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+<span class="text-primary font-semibold">تقرير المتابعة ومصفوفة الإنجاز (Tracking Report)</span>
+</nav>
+<span class="inline-flex items-center gap-1 bg-surface-container-highest/60 text-outline px-space-sm py-0.5 rounded-full text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[13px] text-primary">verified_user</span>
+<span>محلي تحليلي (Offline Read-Only)</span>
+</span>
+</div>
+<!-- Window / Document Top Operations -->
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container hover:bg-surface-container-high active:scale-95 transition-transform text-on-surface rounded-full text-label-md font-label-md shadow-sm" id="refreshBtn">
+<span class="material-symbols-outlined text-[16px] text-primary">sync</span>
+<span>تحديث البيانات (Refresh Matrix)</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container hover:bg-surface-container-high active:scale-95 transition-transform text-on-surface rounded-full text-label-md font-label-md shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">print</span>
+<span>طباعة التقرير / PDF</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-on-primary hover:bg-primary-fixed-dim active:scale-95 transition-all rounded-full font-label-md text-label-md shadow-lg font-bold" id="exportExcelBtn">
+<span class="material-symbols-outlined text-[18px]">table_view</span>
+<span>تصدير التقرير الكامل (_status_20260908.xlsx)</span>
+</button>
+</div>
+</header>
+<!-- Main Viewport Layout -->
+<div class="p-space-lg flex flex-col gap-space-lg">
+<!-- Row 1: KPI Analytical Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- KPI 1 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-on-surface-variant">إجمالي الطلاب المسجلين</span>
+<span class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-on-surface font-bold">48</span>
+<span class="text-body-sm font-body-sm text-outline">طالباً في الشعبة 01</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+            41 وضع مستقر
+          </span>
+<span class="text-secondary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+            7 بحاجة متابعة
+          </span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-on-surface-variant">معدل التسليم الإجمالي</span>
+<span class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">checklist</span>
+</span>
+</div>
+<div class="mt-2 flex items-baseline justify-between">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-primary font-bold">88.4%</span>
+<span class="text-label-sm font-label-sm text-outline">128/144 مهمة</span>
+</div>
+<!-- Inline Sparkline Representation -->
+<svg class="w-20 h-6 text-primary shrink-0" fill="none" viewbox="0 0 80 24">
+<path d="M2 18 L16 14 L30 19 L44 9 L58 11 L72 3 L78 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<circle cx="78" cy="6" fill="currentColor" r="2.5"></circle>
+</svg>
+</div>
+<div class="mt-space-sm w-full bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 88.4%"></div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-on-surface-variant">متوسط الدرجات التراكمي</span>
+<span class="w-7 h-7 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-tertiary font-bold">17.1</span>
+<span class="text-body-sm font-body-sm text-outline">من 20 درجة (85.5%)</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-tertiary">trending_up</span>
+<span>أعلى درجة مسجلة: 20.0 | أدنى درجة: 6.5</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-on-surface-variant">التسليمات المتأخرة والإنذارات</span>
+<span class="w-7 h-7 rounded-lg bg-secondary-container/20 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+</span>
+</div>
+<div class="mt-2 flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-secondary font-bold">14</span>
+<span class="text-body-sm font-body-sm text-outline">حالة تأخير (8.1%)</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-error flex items-center gap-1 font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-error inline-block"></span>
+            5 مفقودة كلياً
+          </span>
+<span class="text-outline">1 ملف تالف</span>
+</div>
+</div>
+</div>
+<!-- Row 2: Interactive Risk Threshold Control Bar (Desktop Widget) -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md flex-1">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">عتبة الخطر والمتابعة الأكاديمية (At-Risk Threshold Slider)</span>
+<span class="bg-secondary-container/30 text-secondary px-2 py-0.5 rounded text-code-sm font-code-sm font-bold" id="thresholdBadge">
+              0.60 (60% فما دون)
+            </span>
+</div>
+<span class="text-body-sm font-body-sm text-outline">يتم تحديث قائمة الطلاب المعرضين للتعثر وتلوين الخلايا تلقائياً فور تحريك المؤشر</span>
+</div>
+</div>
+<!-- Slider + Preset Badges -->
+<div class="flex flex-wrap items-center gap-space-md w-full lg:w-auto">
+<div class="flex items-center gap-space-sm bg-surface-container px-space-md py-1.5 rounded-lg shadow-inner">
+<span class="text-label-sm font-label-sm text-outline">0.40</span>
+<input class="w-36 lg:w-48 accent-primary cursor-pointer h-1.5 bg-surface-container-highest rounded-lg appearance-none" id="riskSlider" max="80" min="40" step="5" type="range" value="60"/>
+<span class="text-label-sm font-label-sm text-outline">0.80</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 bg-surface-container hover:bg-surface-container-high rounded text-label-sm font-label-sm text-error transition-colors" onclick="setThreshold(50)">
+            0.50 إنذار شديد
+          </button>
+<button class="px-2.5 py-1 bg-surface-container-high text-primary rounded text-label-sm font-label-sm transition-colors font-medium" onclick="setThreshold(60)">
+            0.60 الافتراضي
+          </button>
+<button class="px-2.5 py-1 bg-surface-container hover:bg-surface-container-high rounded text-label-sm font-label-sm text-secondary transition-colors" onclick="setThreshold(70)">
+            0.70 متابعة مبكرة
+          </button>
+</div>
+</div>
+</div>
+<!-- Row 3: Main Workspace Split (Table Matrix + At-Risk Side Inspector) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-md items-start">
+<!-- Core Matrix Section (xl:col-span-9) -->
+<div class="xl:col-span-9 flex flex-col gap-space-sm bg-surface-container-low p-space-md rounded-xl shadow-md">
+<!-- Filter & Search Toolbar -->
+<div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-sm pb-space-sm">
+<div class="flex items-center gap-space-sm flex-1">
+<!-- Search -->
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span>
+<input class="w-full h-8 pr-9 pl-3 bg-surface-container text-on-surface placeholder:text-outline rounded-lg text-body-sm font-body-sm focus:outline-none focus:bg-surface-container-high transition-colors" id="searchInput" placeholder="بحث بالرقم الجامعي، اسم الطالب، أو حالة المتابعة..." type="text"/>
+</div>
+<!-- Filter Pills -->
+<div class="hidden sm:flex items-center gap-1 bg-surface-container p-0.5 rounded-lg">
+<button class="filter-pill px-3 py-1 bg-surface-container-highest text-primary font-medium rounded text-label-sm font-label-sm shadow-sm">الكل (48)</button>
+<button class="filter-pill px-3 py-1 hover:bg-surface-container-highest text-on-surface-variant rounded text-label-sm font-label-sm transition-colors">المستقرون (41)</button>
+<button class="filter-pill px-3 py-1 hover:bg-surface-container-highest text-secondary rounded text-label-sm font-label-sm transition-colors">تحت المتابعة (7)</button>
+<button class="filter-pill px-3 py-1 hover:bg-surface-container-highest text-on-surface-variant rounded text-label-sm font-label-sm transition-colors">مكتمل 100% (28)</button>
+</div>
+</div>
+<!-- Sort Selector & Quick Display Toggle -->
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="text-label-sm font-label-sm text-outline hidden md:inline">ترتيب:</span>
+<select class="h-8 bg-surface-container text-on-surface px-2 rounded-lg text-label-sm font-label-sm focus:outline-none cursor-pointer" id="sortSelect">
+<option value="id">الرقم الجامعي (تسلسلي)</option>
+<option value="ratio_asc">نسبة التسليم (تصاعدياً - المعرضين أولاً)</option>
+<option value="ratio_desc">نسبة التسليم (تنازلياً)</option>
+<option value="avg_desc">متوسط الدرجة (الأعلى أولاً)</option>
+</select>
+</div>
+</div>
+<!-- The Spreadsheet / Matrix Viewport with Sticky Headers & Fixed Columns -->
+<div class="overflow-x-auto w-full max-h-[580px] overflow-y-auto rounded-lg bg-surface-container-lowest shadow-inner">
+<table class="w-full border-collapse text-right select-text min-w-[920px]">
+<!-- Table Header -->
+<thead class="sticky top-0 z-20 bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm shadow-sm">
+<tr>
+<th class="py-2.5 px-3 w-10 text-center font-semibold">#</th>
+<th class="py-2.5 px-3 w-28 font-semibold">الرقم الجامعي</th>
+<th class="py-2.5 px-3 w-48 font-semibold">اسم الطالب</th>
+<th class="py-2.5 px-2 text-center min-w-[125px]">
+<div class="font-semibold text-on-surface">HW1: PDO &amp; DB</div>
+<div class="text-[10px] text-outline font-normal">وزن: 10 درجات</div>
+</th>
+<th class="py-2.5 px-2 text-center min-w-[125px]">
+<div class="font-semibold text-on-surface">HW2: REST API</div>
+<div class="text-[10px] text-outline font-normal">وزن: 15 درجة</div>
+</th>
+<th class="py-2.5 px-2 text-center min-w-[125px]">
+<div class="font-semibold text-on-surface">HW3: Auth &amp; MW</div>
+<div class="text-[10px] text-outline font-normal">وزن: 20 درجة</div>
+</th>
+<th class="py-2.5 px-2 text-center min-w-[120px]">
+<div class="font-semibold text-on-surface">HW4: Eloquent</div>
+<div class="text-[10px] text-primary font-normal">قيد التقييم</div>
+</th>
+<th class="py-2.5 px-3 text-center w-24 font-semibold">نسبة التسليم</th>
+<th class="py-2.5 px-2 text-center w-16 font-semibold">متأخر</th>
+<th class="py-2.5 px-3 text-center w-24 font-semibold">المعدل /20</th>
+<th class="py-2.5 px-3 text-center w-24 font-semibold">الحالة</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high font-body-sm text-body-sm" id="matrixTableBody">
+<!-- Student Row 1: High Performer -->
+<tr class="hover:bg-surface-container/60 transition-colors bg-surface-container-low/40">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">01</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-primary font-medium">220194821</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">أحمد سمير التميمي</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    10/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    15/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    20/20
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px] animate-spin">refresh</span>
+                    مسلّم (قيد التدقيق)
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-primary">100%</td>
+<td class="py-2 px-2 text-center text-outline font-code-sm text-code-sm">0</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-on-surface font-semibold">20.0</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-label-sm font-label-sm font-semibold">
+                    جيد جداً ✓
+                  </span>
+</td>
+</tr>
+<!-- Student Row 2: Good Performer with 1 Late -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">02</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-on-surface-variant">220194855</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">سارة مروان القاضي</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    10/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary/15 text-secondary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+                    14/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    19/20
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">done</span>
+                    مسلّم
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-primary">100%</td>
+<td class="py-2 px-2 text-center text-secondary font-code-sm text-code-sm font-semibold">1</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-on-surface font-semibold">18.6</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-label-sm font-label-sm">
+                    مستقر ✓
+                  </span>
+</td>
+</tr>
+<!-- Student Row 3: At Risk (Yousef) -->
+<tr class="hover:bg-surface-container/60 transition-colors bg-error-container/10">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">03</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-error font-medium">220195029</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px] flex items-center gap-1.5">
+<span>يوسف ككمال رضوان</span>
+<span class="material-symbols-outlined text-error text-[14px]">flag</span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    6.5/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error/15 text-error font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">cancel</span>
+                    0/15 (لم يسلّم)
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error/15 text-error font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">cancel</span>
+                    0/20 (لم يسلّم)
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-highest text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">pending</span>
+                    لم يُرفع
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-error">33.3%</td>
+<td class="py-2 px-2 text-center text-outline font-code-sm text-code-sm">0</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-error font-bold">6.5</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error/20 text-error text-label-sm font-label-sm font-bold">
+                    ⛔ حرج
+                  </span>
+</td>
+</tr>
+<!-- Student Row 4: At Risk (Hadeel) -->
+<tr class="hover:bg-surface-container/60 transition-colors bg-secondary-container/5">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">04</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-secondary font-medium">220195071</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">هديل ماجد الصالح</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    9.0/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error/15 text-error font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">cancel</span>
+                    0/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary/15 text-secondary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+                    15/20
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">done</span>
+                    مسلّم
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-secondary">50.0%</td>
+<td class="py-2 px-2 text-center text-secondary font-code-sm text-code-sm font-semibold">1</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-secondary font-bold">9.0</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/20 text-secondary text-label-sm font-label-sm font-semibold">
+                    ⚠️ متابعة
+                  </span>
+</td>
+</tr>
+<!-- Student Row 5: Normal -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">05</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-on-surface-variant">220194882</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">خالد عبد الله النجار</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    9.5/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    14.5/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    18.0/20
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">done</span>
+                    مسلّم
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-primary">100%</td>
+<td class="py-2 px-2 text-center text-outline font-code-sm text-code-sm">0</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-on-surface font-semibold">17.8</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-label-sm font-label-sm">
+                    مستقر ✓
+                  </span>
+</td>
+</tr>
+<!-- Student Row 6: Corrupt file flag -->
+<tr class="hover:bg-surface-container/60 transition-colors bg-secondary-container/5">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">06</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-secondary font-medium">220195034</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">ليلى سامر درويش</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    9.5/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary/15 text-secondary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+                    12/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error/15 text-error font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">broken_image</span>
+                    0/20 (تالف)
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">pending</span>
+                    لم يُسلّم
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-secondary">50.0%</td>
+<td class="py-2 px-2 text-center text-secondary font-code-sm text-code-sm font-semibold">1</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-secondary font-bold">9.5</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/20 text-secondary text-label-sm font-label-sm font-semibold">
+                    ⚠️ متابعة
+                  </span>
+</td>
+</tr>
+<!-- Student Row 7: Normal -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">07</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-on-surface-variant">220194910</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">عمر حازم المصري</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    8.5/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    14/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    17/20
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">done</span>
+                    مسلّم
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-primary">100%</td>
+<td class="py-2 px-2 text-center text-outline font-code-sm text-code-sm">0</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-on-surface font-semibold">16.2</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-label-sm font-label-sm">
+                    مستقر ✓
+                  </span>
+</td>
+</tr>
+<!-- Student Row 8: Hamza (At Risk) -->
+<tr class="hover:bg-surface-container/60 transition-colors bg-secondary-container/5">
+<td class="py-2 px-3 text-center text-outline font-code-sm text-code-sm">08</td>
+<td class="py-2 px-3 font-code-sm text-code-sm text-secondary font-medium">220195058</td>
+<td class="py-2 px-3 font-medium text-on-surface truncate max-w-[180px]">حمزة محمود عياش</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    10/10
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error/15 text-error font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">cancel</span>
+                    0/15
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                    17/20
+                  </span>
+</td>
+<td class="py-2 px-2 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-outline text-[11px]">
+<span class="material-symbols-outlined text-[12px]">pending</span>
+                    لم يُسلّم
+                  </span>
+</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm font-bold text-secondary">50.0%</td>
+<td class="py-2 px-2 text-center text-outline font-code-sm text-code-sm">0</td>
+<td class="py-2 px-3 text-center font-code-sm text-code-sm text-secondary font-bold">10.0</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/20 text-secondary text-label-sm font-label-sm font-semibold">
+                    ⚠️ متابعة
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Matrix Summary Footbar within section -->
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline pt-space-xs px-1">
+<div class="flex items-center gap-space-md">
+<span>عرض 8 من أصل 48 طالباً في العينة الحالية</span>
+<span class="text-on-surface-variant font-code-sm text-code-sm">Freeze Pane: [ID, Name] Locked</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+              مسلّم في الموعد
+            </span>
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+              تسليم متأخر
+            </span>
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+              لم يُسلّم / تالف
+            </span>
+</div>
+</div>
+</div>
+<!-- Side Inspector Panel: At-Risk Students Panel (xl:col-span-3) -->
+<aside class="xl:col-span-3 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xl shadow-md sticky top-4">
+<!-- Panel Header -->
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">warning</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">الطلاب المعرضون للتعثر</h2>
+</div>
+<span class="bg-secondary-container/20 text-secondary px-2 py-0.5 rounded-full text-label-sm font-label-sm font-bold">
+            4 طلاب حرجين
+          </span>
+</div>
+<p class="text-body-sm font-body-sm text-outline -mt-2">
+          الطلاب الذين تقل نسبة إنجازهم عن العتبة الحالية (<span class="text-secondary font-code-sm text-code-sm font-semibold">60%</span>)، مرتبون تصاعدياً حسب الاستجابة:
+        </p>
+<!-- Student Cards List -->
+<div class="flex flex-col gap-space-sm max-h-[460px] overflow-y-auto pr-0.5">
+<!-- Card 1: Yousef -->
+<div class="bg-surface-container hover:bg-surface-container-high transition-colors p-space-sm rounded-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<div class="font-title-md text-title-md text-on-surface">يوسف كمال رضوان</div>
+<div class="font-code-sm text-code-sm text-outline">220195029</div>
+</div>
+<span class="bg-error/20 text-error px-1.5 py-0.5 rounded text-label-sm font-label-sm font-bold">33% تسليم</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-1 text-label-sm font-label-sm bg-surface-container-lowest/70 p-1.5 rounded">
+<div class="text-outline">المعدل التراكمي: <span class="text-error font-bold font-code-sm text-code-sm">6.5/20</span></div>
+<div class="text-outline">المتأخر: <span class="text-on-surface font-code-sm text-code-sm">0</span></div>
+<div class="col-span-2 text-error flex items-center gap-1 font-medium mt-0.5">
+<span class="material-symbols-outlined text-[13px]">error</span>
+                تنبيه: 2 غياب تسليم متتالي
+              </div>
+</div>
+</div>
+<!-- Card 2: Hadeel -->
+<div class="bg-surface-container hover:bg-surface-container-high transition-colors p-space-sm rounded-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<div class="font-title-md text-title-md text-on-surface">هديل ماجد الصالح</div>
+<div class="font-code-sm text-code-sm text-outline">220195071</div>
+</div>
+<span class="bg-secondary/20 text-secondary px-1.5 py-0.5 rounded text-label-sm font-label-sm font-bold">50% تسليم</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-1 text-label-sm font-label-sm bg-surface-container-lowest/70 p-1.5 rounded">
+<div class="text-outline">المعدل: <span class="text-secondary font-bold font-code-sm text-code-sm">9.0/20</span></div>
+<div class="text-outline">المتأخر: <span class="text-secondary font-code-sm text-code-sm">1 مهمة</span></div>
+<div class="col-span-2 text-secondary flex items-center gap-1 font-medium mt-0.5">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+                تنبيه: تسليم واحد فقط في الموعد
+              </div>
+</div>
+</div>
+<!-- Card 3: Layla -->
+<div class="bg-surface-container hover:bg-surface-container-high transition-colors p-space-sm rounded-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<div class="font-title-md text-title-md text-on-surface">ليلى سامر درويش</div>
+<div class="font-code-sm text-code-sm text-outline">220195034</div>
+</div>
+<span class="bg-secondary/20 text-secondary px-1.5 py-0.5 rounded text-label-sm font-label-sm font-bold">50% تسليم</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-1 text-label-sm font-label-sm bg-surface-container-lowest/70 p-1.5 rounded">
+<div class="text-outline">المعدل: <span class="text-secondary font-bold font-code-sm text-code-sm">9.5/20</span></div>
+<div class="text-outline">المتأخر: <span class="text-secondary font-code-sm text-code-sm">1 متأخر</span></div>
+<div class="col-span-2 text-error flex items-center gap-1 font-medium mt-0.5">
+<span class="material-symbols-outlined text-[13px]">broken_image</span>
+                تنبيه: 1 تسليم متأخر + 1 ملف تالف
+              </div>
+</div>
+</div>
+<!-- Card 4: Hamza -->
+<div class="bg-surface-container hover:bg-surface-container-high transition-colors p-space-sm rounded-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<div class="font-title-md text-title-md text-on-surface">حمزة محمود عياش</div>
+<div class="font-code-sm text-code-sm text-outline">220195058</div>
+</div>
+<span class="bg-secondary/20 text-secondary px-1.5 py-0.5 rounded text-label-sm font-label-sm font-bold">50% تسليم</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-1 text-label-sm font-label-sm bg-surface-container-lowest/70 p-1.5 rounded">
+<div class="text-outline">المعدل: <span class="text-secondary font-bold font-code-sm text-code-sm">10.0/20</span></div>
+<div class="text-outline">المتأخر: <span class="text-on-surface font-code-sm text-code-sm">0</span></div>
+<div class="col-span-2 text-secondary flex items-center gap-1 font-medium mt-0.5">
+<span class="material-symbols-outlined text-[13px]">priority_high</span>
+                تنبيه: مفقود الواجب الثاني بالكامل
+              </div>
+</div>
+</div>
+</div>
+<!-- Academic Advisor Export Button -->
+<button class="w-full flex items-center justify-center gap-2 py-2 px-3 bg-surface-container hover:bg-surface-container-high text-primary hover:text-on-surface active:scale-98 transition-all rounded-lg font-label-md text-label-md shadow-sm font-medium mt-1" id="copyAtRiskBtn">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span>نسخ قائمة المتعثرين للإرشاد الأكاديمي</span>
+</button>
+</aside>
+</div>
+</div>
+<!-- Windows 11 Desktop Native Status Bar (Qt QStatusBar standard ergonomics) -->
+<footer class="bg-surface-container-lowest px-space-lg py-1 flex items-center justify-between text-label-sm font-label-sm text-outline select-none shadow-md mt-auto">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[14px]">desktop_windows</span>
+<span class="font-code-sm text-code-sm font-medium">PySide6 Native Engine v6.7.2</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">database</span>
+<span>Local SQLite &amp; Google API Sync (Active)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>Matrix calculated in <span class="font-code-sm text-code-sm text-on-surface">0.04s</span></span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">translate</span>
+<span class="font-code-sm text-code-sm">UTF-8 Arabic (Windows-1256 compat)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1 font-code-sm text-code-sm text-on-surface-variant truncate max-w-sm" title="D:\Grading\2026-Spring\reports\_status_20260908.xlsx">
+<span class="material-symbols-outlined text-[13px] text-primary">folder_open</span>
+<span>D:\Grading\2026-Spring\reports\_status_20260908.xlsx</span>
+</div>
+<span class="text-primary font-bold">100% جاهز</span>
+</div>
+</footer>
+</div>
+<script>
+  function setThreshold(val) {
+    const slider = document.getElementById('riskSlider');
+    const badge = document.getElementById('thresholdBadge');
+    if (slider && badge) {
+      slider.value = val;
+      badge.textContent = (val / 100).toFixed(2) + ' (' + val + '% فما دون)';
+    }
+  }
+
+  const sliderEl = document.getElementById('riskSlider');
+  if (sliderEl) {
+    sliderEl.addEventListener('input', function(e) {
+      const v = e.target.value;
+      const badge = document.getElementById('thresholdBadge');
+      if (badge) {
+        badge.textContent = (v / 100).toFixed(2) + ' (' + v + '% فما دون)';
+      }
+    });
+  }
+
+  const copyBtn = document.getElementById('copyAtRiskBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-primary">done_all</span><span class="text-primary">تم نسخ 4 سجلات إلى الحافظة!</span>';
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+      }, 2200);
+    });
+  }
+
+  const exportBtn = document.getElementById('exportExcelBtn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      const original = exportBtn.innerHTML;
+      exportBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>جاري تجهيز مصنف Excel...</span>';
+      setTimeout(() => {
+        exportBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span><span>تم تصدير ملف _status_20260908.xlsx بنجاح!</span>';
+        setTimeout(() => {
+          exportBtn.innerHTML = original;
+        }, 2500);
+      }, 700);
+    });
+  }
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      const q = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#matrixTableBody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  }
+</script></main></body></html>

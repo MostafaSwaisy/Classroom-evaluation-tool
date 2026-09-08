@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface select-none">
+<!-- Desktop Environment Frame -->
+<div class="flex h-[calc(100vh-2.5rem)] w-full overflow-hidden rounded-xl bg-background shadow-2xl ring-0">
+<!-- RIGHT SIDEBAR (Native RTL Desktop Primary Navigation) -->
+<aside class="flex w-64 flex-col justify-between bg-surface-container-low p-space-md shrink-0">
+<div class="flex flex-col gap-space-lg">
+<!-- App Brand / Workspace Switcher -->
+<div class="flex items-center justify-between rounded-lg bg-surface-container p-space-sm">
+<div class="flex items-center gap-space-sm overflow-hidden">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-container text-on-primary-container font-headline-md text-headline-md">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</div>
+<div class="flex flex-col truncate">
+<span class="font-title-md text-title-md text-on-surface truncate leading-tight">أداة المصحح الذكي</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Classroom-Tool v3.4</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] cursor-pointer hover:text-primary">unfold_more</span>
+</div>
+<!-- Course Context Indicator -->
+<div class="rounded-lg bg-surface-container-high p-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">المساق النشط</span>
+<span class="rounded bg-primary/10 px-1.5 py-0.5 font-code-sm text-[11px] font-semibold text-primary">PHP2026</span>
+</div>
+<p class="mt-1 font-body-sm text-body-sm text-on-surface truncate">تطوير تطبيقات الويب المتقدمة</p>
+<div class="mt-2 flex items-center gap-1.5 font-code-sm text-[11px] text-outline">
+<span class="material-symbols-outlined text-[14px] text-primary">cloud_done</span>
+<span>Google Classroom API: متصل</span>
+</div>
+</div>
+<!-- CLI / Step Flow Menu -->
+<nav class="flex flex-col gap-1">
+<span class="px-2 py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline">دورة تقييم التكليف</span>
+<a class="flex items-center justify-between rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+<span>1. اختيار الواجب</span>
+</div>
+<span class="font-code-sm text-[10px] text-outline">init</span>
+</a>
+<!-- ACTIVE STEP: PULL -->
+<a class="flex items-center justify-between rounded-lg bg-primary-container/20 px-3 py-2 font-headline-sm text-headline-sm text-primary shadow-sm" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">cloud_download</span>
+<span>2. سحب التسليمات (Pull)</span>
+</div>
+<span class="rounded bg-primary px-1.5 py-0.5 font-code-sm text-[10px] text-on-primary font-bold">CLI: pull</span>
+</a>
+<a class="flex items-center justify-between rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">folder_zip</span>
+<span>3. تحضير وفك الأرشيف</span>
+</div>
+<span class="font-code-sm text-[10px] text-outline">prepare</span>
+</a>
+<a class="flex items-center justify-between rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">rate_review</span>
+<span>4. الفحص والتقييم الآلي</span>
+</div>
+<span class="font-code-sm text-[10px] text-outline">grade</span>
+</a>
+<a class="flex items-center justify-between rounded-lg px-3 py-2 font-body-sm text-body-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">fact_check</span>
+<span>5. كشف المراجعة والاعتماد</span>
+</div>
+<span class="font-code-sm text-[10px] text-outline">roster</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Engine Meta & Guardrail -->
+<div class="flex flex-col gap-2 pt-space-sm">
+<div class="flex items-center justify-between rounded-lg bg-surface-container-lowest px-3 py-2">
+<div class="flex items-center gap-1.5">
+<span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface">محرك Claude 3.7</span>
+</div>
+<span class="font-code-sm text-[11px] text-primary">جاهز</span>
+</div>
+<div class="rounded-lg bg-surface-container p-2.5">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span class="font-label-sm text-label-sm font-semibold">حماية درجات الطلاب</span>
+</div>
+<p class="mt-1 font-body-sm text-[11px] text-on-surface-variant leading-relaxed">
+            عملية السحب الحالية للقراءة فقط. لا يتم التعديل أو كتابة أي بيانات على منصة قوقل.
+          </p>
+</div>
+</div>
+</aside>
+<!-- MAIN INTERFACE BODY (Central Workspace & Panes) -->
+<section class="flex flex-1 flex-col overflow-hidden bg-surface">
+<!-- TOP RUNTIME DESKTOP BAR -->
+<header class="flex h-12 items-center justify-between bg-surface-container-low px-space-lg shrink-0">
+<!-- Breadcrumb / Assignment Context -->
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="font-label-sm text-label-sm text-outline">واجبات المساق</span>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_left</span>
+<span class="font-body-md text-body-md font-semibold text-primary truncate">واجب 3: بناء نظام المصادقة والـ Middleware</span>
+<span class="rounded bg-surface-container px-2 py-0.5 font-code-sm text-[11px] text-on-surface-variant">#784910284210</span>
+</div>
+<!-- Right Quick Status Badges -->
+<div class="flex items-center gap-3">
+<!-- Permanent Security Badge Mandate -->
+<div class="flex items-center gap-1.5 rounded-full bg-secondary-container/20 px-3 py-1 text-secondary">
+<span class="material-symbols-outlined text-[15px]">lock</span>
+<span class="font-label-sm text-label-sm font-bold">مسودة محليّة — لم تُرفع الدرجات إطلاقاً</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<button class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface" title="إعدادات السحب">
+<span class="material-symbols-outlined text-[17px]">tune</span>
+</button>
+<button class="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface" title="سجل الأوامر (Console)">
+<span class="material-symbols-outlined text-[17px]">terminal</span>
+</button>
+</div>
+</div>
+</header>
+<!-- SCROLLABLE INTERACTION SURFACE -->
+<div class="flex-1 overflow-y-auto p-space-lg flex flex-col gap-space-lg">
+<!-- 1. HEADER CARD: Assignment Details & Pull Options -->
+<div class="rounded-xl bg-surface-container p-space-lg shadow-sm">
+<div class="flex flex-wrap items-start justify-between gap-space-md">
+<div class="flex flex-col gap-1 max-w-2xl">
+<div class="flex items-center gap-2">
+<span class="rounded bg-primary/15 px-2 py-0.5 font-label-sm text-label-sm font-bold text-primary">المهمة المحددة للتشغيل</span>
+<span class="font-code-sm text-code-sm text-outline">Assignment ID: 784910284210</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
+                واجب 3: بناء نظام المصادقة والـ Middleware (Auth &amp; API Middleware)
+              </h1>
+<!-- Assignment Meta Chips -->
+<div class="mt-2 flex flex-wrap items-center gap-space-sm font-body-sm text-body-sm text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">school</span>
+<span>المساق: <strong class="text-on-surface">PHP2026</strong></span>
+</span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">grade</span>
+<span>الدرجة القصوى: <strong class="text-primary">20 نقطة</strong></span>
+</span>
+<span class="text-outline">•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">event_busy</span>
+<span>موعد التسليم النهائي: <strong class="text-on-surface">28 نوفمبر 2025 (23:59)</strong></span>
+</span>
+</div>
+</div>
+<!-- Download Switch & Direct Execution Toggles -->
+<div class="flex flex-col items-end gap-2 bg-surface-container-high p-space-sm rounded-lg min-w-[300px]">
+<div class="flex w-full items-center justify-between gap-3">
+<div class="flex flex-col">
+<span class="font-headline-sm text-body-md font-semibold text-on-surface">تنزيل ملفات الأكواد والحلول</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">التعطيل يعني جلب كشف الأسماء فقط (<code class="font-code-sm text-secondary">--no-files</code>)</span>
+</div>
+<!-- Interactive Toggle Switch -->
+<label class="relative inline-flex cursor-pointer items-center">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-6 w-11 rounded-full bg-surface-container-lowest peer-checked:bg-primary after:absolute after:top-[2px] after:right-[2px] after:h-5 after:w-5 after:rounded-full after:bg-on-primary-container peer-checked:after:bg-on-primary after:transition-all peer-checked:after:-translate-x-full"></div>
+</label>
+</div>
+<div class="w-full pt-1 flex items-center justify-between text-on-surface-variant font-code-sm text-[11px]">
+<span>المجلد المحلي للواجب:</span>
+<span class="text-primary font-bold">hw3-auth-middleware/</span>
+</div>
+</div>
+</div>
+<!-- Overwrite Guardrail Advisory Notice -->
+<div class="mt-space-md flex items-center gap-2 rounded-lg bg-surface-container-high/60 px-space-md py-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">sync_saved_locally</span>
+<p class="font-body-sm text-body-sm">
+<strong class="text-on-surface">تنبيه المزامنة الآمنة:</strong> إعادة تشغيل عملية السحب سيقوم تلقائياً بتحديث واستبدال التسليمات السابقة لنفس الواجب بأمان محلياً (<span class="font-code-sm text-outline">Running again overwrites the previous pull for this assignment</span>).
+            </p>
+</div>
+</div>
+<!-- 2. PROGRESS & LIVE EXECUTION DASHBOARD -->
+<div class="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
+<!-- Large Progress Metric & Live Per-File Log (8 cols) -->
+<div class="flex flex-col gap-space-md rounded-xl bg-surface-container p-space-lg lg:col-span-8 shadow-sm">
+<!-- Progress Top Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="relative flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined animate-spin text-[24px]">progress_activity</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">جارٍ سحب تسليمات الطلاب من السحابة...</h2>
+<span class="rounded bg-primary-container px-2 py-0.2 font-code-sm text-[11px] font-bold text-on-primary-container">88%</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">تم تنزيل وتجهيز 42 من أصل 48 تسليماً مستلماً عبر الـ API</span>
+</div>
+</div>
+<!-- Action Controls -->
+<div class="flex items-center gap-2">
+<button class="flex h-8 items-center gap-1.5 rounded-full bg-surface-container-highest px-3 font-label-md text-label-md text-on-surface hover:bg-surface-bright transition-colors" title="إيقاف مؤقت للعملية">
+<span class="material-symbols-outlined text-[16px]">pause</span>
+<span>إيقاف مؤقت</span>
+</button>
+<button class="flex h-8 items-center gap-1.5 rounded-full bg-error-container/40 px-3 font-label-md text-label-md text-error hover:bg-error-container transition-colors" title="إلغاء عملية التنزيل">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+<span>إلغاء العملية</span>
+</button>
+</div>
+</div>
+<!-- Massive Progress Track with RTL Fill -->
+<div class="w-full">
+<div class="h-3 w-full overflow-hidden rounded-full bg-surface-container-lowest">
+<div class="h-full rounded-full bg-gradient-to-l from-primary-fixed to-primary transition-all duration-300 shadow-[0_0_12px_rgba(107,216,203,0.4)]" style="width: 88%"></div>
+</div>
+<div class="mt-1 flex items-center justify-between font-code-sm text-[11px] text-outline">
+<span>السرعة الحالية: 4.8 MB/s</span>
+<span>الحجم المكتمل: 142.6 MB / 162.0 MB التقديري</span>
+<span>المتبقي: 6 ملفات (تقريباً 4 ثوانٍ)</span>
+</div>
+</div>
+<!-- Live Streaming File Download Log -->
+<div class="flex flex-col gap-2 pt-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">سجل السحب المباشر (Live per-file download stream)</span>
+<span class="font-code-sm text-[11px] text-primary">المعالج: Thread-4 [Active]</span>
+</div>
+<!-- Terminal-style Log Box -->
+<div class="h-60 overflow-y-auto rounded-lg bg-surface-container-lowest p-space-sm font-code-sm text-code-sm flex flex-col gap-1.5">
+<div class="flex items-center justify-between rounded px-2 py-1 bg-surface-container-low/80 text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-bold">120210123</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface">Swaisy_Auth_HW3.zip</span>
+<span class="rounded bg-surface-container px-1.5 text-[10px] text-on-surface-variant">2.4 MB</span>
+</div>
+<span class="text-[11px] text-primary">تم الاستخراج والتجهيز</span>
+</div>
+<div class="flex items-center justify-between rounded px-2 py-1 bg-surface-container-low/80 text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-bold">120210145</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface">Middleware_Project_src.tar.gz</span>
+<span class="rounded bg-surface-container px-1.5 text-[10px] text-on-surface-variant">4.1 MB</span>
+</div>
+<span class="text-[11px] text-primary">تم الاستخراج والتجهيز</span>
+</div>
+<div class="flex items-center justify-between rounded px-2 py-1 bg-surface-container-low/80 text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-bold">120210189</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface">auth_jwt_assignment3.zip</span>
+<span class="rounded bg-surface-container px-1.5 text-[10px] text-on-surface-variant">1.8 MB</span>
+</div>
+<span class="text-[11px] text-primary">تم الاستخراج والتجهيز</span>
+</div>
+<!-- Corrupted / Failed File Entry -->
+<div class="flex items-center justify-between rounded px-2 py-1 bg-error-container/30 text-on-error-container">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[16px]">error</span>
+<span class="font-bold text-error">120210204</span>
+<span class="text-error/70">→</span>
+<span class="line-through text-on-surface-variant">Assignment3_Empty.zip</span>
+<span class="rounded bg-error-container/60 px-1.5 text-[10px] text-error font-bold">0 KB</span>
+</div>
+<span class="text-[11px] font-bold text-error">ملف فارغ أو معطوب من المصدر</span>
+</div>
+<div class="flex items-center justify-between rounded px-2 py-1 bg-surface-container-low/80 text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-bold">120210255</span>
+<span class="text-outline">→</span>
+<span class="text-on-surface">Homework3_API.zip</span>
+<span class="rounded bg-surface-container px-1.5 text-[10px] text-on-surface-variant">3.2 MB</span>
+</div>
+<span class="text-[11px] text-primary">تم الاستخراج والتجهيز</span>
+</div>
+<!-- Ongoing Item -->
+<div class="flex items-center justify-between rounded px-2 py-1 bg-primary/10 text-primary">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined animate-spin text-[16px]">sync</span>
+<span class="font-bold">120210280</span>
+<span class="text-outline">→</span>
+<span>Tokens_Middleware_v2.zip</span>
+<span class="text-[10px] text-on-surface-variant">5.1 MB (72%)</span>
+</div>
+<span class="text-[11px]">جارٍ التنزيل الآن...</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Statistics Panel (4 cols) -->
+<div class="flex flex-col gap-space-md lg:col-span-4">
+<div class="rounded-xl bg-surface-container p-space-lg shadow-sm flex flex-col gap-space-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">إحصائيات السحب اللحظية</h3>
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- On Time Card -->
+<div class="flex flex-col rounded-lg bg-surface-container-high p-3">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">مسلّم في الوقت</span>
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+</div>
+<span class="mt-1 font-display-lg text-display-lg text-primary font-bold">38</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant">قبل الموعد النهائي</span>
+</div>
+<!-- Late Card -->
+<div class="flex flex-col rounded-lg bg-surface-container-high p-3">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-secondary">تسليم متأخر</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">schedule</span>
+</div>
+<span class="mt-1 font-display-lg text-display-lg text-secondary font-bold">4</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant">سيُطبق خصم التأخير</span>
+</div>
+<!-- Missing Card -->
+<div class="flex flex-col rounded-lg bg-surface-container-high p-3">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-error">لم يسلّموا بعد</span>
+<span class="material-symbols-outlined text-error text-[18px]">person_off</span>
+</div>
+<span class="mt-1 font-display-lg text-display-lg text-error font-bold">6</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant">من أصل 48 طالباً</span>
+</div>
+<!-- Payload Card -->
+<div class="flex flex-col rounded-lg bg-surface-container-high p-3">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-tertiary">حجم البيانات</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">hard_drive</span>
+</div>
+<span class="mt-1 font-title-md text-headline-md text-tertiary font-bold">142.6 <span class="text-xs font-normal">MB</span></span>
+<span class="font-label-sm text-[10px] text-on-surface-variant">معدل: 4.8 MB/s</span>
+</div>
+</div>
+<!-- Storage Quota Mini Indicator -->
+<div class="flex flex-col gap-1.5 rounded-lg bg-surface-container-lowest p-3">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="text-on-surface-variant">مساحة التخزين المحلية المتاحة (D:)</span>
+<span class="text-primary font-code-sm">184.2 GB متوفرة</span>
+</div>
+<div class="h-1.5 w-full rounded-full bg-surface-container">
+<div class="h-full rounded-full bg-primary" style="width: 32%"></div>
+</div>
+</div>
+</div>
+<!-- Desktop Pull Flags Mini Card -->
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-outline">خيارات أمر السحب CLI Flags</span>
+<div class="flex flex-wrap gap-1 font-code-sm text-[11px]">
+<span class="rounded bg-surface-container-high px-2 py-0.5 text-primary">--extract-archives</span>
+<span class="rounded bg-surface-container-high px-2 py-0.5 text-on-surface-variant">--sanitize-names</span>
+<span class="rounded bg-surface-container-high px-2 py-0.5 text-secondary">--detect-late</span>
+<span class="rounded bg-surface-container-high px-2 py-0.5 text-primary">--match-id-regex</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. CRITICAL PANEL: No-ID Warnings (Orange Alert Box) -->
+<div class="rounded-xl bg-surface-container p-space-lg shadow-sm">
+<!-- Box Header with Warm Amber Accent -->
+<div class="flex flex-wrap items-center justify-between gap-2 pb-3">
+<div class="flex items-center gap-2.5">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-container/20 text-secondary">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">تنبيهات مطابقة الأرقام الجامعية</h3>
+<span class="rounded-full bg-secondary-container/30 px-2.5 py-0.5 font-code-sm text-label-sm font-bold text-secondary">
+                    2 تسليمات لم تطابق النمط (No-ID Warnings)
+                  </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                  لم يتمكن التعبير النمطي الافتراضي <code class="rounded bg-surface-container-lowest px-1 font-code-sm text-primary">student_id_pattern</code> من استخراج الرقم الجامعي لهؤلاء الطلبة:
+                </span>
+</div>
+</div>
+<!-- Quick Action Links -->
+<div class="flex items-center gap-2">
+<button class="flex h-8 items-center gap-1.5 rounded-lg bg-surface-container-high px-3 font-label-md text-label-md text-secondary hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+<span>تعديل نمط Regex في الإعدادات (Fix in Settings)</span>
+</button>
+</div>
+</div>
+<!-- Mismatched Student Entries Table -->
+<div class="flex flex-col gap-2 pt-2">
+<!-- Issue Row 1 -->
+<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface-container-high p-3">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-secondary font-bold font-code-sm text-xs">
+                  01
+                </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-body-md font-bold text-on-surface">tareq.special.student@gmail.com</span>
+<span class="rounded bg-error-container/40 px-2 py-0.2 font-label-sm text-[10px] text-error font-semibold">إيميل شخصي</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">
+                    لم يطابق نمط <code class="font-code-sm text-secondary">.*@(\d{9})^</code> — قام الطالب بالتسليم عبر حساب بريد شخصي خارجي وليس الجامعي.
+                  </span>
+</div>
+</div>
+<!-- Inline Resolution Tool -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 rounded-lg bg-surface-container-lowest px-2 py-1">
+<span class="font-label-sm text-label-sm text-outline">تعيين يدوي:</span>
+<input class="h-6 w-28 bg-transparent text-center font-code-sm text-code-sm text-primary placeholder-outline focus:outline-none" placeholder="مثال: 120210999" type="text"/>
+</div>
+<button class="flex h-7 items-center gap-1 rounded bg-secondary-container px-2.5 font-label-sm text-label-sm text-on-secondary font-bold hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[14px]">save</span>
+<span>حفظ الرقم</span>
+</button>
+</div>
+</div>
+<!-- Issue Row 2 -->
+<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface-container-high p-3">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-secondary font-bold font-code-sm text-xs">
+                  02
+                </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-body-md font-bold text-on-surface">dev.alialqudsi@students.edu</span>
+<span class="rounded bg-secondary-container/30 px-2 py-0.2 font-label-sm text-[10px] text-secondary font-semibold">معرّف نصّي</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">
+                    لم يطابق نمط 9 أرقام — يحتوي البريد على اسم المستخدم النصي <code class="font-code-sm text-secondary">(dev.alialqudsi)</code> بدلاً من المعرف الرقمي المعتمد.
+                  </span>
+</div>
+</div>
+<!-- Inline Resolution Tool -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 rounded-lg bg-surface-container-lowest px-2 py-1">
+<span class="font-label-sm text-label-sm text-outline">تعيين يدوي:</span>
+<input class="h-6 w-28 bg-transparent text-center font-code-sm text-code-sm text-primary placeholder-outline focus:outline-none" placeholder="مثال: 120200412" type="text"/>
+</div>
+<button class="flex h-7 items-center gap-1 rounded bg-secondary-container px-2.5 font-label-sm text-label-sm text-on-secondary font-bold hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[14px]">save</span>
+<span>حفظ الرقم</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 4. FINAL RESULTS & WORKFLOW ADVANCEMENT PANEL -->
+<div class="rounded-xl bg-surface-container-high p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-3">
+<div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-on-primary">
+<span class="material-symbols-outlined text-[26px]">task_alt</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-md text-headline-md text-on-surface">اكتمل سحب ملفات الواجب بنجاح</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                  تم تجهيز <strong class="text-primary font-code-sm">42</strong> أرشيف كود في المجلد المحلي بنجاح، ومطابقة البيانات مع كشف الطلاب المعتمد.
+                </span>
+</div>
+</div>
+<!-- Primary Advance Call-To-Action -->
+<div class="flex items-center gap-2">
+<button class="flex h-10 items-center gap-2 rounded-full bg-primary px-5 font-headline-sm text-title-md font-bold text-on-primary shadow-lg shadow-primary/20 hover:bg-primary-fixed transition-all hover:scale-[1.01] active:scale-[0.99]">
+<span>ابدأ تحضير وفك ضغط الأكواد الآن (Prepare Now)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+</div>
+</div>
+<!-- File Storage Path Strip -->
+<div class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-container-lowest px-space-md py-2 font-code-sm text-code-sm">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-[16px] text-outline">folder_open</span>
+<span class="text-outline">مسار المجلد المحلي:</span>
+<span class="text-primary truncate font-bold" dir="ltr">D:\Grading\2026-Spring\submissions\PHP2026\hw3-auth-middleware\</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1 rounded bg-surface-container px-2 py-1 text-on-surface hover:text-primary transition-colors text-label-sm" title="نسخ المسار">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>نسخ المسار</span>
+</button>
+<button class="flex items-center gap-1 rounded bg-surface-container px-2 py-1 text-on-surface hover:text-primary transition-colors text-label-sm" title="عرض في مستكشف ويندوز">
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+<span>فتح المجلد في المستكشف</span>
+</button>
+<button class="flex items-center gap-1 rounded bg-surface-container px-2 py-1 text-on-surface hover:text-primary transition-colors text-label-sm" title="كشف الدرجات">
+<span class="material-symbols-outlined text-[14px]">list_alt</span>
+<span>عرض كشف الواجب (Open Roster)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- DESKTOP STATUS BAR (Native Bottom Bar) -->
+<footer class="flex h-7 items-center justify-between bg-surface-container-lowest px-space-md text-[11px] font-code-sm text-outline shrink-0">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1 text-primary">
+<span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+<span>جاهز لخطوة prepare</span>
+</span>
+<span>•</span>
+<span>Google Token: Valid (Expires in 52m)</span>
+<span>•</span>
+<span>Submissions Directory: Read/Write OK</span>
+</div>
+<div class="flex items-center gap-3">
+<span>ترميز الملفات: UTF-8</span>
+<span>•</span>
+<span>Classroom-Tool Desktop Engine (Qt / Fluent)</span>
+</div>
+</footer>
+</section>
+</div>
+</div></main></body></html>

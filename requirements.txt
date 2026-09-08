@@ -1,7 +1,13 @@
+# --- CLI / backend ---
 google-api-python-client>=2.120.0
 google-auth-oauthlib>=1.2.0
 google-auth-httplib2>=0.2.0
 openpyxl>=3.1.2
-PyYAML>=6.0
+PyYAML>=6.0          # replaced by ruamel.yaml in R10; kept until config.py migrates
 click>=8.1.7
 tqdm>=4.66.0
+
+# --- GUI (Phase 0+) ---
+PySide6>=6.7
+ruamel.yaml>=0.18    # comment-preserving round-trip for config.yaml / rubrics (R10, R7)
+keyring>=25          # OS credential store for the optional Provider-A API key (R8)

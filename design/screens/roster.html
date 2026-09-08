@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface bg-background select-none">
+<!-- Top Navigation & Context Toolbar (Fluent Desktop Style) -->
+<header class="flex flex-col w-full bg-surface-container-low shadow-sm">
+<!-- Row 1: App Header / Breadcrumb & Core Workflow Buttons -->
+<div class="flex items-center justify-between px-space-xl py-space-sm h-toolbar-height bg-surface-container-lowest">
+<!-- Breadcrumbs Hierarchy -->
+<div class="flex items-center space-x-space-sm space-x-reverse min-w-0">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0" style="font-variation-settings: 'FILL' 1;">dataset</span>
+<nav class="flex items-center space-x-space-xs space-x-reverse font-body-sm text-body-sm text-on-surface-variant truncate">
+<span class="hover:text-primary cursor-pointer transition-colors">مساقات Google Classroom</span>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_left</span>
+<span class="font-code-sm text-code-sm text-tertiary px-space-xs py-space-2xs bg-surface-container rounded">PHP2026</span>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_left</span>
+<span class="text-on-surface font-title-md text-title-md truncate">واجب 3: بناء نظام المصادقة والـ Middleware (Auth &amp; API Middleware)</span>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_left</span>
+<span class="text-primary font-headline-sm text-headline-sm">كشف التسليمات (Roster)</span>
+</nav>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex items-center space-x-space-sm space-x-reverse shrink-0">
+<!-- Open Local Directory -->
+<button class="flex items-center space-x-space-xs space-x-reverse px-space-md py-space-xs h-8 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">folder_open</span>
+<span>فتح مجلد الواجب محلياً</span>
+</button>
+<!-- Export Roster -->
+<button class="flex items-center space-x-space-xs space-x-reverse px-space-md py-space-xs h-8 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">file_download</span>
+<span>تصدير الكشف (_roster.xlsx)</span>
+</button>
+<!-- Primary CTA: Grading Workspace -->
+<button class="flex items-center space-x-space-xs space-x-reverse px-space-lg py-space-xs h-8 rounded-full bg-primary text-on-primary hover:bg-primary-container transition-transform active:scale-95 shadow-md font-label-md text-label-md font-semibold" type="button">
+<span>افتح مساحة التصحيح (Workspace)</span>
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Security Banner & Read-Only Notice Bar -->
+<div class="flex items-center justify-between px-space-xl py-space-xs bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center space-x-space-md space-x-reverse">
+<div class="flex items-center space-x-space-xs space-x-reverse bg-surface-container-high px-space-sm py-space-2xs rounded text-primary">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-code-sm text-code-sm">_roster.xlsx (Read-Only)</span>
+</div>
+<span class="text-on-surface">هذا الكشف مسحوب ومطابق لبيانات Google Classroom — للقراءة والتدقيق فقط ولا يُعدَّل هيكلياً من هذه الشاشة.</span>
+</div>
+<div class="flex items-center space-x-space-xs space-x-reverse px-space-md py-space-2xs rounded-full bg-surface-container-highest text-primary">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-xs text-label-xs">مسودة محلية آمنة — لن تُرفع أي تعديلات أو درجات تلقائياً إلى الخوادم السحابية</span>
+</div>
+</div>
+</header>
+<!-- Summary Metric Strip (5 Tonal Desktop Cards) -->
+<section class="grid grid-cols-5 gap-space-md px-space-xl pt-space-md pb-space-sm">
+<!-- Card 1: Total -->
+<div class="flex flex-col justify-between p-space-md rounded bg-surface-container shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">إجمالي مقيدي الشعبة</span>
+<span class="material-symbols-outlined text-primary text-[18px]">groups</span>
+</div>
+<div class="flex items-baseline space-x-space-xs space-x-reverse mt-space-xs">
+<span class="font-display-lg text-display-lg text-on-surface">48</span>
+<span class="font-label-sm text-label-sm text-outline">طالباً مسجلاً</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded-full mt-space-sm overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+</div>
+<!-- Card 2: Submitted On-Time -->
+<div class="flex flex-col justify-between p-space-md rounded bg-surface-container shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">تم التسليم في الموعد</span>
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</div>
+<div class="flex items-baseline space-x-space-xs space-x-reverse mt-space-xs">
+<span class="font-display-lg text-display-lg text-primary">34</span>
+<span class="font-label-sm text-label-sm text-primary">طالباً (71%)</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded-full mt-space-sm overflow-hidden">
+<div class="bg-primary h-full" style="width: 71%"></div>
+</div>
+</div>
+<!-- Card 3: Late Turn-In -->
+<div class="flex flex-col justify-between p-space-md rounded bg-surface-container shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-secondary">تسليم متأخر (Late)</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">alarm</span>
+</div>
+<div class="flex items-baseline space-x-space-xs space-x-reverse mt-space-xs">
+<span class="font-display-lg text-display-lg text-secondary">4</span>
+<span class="font-label-sm text-label-sm text-secondary">طلاب (8%)</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded-full mt-space-sm overflow-hidden">
+<div class="bg-secondary h-full" style="width: 8%"></div>
+</div>
+</div>
+<!-- Card 4: Missing Students -->
+<div class="flex flex-col justify-between p-space-md rounded bg-surface-container shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-error">لم يسلّموا (Missing)</span>
+<span class="material-symbols-outlined text-error text-[18px]">cancel</span>
+</div>
+<div class="flex items-baseline space-x-space-xs space-x-reverse mt-space-xs">
+<span class="font-display-lg text-display-lg text-error">6</span>
+<span class="font-label-sm text-label-sm text-error">طلاب (13%)</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded-full mt-space-sm overflow-hidden">
+<div class="bg-error h-full" style="width: 13%"></div>
+</div>
+</div>
+<!-- Card 5: Grade Average Suggestion -->
+<div class="flex flex-col justify-between p-space-md rounded bg-surface-container shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">متوسط الدرجة المقترحة</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">query_stats</span>
+</div>
+<div class="flex items-baseline space-x-space-xs space-x-reverse mt-space-xs">
+<span class="font-display-lg text-display-lg text-tertiary">17.4</span>
+<span class="font-label-sm text-label-sm text-outline">/ 20 نقطة</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1 rounded-full mt-space-sm overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 87%"></div>
+</div>
+</div>
+</section>
+<!-- Filter, Search & Segmented Control Hub -->
+<section class="px-space-xl py-space-sm">
+<div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-sm p-space-sm rounded bg-surface-container-low">
+<!-- Search Input Container -->
+<div class="relative flex-1 min-w-[280px]">
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full h-8 pr-9 pl-space-md bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm rounded outline-none focus:bg-surface-container transition-colors" id="rosterSearch" placeholder="بحث بالرقم الجامعي، اسم الطالب، أو صيغة ملف التسليم (.zip, .pdf)..." type="text"/>
+</div>
+<!-- Segmented State Chips -->
+<div class="flex items-center space-x-space-xs space-x-reverse overflow-x-auto scrollbar-none py-space-2xs">
+<button class="px-space-md py-space-2xs rounded-full bg-primary text-on-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm" type="button">الكل (48)</button>
+<button class="px-space-md py-space-2xs rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm whitespace-nowrap transition-colors" type="button">مسلّم في الموعد (34)</button>
+<button class="px-space-md py-space-2xs rounded-full bg-surface-container text-secondary hover:bg-surface-container-high font-label-sm text-label-sm whitespace-nowrap transition-colors" type="button">متأخر (4)</button>
+<button class="px-space-md py-space-2xs rounded-full bg-surface-container text-error hover:bg-surface-container-high font-label-sm text-label-sm whitespace-nowrap transition-colors" type="button">لم يسلّم (6)</button>
+<button class="px-space-md py-space-2xs rounded-full bg-surface-container text-tertiary hover:bg-surface-container-high font-label-sm text-label-sm whitespace-nowrap transition-colors" type="button">مرفقات كود ZIP (38)</button>
+<button class="px-space-md py-space-2xs rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-label-sm text-label-sm whitespace-nowrap transition-colors" type="button">درايف / Drive (4)</button>
+</div>
+<!-- Advanced Sort Comboboxes -->
+<div class="flex items-center space-x-space-xs space-x-reverse shrink-0">
+<div class="flex items-center space-x-space-xs space-x-reverse px-space-sm h-8 rounded bg-surface-container text-on-surface font-label-md text-label-md cursor-pointer hover:bg-surface-container-high">
+<span class="material-symbols-outlined text-[16px] text-outline">sort</span>
+<span>فرز: وقت التسليم (الأحدث)</span>
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+</div>
+<button class="p-space-xs h-8 w-8 flex items-center justify-center rounded bg-surface-container text-on-surface hover:bg-surface-container-high" title="تحديث البيانات من المجلد" type="button">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Main Roster Table Section (Dense Desktop Excel Mirror) -->
+<main class="px-space-xl py-space-2xs flex-1">
+<div class="rounded overflow-hidden bg-surface-container shadow-md">
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse select-text">
+<!-- Table Header -->
+<thead>
+<tr class="h-8 bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm uppercase">
+<th class="px-space-md font-medium w-10 text-center">#</th>
+<th class="px-space-md font-medium w-32">الرقم الجامعي</th>
+<th class="px-space-md font-medium w-48">اسم الطالب</th>
+<th class="px-space-md font-medium w-52">البريد الأكاديمي الرسمي</th>
+<th class="px-space-md font-medium w-36 text-center">حالة التسليم</th>
+<th class="px-space-md font-medium w-40">توقيت التسليم</th>
+<th class="px-space-md font-medium w-32">الملفات المستلمة</th>
+<th class="px-space-md font-medium">المرفقات والروابط</th>
+<th class="px-space-md font-medium w-32 text-center">الدرجة المقترحة</th>
+<th class="px-space-md font-medium w-40 text-center">إجراء التصحيح</th>
+</tr>
+</thead>
+<!-- Table Rows (Zebra Striped & Tactile Hover States) -->
+<tbody class="font-body-sm text-body-sm text-on-surface">
+<!-- Row 1: On-Time / High Grade -->
+<tr class="h-9 bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">01</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194821</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">مصطفى سويسي</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>m.sweisi@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-primary-container/20 text-primary font-label-xs text-label-xs font-semibold">
+                  مسلّم في الموعد ✓
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant">2025-11-28 21:42</td>
+<td class="px-space-md font-code-sm text-code-sm">1 ZIP (14 ملفاً)</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>auth_v2.zip</span>
+</span>
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-on-surface-variant">
+<span class="material-symbols-outlined text-[13px]">description</span>
+<span>readme.pdf</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-primary">19.5 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Late (+2h) -->
+<tr class="h-9 bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">02</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194835</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">أحمد عبد الرحمن</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>a.abdulrahman@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-secondary-container/20 text-secondary font-label-xs text-label-xs font-semibold">
+                  متأخر ⏰ (+2h 15m)
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-secondary">2025-11-29 02:15</td>
+<td class="px-space-md font-code-sm text-code-sm">1 ZIP (9 ملفات)</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>middleware_project.zip</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-secondary">16.0 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: On-Time / Clean Structure -->
+<tr class="h-9 bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">03</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194877</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">سارة العلي</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>s.alali@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-primary-container/20 text-primary font-label-xs text-label-xs font-semibold">
+                  مسلّم في الموعد ✓
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant">2025-11-28 19:10</td>
+<td class="px-space-md font-code-sm text-code-sm">2 ملفات (ZIP + SQL)</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>api_system.zip</span>
+</span>
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-on-surface-variant">
+<span class="material-symbols-outlined text-[13px]">data_object</span>
+<span>schema.sql</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-primary">20.0 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Google Drive External Link Submission -->
+<tr class="h-9 bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">04</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194892</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">خالد منصور</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>k.mansour@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-primary-container/20 text-primary font-label-xs text-label-xs font-semibold">
+                  مسلّم (رابط سحابي)
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant">2025-11-28 23:50</td>
+<td class="px-space-md font-code-sm text-code-sm">1 رابط خارجي</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-secondary">
+<span class="material-symbols-outlined text-[13px]">add_link</span>
+<span>Google Drive: Project-Zip</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm text-outline">مسودة (قيد التدقيق)</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Resubmitted -->
+<tr class="h-9 bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">05</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194901</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">ديما القادري</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>d.qadiri@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-tertiary/20 text-tertiary font-label-xs text-label-xs font-semibold">
+                  معاد تسليمه (v2)
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant">2025-11-28 23:14</td>
+<td class="px-space-md font-code-sm text-code-sm">1 TAR.GZ (18 ملفاً)</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>laravel_auth_final.tar.gz</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-primary">18.0 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Late (+4h) -->
+<tr class="h-9 bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">06</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194918</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">طارق النابلسي</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>t.nabulsi@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-secondary-container/20 text-secondary font-label-xs text-label-xs font-semibold">
+                  متأخر ⏰ (+4h 30m)
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-secondary">2025-11-29 04:30</td>
+<td class="px-space-md font-code-sm text-code-sm">1 ZIP (11 ملفاً)</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>src_repo.zip</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-secondary">15.5 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: On-Time -->
+<tr class="h-9 bg-surface-container hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">07</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194933</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">عمر الخطيب</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>o.khatib@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-primary-container/20 text-primary font-label-xs text-label-xs font-semibold">
+                  مسلّم في الموعد ✓
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant">2025-11-28 22:05</td>
+<td class="px-space-md font-code-sm text-code-sm">1 ZIP</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>khatib_hw3.zip</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-primary">17.0 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 8: On-Time -->
+<tr class="h-9 bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<td class="px-space-md text-center font-code-sm text-outline">08</td>
+<td class="px-space-md">
+<span class="font-code-sm text-code-sm text-primary hover:underline cursor-pointer">220194945</span>
+</td>
+<td class="px-space-md font-semibold text-on-surface">ريم الحسين</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant flex items-center space-x-space-xs space-x-reverse pt-2">
+<span>r.hussein@std.univ.edu</span>
+<span class="material-symbols-outlined text-[13px] text-primary" title="بريد جامعي مؤكد">verified</span>
+</td>
+<td class="px-space-md text-center">
+<span class="inline-flex items-center px-space-sm py-space-2xs rounded-full bg-primary-container/20 text-primary font-label-xs text-label-xs font-semibold">
+                  مسلّم في الموعد ✓
+                </span>
+</td>
+<td class="px-space-md font-code-sm text-code-sm text-on-surface-variant">2025-11-28 18:22</td>
+<td class="px-space-md font-code-sm text-code-sm">1 ZIP (16 ملفاً)</td>
+<td class="px-space-md">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="flex items-center space-x-space-2xs space-x-reverse px-space-xs py-space-2xs rounded bg-surface-container-highest font-code-sm text-[11px] text-tertiary">
+<span class="material-symbols-outlined text-[13px]">folder_zip</span>
+<span>assignment3_auth.zip</span>
+</span>
+</div>
+</td>
+<td class="px-space-md text-center font-code-sm font-semibold text-primary">19.0 / 20</td>
+<td class="px-space-md text-center">
+<div class="flex items-center justify-center space-x-space-xs space-x-reverse">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm" type="button">افتح (Grade)</button>
+<button class="p-1 rounded bg-surface-container-highest hover:bg-surface-bright text-on-surface" title="استعراض المجلد" type="button">
+<span class="material-symbols-outlined text-[15px]">folder</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- Collapsible Section: Missing Students Box (_missing.txt mirror) -->
+<section class="px-space-xl py-space-sm">
+<div class="rounded bg-surface-container-low p-space-md shadow-sm">
+<!-- Section Header -->
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center space-x-space-sm space-x-reverse">
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<div class="flex flex-col">
+<div class="flex items-center space-x-space-xs space-x-reverse">
+<span class="font-headline-sm text-headline-sm text-error">الطلاب غير المسلّمين والمفقودين (Missing Students)</span>
+<span class="font-code-sm text-code-sm px-space-xs py-space-2xs rounded bg-error-container text-on-error-container">_missing.txt (6 طلاب)</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">تم استخراج هذه القائمة تلقائياً للطلاب الذين لديهم 0 تسليمات على منصة Google Classroom حتى موعد الإغلاق.</span>
+</div>
+</div>
+<!-- Quick Copy CTA -->
+<button class="flex items-center space-x-space-xs space-x-reverse px-space-md py-space-xs h-8 rounded bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors font-label-md text-label-md" onclick="alert('تم نسخ قائمة الطلاب غير المسلّمين إلى الحافظة بنجاح')" type="button">
+<span class="material-symbols-outlined text-[16px] text-tertiary">content_copy</span>
+<span>نسخ القائمة للمتابعة الأكاديمية</span>
+</button>
+</div>
+<!-- Compact 6 Missing Students Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-sm mt-space-sm">
+<!-- Missing 1 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface font-title-md text-title-md">باسل صبحي عثمان</span>
+<span class="font-code-sm text-code-sm text-outline">ID: 220195002</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">b.othman@std.univ.edu</span>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-error/10 text-error font-label-xs text-label-xs font-semibold">لم يسلّم ✗</span>
+</div>
+<!-- Missing 2 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface font-title-md text-title-md">نور الهدى حمود</span>
+<span class="font-code-sm text-code-sm text-outline">ID: 220195015</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">n.hamoud@std.univ.edu</span>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-error/10 text-error font-label-xs text-label-xs font-semibold">لم يسلّم ✗</span>
+</div>
+<!-- Missing 3 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface font-title-md text-title-md">يوسف كمال رضوان</span>
+<span class="font-code-sm text-code-sm text-outline">ID: 220195029</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">y.radwan@std.univ.edu</span>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-error/10 text-error font-label-xs text-label-xs font-semibold">لم يسلّم ✗</span>
+</div>
+<!-- Missing 4 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface font-title-md text-title-md">ليلى سامر درويش</span>
+<span class="font-code-sm text-code-sm text-outline">ID: 220195034</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">l.darwish@std.univ.edu</span>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-error/10 text-error font-label-xs text-label-xs font-semibold">لم يسلّم ✗</span>
+</div>
+<!-- Missing 5 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface font-title-md text-title-md">حمزة محمود عياش</span>
+<span class="font-code-sm text-code-sm text-outline">ID: 220195058</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">h.ayyash@std.univ.edu</span>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-error/10 text-error font-label-xs text-label-xs font-semibold">لم يسلّم ✗</span>
+</div>
+<!-- Missing 6 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex flex-col">
+<span class="font-semibold text-on-surface font-title-md text-title-md">هديل ماجد الصالح</span>
+<span class="font-code-sm text-code-sm text-outline">ID: 220195071</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">h.saleh@std.univ.edu</span>
+</div>
+<span class="px-space-xs py-space-2xs rounded bg-error/10 text-error font-label-xs text-label-xs font-semibold">لم يسلّم ✗</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Qt Native Desktop App Status Bar -->
+<footer class="flex items-center justify-between px-space-xl py-space-2xs h-status-bar-height bg-surface-container-lowest text-on-surface-variant font-code-sm text-[11px]">
+<div class="flex items-center space-x-space-md space-x-reverse">
+<div class="flex items-center space-x-space-xs space-x-reverse text-primary">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>الملف النشط: _roster.xlsx (مقفول للقراءة فقط)</span>
+</div>
+<span class="text-outline">|</span>
+<span>المصدر: Google Classroom API v1 Sync Engine</span>
+<span class="text-outline">|</span>
+<span>آخر تحديث للكشف: اليوم 10:45 ص (محلياً)</span>
+</div>
+<div class="flex items-center space-x-space-md space-x-reverse text-outline">
+<span>ترميز البيانات: UTF-8 Arabic Support</span>
+<span class="text-outline">|</span>
+<span>محرك الواجهة: Qt 6.7.2 Widgets Subsystem</span>
+<span class="text-outline">|</span>
+<span class="text-primary font-semibold">جاهز للتصحيح 100%</span>
+</div>
+</footer>
+<script>
+    // Inline search micro-interaction
+    document.getElementById('rosterSearch')?.addEventListener('input', function(e) {
+      const term = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(term) ? '' : 'none';
+      });
+    });
+  </script>
+</div></main></body></html>
