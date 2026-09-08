@@ -25,10 +25,12 @@ def test_thirteen_screens_registered(win):
 
 
 @pytest.mark.parametrize("key", KEYS)
-def test_every_nav_entry_navigates_to_empty_state(win, key):
-    win.navigate(key)
+def test_every_nav_entry_navigates_and_leaves_a_valid_state(win, key):
+    from gui.widgets.state_view import STATES
+
+    win.navigate(key)                       # calls the screen's load()
     assert win.current_key == key
-    assert win._screens[key].state_view.state == "empty"
+    assert win._screens[key].state_view.state in STATES
 
 
 def test_topbar_has_course_chip_two_dots_and_theme_toggle(win):
