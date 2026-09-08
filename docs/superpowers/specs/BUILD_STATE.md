@@ -4,11 +4,14 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 ## Position (updated as units land)
 
-- **main:** Phase 0 merged (`49d9e84`) — RTL shell, theme, widgets, worker, 13 placeholder screens. CLI intact.
-- **Working branch:** `feat/gui-phase1` (cut from main).
-- **Units done:** P0-U1…U5 (+ Opus review of P0-U4 → approved) · P1-U1 (R10 config→ruamel) · P1-U2 (R6 roster_read).
-- **Next:** P1-U3 (R2 doctor→structured, **Opus-mandatory**) → P1-U4 (R5 status→compute_status) → P1-U5…U9 screens.
-- **Test count:** 82 green on `feat/gui-phase1`.
+- **main:** Phase 0 merged (`49d9e84`).
+- **Working branch:** `feat/gui-phase1`.
+- **Units done:** P0-U1…U5 (Opus P0-U4 → approved) · P1-U1 (R10 config→ruamel) · P1-U2 (R6 roster_read) ·
+  P1-U3 (R2 doctor→CheckResult; Opus must-fix MF-1/2/3 → fixed in `e6ad716`, **re-verdict pending**) ·
+  P1-U4 (R5 status→compute_status).
+- **Next:** P1-U5 (connections screen, needs P1-U3) → P1-U6 (courses) → P1-U7 (assignments) →
+  P1-U8 (roster) → P1-U9 (tracking report) → Phase 1 Fable checkpoint → merge to main.
+- **Test count:** 96 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
 
 ## Working method (Fable ruling — see plan §"Working method")
 
