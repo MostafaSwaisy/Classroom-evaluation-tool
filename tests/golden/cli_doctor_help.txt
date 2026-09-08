@@ -1,0 +1,11 @@
+Usage: cli.py doctor [OPTIONS] [COURSE]
+
+  فحص صحة الإعداد: ملفات، توكن، صلاحيات ممنوحة، واتصال فعلي بـ Classroom API.
+
+  بدون وسيط بيفحص الملفات والصلاحيات و list_courses. مع اسم مساق بيزيد فحص
+  list_coursework عليه.
+
+  مثال: classroom doctor   أو   classroom doctor SE2026
+
+Options:
+  --help  Show this message and exit.

@@ -1,0 +1,8 @@
+Usage: cli.py prepare [OPTIONS] WORK_DIR
+
+  فك ضغط الأرشيفات وبناء فهرس للمراجعة.
+
+  مثال: classroom prepare "D:/UCAS/submissions/SE2026/HW03"
+
+Options:
+  --help  Show this message and exit.

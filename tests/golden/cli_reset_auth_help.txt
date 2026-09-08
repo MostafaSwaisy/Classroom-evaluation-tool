@@ -1,0 +1,9 @@
+Usage: cli.py reset-auth [OPTIONS]
+
+  يحذف token.json لإجبار إعادة تسجيل الدخول من الصفر.
+
+  استخدمه لما تكون صلاحية ناقصة أو التوكن تلف. بعده شغّل: classroom auth
+  وأشّر على كل الصناديق.
+
+Options:
+  --help  Show this message and exit.
