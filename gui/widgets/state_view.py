@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QLabel,
     QProgressBar,
+    QPushButton,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -47,6 +48,10 @@ class StateView(QStackedWidget):
 
         self._error_label = QLabel("صار في خطأ.")
         self._error_label.setProperty("role", "title")
+        self._error_button = QPushButton("")
+        self._error_button.setProperty("accent", "true")
+        self._error_button.hide()
+        self._error_action = None  # current on_action callback, if any
 
         self._content_host = QWidget()
         self._content_layout = QVBoxLayout(self._content_host)
@@ -55,7 +60,7 @@ class StateView(QStackedWidget):
         self._pages = {
             "empty": _centered(self._empty_label),
             "loading": _centered(self._loading_label, self._progress),
-            "error": _centered(self._error_label),
+            "error": _centered(self._error_label, self._error_button),
             "ok": self._content_host,
         }
         for name in STATES:
@@ -90,6 +95,18 @@ class StateView(QStackedWidget):
     def set_loading_text(self, text: str) -> None:
         self._loading_label.setText(text)
 
-    def set_error(self, text: str) -> None:
+    def set_error(self, text: str, action_text: str | None = None,
+                  on_action=None) -> None:
         self._error_label.setText(text)
+        if self._error_action is not None:
+            self._error_button.clicked.disconnect()
+            self._error_action = None
+        if action_text and on_action is not None:
+            self._error_button.setText(action_text)
+            self._error_button.clicked.connect(on_action)
+            self._error_action = on_action
+            self._error_button.show()
+        else:
+            self._error_action = None
+            self._error_button.hide()
         self.set_state("error")
