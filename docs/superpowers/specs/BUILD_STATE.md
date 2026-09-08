@@ -8,10 +8,12 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 - **Working branch:** `feat/gui-phase1`.
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
-  P1-U5 (connections screen) · P1-U6 (courses & aliases screen).
-- **Next:** P1-U7 (assignments screen) → P1-U8 (roster screen) → P1-U9 (tracking report screen) →
+  P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
+  P1-U7 (assignments screen; `StateView.set_error` gained an optional action button,
+  `navigation_requested(key, ctx)` signal wired in `main_window`).
+- **Next:** P1-U8 (roster screen) → P1-U9 (tracking report screen) →
   Phase 1 Fable checkpoint → merge to `main`.
-- **Test count:** 115 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
+- **Test count:** 126 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
 - **Carry into P1-U8:** roster screen must have `NoEditTriggers` + read-only banner (grep-checked).
   **P4-U5 (setup wizard):** `reset_token()` still prints/returns None — needs a structured result.
 

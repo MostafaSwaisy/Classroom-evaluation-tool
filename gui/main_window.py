@@ -71,6 +71,9 @@ class MainWindow(QMainWindow):
             screen = screen_class(key)(services=self.services)
             self._screens[key] = screen
             self.stack.addWidget(screen)
+            nav_signal = getattr(screen, "navigation_requested", None)
+            if nav_signal is not None:
+                nav_signal.connect(lambda target, _ctx=None: self.navigate(target))
 
         self.navigate("dashboard")
 
