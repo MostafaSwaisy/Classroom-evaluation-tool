@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# --- test / lint (execution plan verification roles) ---
+pytest>=8.0
+pytest-qt>=4.4        # qtbot fixture for widget tests (P0-U3+)
+ruff>=0.6             # Haiku mechanical gate, check 4

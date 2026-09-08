@@ -1,0 +1,8 @@
+Usage: cli.py auth [OPTIONS]
+
+  تسجيل الدخول لأول مرة أو تجديد التوكن.
+
+Options:
+  --port INTEGER  منفذ ثابت للـ redirect (للـ Web client)
+  --console       وضع يدوي: افتح الرابط والصق الكود بدل فتح متصفح
+  --help          Show this message and exit.
