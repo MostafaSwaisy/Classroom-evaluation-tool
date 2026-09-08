@@ -87,9 +87,15 @@ def run(argv: list[str] | None = None) -> int:
     window.show()
 
     if smoke:
-        # Boot, let the event loop turn once, then quit cleanly with code 0.
+        # Boot, visit every screen once (exercises each load() headlessly),
+        # let the event loop turn, then quit cleanly with code 0.
+        if hasattr(window, "navigate") and hasattr(window, "_screens"):
+            for key in list(window._screens):
+                window.navigate(key)
         QTimer.singleShot(_SMOKE_MS, app.quit)
         app.exec()
+        if hasattr(window, "services"):
+            window.services.backend.shutdown()
         return 0
 
     return app.exec()
