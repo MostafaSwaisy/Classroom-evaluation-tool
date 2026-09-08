@@ -151,8 +151,9 @@ def doctor_cmd(ctx, course):
     """
     cfg = ctx.obj["cfg"]
     course_id = resolve_course_id(cfg, course) if course else None
-    ok = doctor_mod.doctor(course_id)
-    sys.exit(0 if ok else 1)
+    results = doctor_mod.doctor(course_id)
+    click.echo(doctor_mod.render_text(results), nl=False)
+    sys.exit(0 if doctor_mod.is_healthy(results) else 1)
 
 
 @cli.command("reset-auth")
