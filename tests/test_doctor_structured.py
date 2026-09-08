@@ -58,12 +58,40 @@ def test_every_failing_check_has_a_fix_action(monkeypatch, tmp_path):
 def test_warn_rows_are_ok_none_and_only_no_token_warns_carry_run_auth(monkeypatch, tmp_path):
     _fake_root(monkeypatch, tmp_path, token=None)
     warns = {r.key: r for r in doc.doctor() if r.ok is None}
-    assert warns
+    assert {"files.config", "files.token", "scopes.no_token", "live.skipped"} <= set(warns)
     assert warns["files.config"].fix_action is None
-    for key in ("files.token", "scopes.no_token", "live.skipped"):
-        if key in warns:
-            expected = None if key == "live.skipped" else doc.FixAction.RUN_AUTH
-            assert warns[key].fix_action is expected
+    assert warns["live.skipped"].fix_action is None
+    assert warns["files.token"].fix_action is doc.FixAction.RUN_AUTH
+    assert warns["scopes.no_token"].fix_action is doc.FixAction.RUN_AUTH
+
+
+def test_live_no_token_row_carries_run_auth(monkeypatch, tmp_path):
+    # files present but no token -> _check_live reaches its live.no_token guard
+    _fake_root(monkeypatch, tmp_path, token=None, files=True)
+    row = next(r for r in doc.doctor() if r.key == "live.no_token")
+    assert row.ok is None and row.fix_action is doc.FixAction.RUN_AUTH
+
+
+def test_cli_doctor_abort_renders_partial_then_exits_1(monkeypatch):
+    from click.testing import CliRunner
+
+    import cli
+
+    partial = [
+        doc.CheckResult("files.creds", True, "credentials.json موجود", "", None, "الملفات"),
+        doc.CheckResult("live.header_only", None, "", "", None, "الاتصال الفعلي"),
+    ]
+
+    def _abort(*_a, **_k):
+        raise doc.DoctorAborted(SystemExit("token expired"), partial)
+
+    monkeypatch.setattr(cli.doctor_mod, "doctor", _abort)
+    monkeypatch.setattr(cli, "load_config", lambda *a, **k: {"student_id_pattern": "", "courses": {}})
+
+    result = CliRunner().invoke(cli.cli, ["doctor"])
+    assert result.exit_code == 1
+    assert result.output.startswith(doc.render_text(partial, summary=False))
+    assert "== الاتصال الفعلي ==" in result.output
 
 
 def test_is_healthy():
