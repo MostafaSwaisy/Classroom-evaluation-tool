@@ -151,7 +151,11 @@ def doctor_cmd(ctx, course):
     """
     cfg = ctx.obj["cfg"]
     course_id = resolve_course_id(cfg, course) if course else None
-    results = doctor_mod.doctor(course_id)
+    try:
+        results = doctor_mod.doctor(course_id)
+    except doctor_mod.DoctorAborted as exc:
+        click.echo(doctor_mod.render_text(exc.partial, summary=False), nl=False)
+        raise
     click.echo(doctor_mod.render_text(results), nl=False)
     sys.exit(0 if doctor_mod.is_healthy(results) else 1)
 
