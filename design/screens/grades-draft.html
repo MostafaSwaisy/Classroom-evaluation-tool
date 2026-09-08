@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface">
+<!-- TOP CONTEXT & SAFETY RIBBON -->
+<div class="flex flex-col gap-space-sm mb-space-lg">
+<!-- Breadcrumb & Mode Pills -->
+<div class="flex items-center justify-between flex-wrap gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-lg shadow-sm">
+<nav aria-label="مسار التصفح" class="flex items-center gap-space-xs font-label-md text-on-surface-variant overflow-x-auto py-space-2xs">
+<span class="flex items-center gap-space-xs hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">school</span>
+          مساقات Google Classroom
+        </span>
+<span class="material-symbols-outlined text-[14px] text-outline opacity-60">chevron_left</span>
+<span class="hover:text-primary transition-colors cursor-pointer">PHP2026</span>
+<span class="material-symbols-outlined text-[14px] text-outline opacity-60">chevron_left</span>
+<span class="hover:text-primary transition-colors cursor-pointer">واجب 3: بناء نظام المصادقة والـ Middleware</span>
+<span class="material-symbols-outlined text-[14px] text-outline opacity-60">chevron_left</span>
+<span class="text-primary font-headline-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px]">fact_check</span>
+          مراجعة وتصدير المسودة (Grades Draft)
+        </span>
+</nav>
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-space-xs px-space-sm py-[2px] rounded-full bg-surface-container-highest text-on-surface-variant font-code-sm text-code-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          CLI: write_grades --offline
+        </span>
+<span class="inline-flex items-center gap-space-xs px-space-sm py-[2px] rounded-full bg-surface-variant text-on-surface font-label-sm">
+<span class="material-symbols-outlined text-[13px]">desktop_windows</span>
+          PySide6 Native Engine
+        </span>
+</div>
+</div>
+<!-- Persistent Critical Safety Banner (Inviolable Constraint) -->
+<div class="relative overflow-hidden flex items-center justify-between p-space-md rounded-xl bg-surface-container-high shadow-md">
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-space-md z-10">
+<div class="p-space-sm rounded-lg bg-secondary-container/20 text-secondary shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[26px]">lock_clock</span>
+</div>
+<div class="flex flex-col gap-[2px]">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="px-space-sm py-space-2xs rounded-md bg-secondary text-on-secondary font-label-md text-label-sm tracking-wider">
+              مسودة محلية آمنة — لم تُرفع (Never Uploaded)
+            </span>
+<span class="font-headline-sm text-on-surface font-title-md">
+              الوضع الآمن غير المتصل: لا يوجد أي تكامل أو رفع تلقائي إلى الخوادم السحابية
+            </span>
+</div>
+<p class="font-body-sm text-on-surface-variant max-w-4xl">
+            هذه المسودة تُحفظ محلياً على جهازك بصيغة <span class="font-code-sm text-primary font-body-sm">grades_draft.xlsx</span>. لن يتم إرسال أو مزامنة أي درجة إلى خوادم Google Classroom نهائياً من هذا البرنامج. راجع الملف، عدّل تفاصيله محلياً، ثم قم برفعه يدوياً بنفسك عبر متصفح الويب.
+          </p>
+</div>
+</div>
+<div class="hidden lg:flex items-center gap-space-xs px-space-md py-space-xs rounded-lg bg-surface-container text-on-surface-variant font-label-sm shrink-0">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<span>بيئة عزل تام (Sandbox)</span>
+</div>
+</div>
+</div>
+<!-- PRIMARY ACTION HEADER BAR & FILTER CHIPS -->
+<div class="flex flex-col gap-space-md p-space-md rounded-xl bg-surface-container shadow-md mb-space-lg">
+<div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+<!-- Title & Rubric Info -->
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary shrink-0 shadow-inner">
+<span class="material-symbols-outlined text-[24px]">description</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">جدول تدقيق وتصدير الدرجات المستخلصة</h1>
+<span class="px-space-xs py-space-2xs rounded bg-surface-container-highest text-primary font-label-sm">42 طالب مسجل</span>
+</div>
+<span class="font-body-sm text-on-surface-variant font-code-sm text-label-md">Rubric: rubrics/hw3_auth_middleware.yaml (إجمالي النقاط: 20.0)</span>
+</div>
+</div>
+<!-- Action Buttons (Strictly Local Export, No Upload) -->
+<div class="flex items-center flex-wrap gap-space-sm justify-end">
+<button class="flex items-center gap-space-xs px-space-md py-space-sm rounded-full bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md transition-all active:scale-95 shadow-sm" id="recalcBtn">
+<span class="material-symbols-outlined text-[18px] text-primary">sync</span>
+          إعادة الحساب والتحقق
+        </button>
+<button class="flex items-center gap-space-xs px-space-md py-space-sm rounded-full bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md transition-all active:scale-95 shadow-sm" id="openFolderBtn">
+<span class="material-symbols-outlined text-[18px] text-tertiary">folder_open</span>
+          افتح مجلد الواجب المحلي
+        </button>
+<!-- Primary Export Button (Safe Local Excel Export) -->
+<button class="flex items-center gap-space-sm px-space-lg py-space-sm rounded-full bg-primary hover:bg-primary-fixed-dim text-on-primary font-title-md transition-all active:scale-95 shadow-md hover:shadow-lg" id="exportExcelBtn">
+<span class="material-symbols-outlined text-[20px]">table_view</span>
+<span>تصدير المسودة إلى إكسل (Export grades_draft.xlsx)</span>
+</button>
+</div>
+</div>
+<!-- Search, Filters, and Table Utility Tools -->
+<div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md pt-space-xs bg-surface-container-low p-space-sm rounded-lg">
+<!-- Search Input -->
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full h-8 pr-9 pl-space-sm rounded-md bg-surface-container-lowest text-on-surface font-body-sm placeholder:text-outline/70 focus:outline-none focus:ring-1 focus:ring-primary shadow-inner" id="studentSearch" placeholder="ابحث بالاسم، الرقم الجامعي (e.g. 220194821)، أو الملاحظة..." type="text"/>
+</div>
+<!-- Filter Segmented Chips -->
+<div class="flex items-center gap-space-xs overflow-x-auto py-space-2xs text-label-md font-label-md">
+<button class="filter-chip active px-space-md py-space-2xs rounded-full bg-primary text-on-primary transition-all flex items-center gap-space-xs shadow-sm" data-filter="all">
+<span>الكل</span>
+<span class="px-space-xs rounded-full bg-on-primary/20 text-on-primary text-label-sm">42</span>
+</button>
+<button class="filter-chip px-space-md py-space-2xs rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all flex items-center gap-space-xs" data-filter="completed">
+<span>المكتملون</span>
+<span class="px-space-xs rounded-full bg-surface-container-highest text-primary text-label-sm">38</span>
+</button>
+<button class="filter-chip px-space-md py-space-2xs rounded-full bg-surface-container-high text-on-surface-variant hover:text-secondary transition-all flex items-center gap-space-xs" data-filter="flagged">
+<span>معلَّم بـ Flag</span>
+<span class="px-space-xs rounded-full bg-secondary-container/30 text-secondary text-label-sm">3</span>
+</button>
+<button class="filter-chip px-space-md py-space-2xs rounded-full bg-surface-container-high text-on-surface-variant hover:text-error transition-all flex items-center gap-space-xs" data-filter="null">
+<span>درجات معلقة / Null</span>
+<span class="px-space-xs rounded-full bg-error-container/40 text-error text-label-sm">1</span>
+</button>
+<button class="filter-chip px-space-md py-space-2xs rounded-full bg-surface-container-high text-on-surface-variant hover:text-secondary-fixed-dim transition-all flex items-center gap-space-xs" data-filter="low">
+<span>أقل من 50%</span>
+<span class="px-space-xs rounded-full bg-secondary-container/20 text-secondary-fixed-dim text-label-sm">2</span>
+</button>
+</div>
+<!-- Compact Tools Toggle -->
+<div class="flex items-center gap-space-xs text-on-surface-variant text-label-sm font-label-sm self-end lg:self-center">
+<span class="material-symbols-outlined text-[16px] text-outline">tune</span>
+<span>طريقة العرض: سطح المكتب المحكم</span>
+</div>
+</div>
+</div>
+<!-- DESCRIPTIVE STATISTICAL SUMMARY PANEL (6 DENSE METRIC TILES) -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-space-sm mb-space-lg">
+<!-- Stat 1: Total Assessed -->
+<div class="flex flex-col p-space-md rounded-xl bg-surface-container shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm">الطلاب المقيمون</span>
+<span class="material-symbols-outlined text-primary text-[18px]">group_add</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-primary font-headline-lg">42</span>
+<span class="font-body-sm text-on-surface-variant font-code-sm">/ 42</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-space-xs overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 100%;"></div>
+</div>
+<span class="font-label-sm text-primary mt-space-xs">100% مكتمل التقييم بالكامل</span>
+</div>
+<!-- Stat 2: Class Average -->
+<div class="flex flex-col p-space-md rounded-xl bg-surface-container shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm">متوسط درجات الشعبة</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">query_stats</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-on-surface font-headline-lg">16.8</span>
+<span class="font-body-sm text-on-surface-variant font-code-sm">/ 20</span>
+</div>
+<!-- Mini Sparkline inline SVG -->
+<div class="w-full h-3 mt-space-xs flex items-end">
+<svg class="w-full h-full text-tertiary" fill="none" preserveaspectratio="none" viewbox="0 0 100 12">
+<path d="M0,10 L15,8 L30,9 L45,4 L60,5 L75,2 L90,6 L100,3" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<span class="font-label-sm text-tertiary mt-space-xs">84.0% المعدل العام للمقرر</span>
+</div>
+<!-- Stat 3: Max Score -->
+<div class="flex flex-col p-space-md rounded-xl bg-surface-container shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm">أعلى درجة مرصودة</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]">military_tech</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-primary font-headline-lg">20.0</span>
+<span class="font-body-sm text-on-surface-variant font-code-sm">/ 20</span>
+</div>
+<div class="truncate font-body-sm text-on-surface-variant mt-space-xs">
+        سارة العلي، ديما القادري
+      </div>
+<span class="font-label-sm text-primary-container mt-space-2xs">علامة كاملة في الـ Rubric</span>
+</div>
+<!-- Stat 4: Min Score -->
+<div class="flex flex-col p-space-md rounded-xl bg-surface-container shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm">أدنى درجة صحيحة</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">trending_down</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-secondary font-headline-lg">09.5</span>
+<span class="font-body-sm text-on-surface-variant font-code-sm">/ 20</span>
+</div>
+<div class="truncate font-body-sm text-on-surface-variant mt-space-xs">
+        باستثناء درجات الـ Null
+      </div>
+<span class="font-label-sm text-secondary mt-space-2xs">تم تسليم مشروع جزئي</span>
+</div>
+<!-- Stat 5: Standard Deviation -->
+<div class="flex flex-col p-space-md rounded-xl bg-surface-container shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm">الانحراف المعياري (σ)</span>
+<span class="material-symbols-outlined text-on-surface text-[18px]">equalizer</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-on-surface font-headline-lg font-code-sm">2.45</span>
+<span class="font-body-sm text-on-surface-variant">σ</span>
+</div>
+<div class="truncate font-body-sm text-on-surface-variant mt-space-xs">
+        توزيع درجات طبيعي متوازن
+      </div>
+<span class="font-label-sm text-primary mt-space-2xs">عينة منسجمة دون تشتت حاد</span>
+</div>
+<!-- Stat 6: Warnings & Nulls Alert Card -->
+<div class="flex flex-col p-space-md rounded-xl bg-surface-container-high shadow-sm hover:shadow-md transition-shadow relative">
+<div class="flex items-center justify-between text-secondary mb-space-xs">
+<span class="font-label-sm font-label-md">تنبيهات المراجعة</span>
+<span class="material-symbols-outlined text-error text-[18px]">warning</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-secondary font-headline-lg">3</span>
+<span class="font-body-sm text-on-surface-variant">حالات تحتاج تدقيقاً</span>
+</div>
+<div class="flex flex-col gap-[2px] mt-space-xs text-[11px] font-label-sm">
+<span class="text-error flex items-center gap-[4px]">
+<span class="w-1.5 h-1.5 rounded-full bg-error inline-block"></span>
+          1 طالب بدرجة Null (تالف)
+        </span>
+<span class="text-secondary flex items-center gap-[4px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary inline-block"></span>
+          2 طلاب دون 50%
+        </span>
+</div>
+</div>
+</div>
+<!-- MAIN SPREADSHEET-LIKE DATA TABLE (Dense Desktop GUI Style) -->
+<div class="flex flex-col rounded-xl bg-surface-container shadow-md overflow-hidden mb-space-lg">
+<!-- Table Header Info Sub-bar -->
+<div class="flex items-center justify-between px-space-md py-space-xs bg-surface-container-high font-label-sm text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[15px] text-primary">view_column</span>
+          معايير الـ Rubric: 5 معايير تقييم (Total Max: 20)
+        </span>
+<span class="hidden md:inline text-outline">•</span>
+<span class="hidden md:inline font-code-sm">Formula: =SUM(col4..col8)</span>
+</div>
+<div class="flex items-center gap-space-sm font-code-sm">
+<span class="text-on-surface">وضع التحرير المباشر مفعل (Click cell to edit)</span>
+</div>
+</div>
+<!-- Scrollable Table Container with subtle custom scrollbar-free style -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-right border-collapse select-text" id="draftGradesTable">
+<!-- Table Head -->
+<thead>
+<tr class="bg-surface-container-lowest text-on-surface-variant font-label-md text-label-sm tracking-wide">
+<th class="p-space-xs text-center w-10">#</th>
+<th class="p-space-sm font-code-sm w-32">الرقم الجامعي</th>
+<th class="p-space-sm min-w-[150px]">اسم الطالب</th>
+<th class="p-space-xs text-center font-code-sm w-24 bg-surface-container-low/50">
+<div class="flex flex-col items-center">
+<span>C1: JWT</span>
+<span class="text-[10px] text-outline font-label-sm">(Max 4)</span>
+</div>
+</th>
+<th class="p-space-xs text-center font-code-sm w-24 bg-surface-container-low/50">
+<div class="flex flex-col items-center">
+<span>C2: 401 Auth</span>
+<span class="text-[10px] text-outline font-label-sm">(Max 5)</span>
+</div>
+</th>
+<th class="p-space-xs text-center font-code-sm w-24 bg-surface-container-low/50">
+<div class="flex flex-col items-center">
+<span>C3: Roles</span>
+<span class="text-[10px] text-outline font-label-sm">(Max 4)</span>
+</div>
+</th>
+<th class="p-space-xs text-center font-code-sm w-24 bg-surface-container-low/50">
+<div class="flex flex-col items-center">
+<span>C4: PSR-12</span>
+<span class="text-[10px] text-outline font-label-sm">(Max 4)</span>
+</div>
+</th>
+<th class="p-space-xs text-center font-code-sm w-24 bg-surface-container-low/50">
+<div class="flex flex-col items-center">
+<span>C5: Tests</span>
+<span class="text-[10px] text-outline font-label-sm">(Max 3)</span>
+</div>
+</th>
+<th class="p-space-sm text-center font-code-sm w-28 bg-surface-container-high font-headline-sm text-on-surface">
+<div class="flex flex-col items-center">
+<span>المجموع</span>
+<span class="text-[10px] text-primary font-label-sm">/ 20</span>
+</div>
+</th>
+<th class="p-space-sm min-w-[160px]">الأعلام والتنبيهات</th>
+<th class="p-space-sm min-w-[260px]">الملاحظات والتغذية الراجعة</th>
+<th class="p-space-xs text-center w-24">إجراء</th>
+</tr>
+</thead>
+<!-- Table Body (Zebra Striping & Hover States) -->
+<tbody class="divide-y-0 font-body-sm text-on-surface">
+<!-- Row 1: Mustafa Sweisi -->
+<tr class="h-9 hover:bg-surface-container-high transition-colors bg-surface-container-low/40 group" data-category="completed">
+<td class="p-space-xs text-center text-outline font-code-sm">1</td>
+<td class="p-space-sm font-code-sm text-primary-fixed">220194821</td>
+<td class="p-space-sm font-title-md text-on-surface">مصطفى السويسي</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">5.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.5</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-primary bg-primary/5">
+              19.5
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs text-[11px] text-outline opacity-70">
+                — لا توجد أعلام
+              </span>
+</td>
+<td class="p-space-sm text-on-surface-variant truncate max-w-xs" title="كود ممتاز واختبارات شاملة وتغطية رائعة للحالات الحدية">
+              كود ممتاز واختبارات شاملة وتغطية رائعة
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors" title="تعديل درجات الطالب">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Ahmed Abdulrahman -->
+<tr class="h-9 hover:bg-surface-container-high transition-colors bg-surface-container group" data-category="completed">
+<td class="p-space-xs text-center text-outline font-code-sm">2</td>
+<td class="p-space-sm font-code-sm text-on-surface-variant">220194835</td>
+<td class="p-space-sm font-title-md text-on-surface">أحمد عبد الرحمن</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">2.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-on-surface bg-surface-container-high/50">
+              16.0
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-[2px] rounded-full bg-secondary-container/20 text-secondary text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+                تسليم متأخر (+12h)
+              </span>
+</td>
+<td class="p-space-sm text-on-surface-variant truncate max-w-xs" title="كود منظم، يرجى معالجة انتهاء الجلسة 401 بشكل أدق">
+              كود منظم، يرجى معالجة انتهاء الجلسة 401
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors" title="تعديل درجات الطالب">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Sarah Al-Ali -->
+<tr class="h-9 hover:bg-surface-container-high transition-colors bg-surface-container-low/40 group" data-category="completed">
+<td class="p-space-xs text-center text-outline font-code-sm">3</td>
+<td class="p-space-sm font-code-sm text-primary-fixed">220194877</td>
+<td class="p-space-sm font-title-md text-on-surface">سارة العلي</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">5.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-primary bg-primary/10">
+              20.0
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-[2px] rounded-full bg-primary/15 text-primary text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[12px]">star</span>
+                الدرجة الكاملة
+              </span>
+</td>
+<td class="p-space-sm text-on-surface-variant truncate max-w-xs" title="عمل متقن واستيفاء كامل ودقيق لكل شروط الواجب">
+              عمل متقن واستيفاء كامل لكافة الشروط
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors" title="تعديل درجات الطالب">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Khaled Mansour (Warning Highlight - Wrong Homework) -->
+<tr class="h-9 hover:bg-secondary-container/20 transition-colors bg-secondary-container/10 group" data-category="flagged low">
+<td class="p-space-xs text-center text-secondary font-code-sm">4</td>
+<td class="p-space-sm font-code-sm text-secondary">220194892</td>
+<td class="p-space-sm font-title-md text-on-surface font-title-md">خالد منصور</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">3.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">2.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">2.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">1.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">0.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-secondary bg-secondary-container/30">
+              08.0
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-[2px] rounded-full bg-secondary-container text-on-secondary font-label-sm text-[11px]">
+<span class="material-symbols-outlined text-[12px]">warning</span>
+                Flag: سلّم واجب تاني
+              </span>
+</td>
+<td class="p-space-sm text-secondary truncate max-w-xs font-body-sm" title="تم تسليم ملفات مشروع قديم بدلاً من مستودع مصادقة JWT">
+              تم تسليم ملفات مشروع قديم بدلاً من واجب JWT
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded bg-secondary-container/30 hover:bg-secondary-container text-secondary hover:text-on-secondary transition-colors" title="إعادة التقييم في مساحة العمل">
+<span class="material-symbols-outlined text-[16px]">rule</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Omar Al-Khatib (Critical Null Error - Archive Corrupt) -->
+<tr class="h-10 hover:bg-error-container/30 transition-colors bg-error-container/20 group" data-category="null flagged">
+<td class="p-space-xs text-center text-error font-code-sm">5</td>
+<td class="p-space-sm font-code-sm text-error font-headline-sm">220194933</td>
+<td class="p-space-sm font-title-md text-on-surface font-headline-sm">عمر الخطيب</td>
+<td class="p-space-xs text-center font-code-sm text-error">—</td>
+<td class="p-space-xs text-center font-code-sm text-error">—</td>
+<td class="p-space-xs text-center font-code-sm text-error">—</td>
+<td class="p-space-xs text-center font-code-sm text-error">—</td>
+<td class="p-space-xs text-center font-code-sm text-error">—</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-error bg-error-container/40">
+              Null (0)
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-[2px] rounded-full bg-error-container text-on-error-container font-label-sm text-[11px]">
+<span class="material-symbols-outlined text-[12px]">error</span>
+                ⛔ Flag: الملف ما بينفتح
+              </span>
+</td>
+<td class="p-space-sm text-error truncate max-w-xs font-body-sm" title="الأرشيف تالف CRC32 Bad Header ولا يمكن فك الضغط عنه">
+              الأرشيف تالف CRC32 Bad Header (يحتاج إعادة إرسال)
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded bg-error-container hover:bg-error text-on-error-container hover:text-on-error transition-colors" title="إجراء مراجعة الملف اليدوي">
+<span class="material-symbols-outlined text-[16px]">file_open</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: Dima Al-Qadiri -->
+<tr class="h-9 hover:bg-surface-container-high transition-colors bg-surface-container group" data-category="completed">
+<td class="p-space-xs text-center text-outline font-code-sm">6</td>
+<td class="p-space-sm font-code-sm text-primary-fixed">220194901</td>
+<td class="p-space-sm font-title-md text-on-surface">ديما القادري</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">5.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-primary bg-primary/10">
+              20.0
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-[2px] rounded-full bg-tertiary-container/30 text-tertiary text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[12px]">replay</span>
+                معاد تسليمه (Re-submitted)
+              </span>
+</td>
+<td class="p-space-sm text-on-surface-variant truncate max-w-xs" title="نسخة محسنة ومطابقة تماماً للشروط الهندسية">
+              نسخة محسنة ومطابقة للشروط بعد المعالجة
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors" title="تعديل درجات الطالب">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 7: Tareq Nabulsi -->
+<tr class="h-9 hover:bg-surface-container-high transition-colors bg-surface-container-low/40 group" data-category="completed">
+<td class="p-space-xs text-center text-outline font-code-sm">7</td>
+<td class="p-space-sm font-code-sm text-on-surface-variant">220194918</td>
+<td class="p-space-sm font-title-md text-on-surface">طارق النابلسي</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">1.5</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-on-surface bg-surface-container-high/50">
+              15.5
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs text-[11px] text-outline opacity-70">
+                — لا توجد أعلام
+              </span>
+</td>
+<td class="p-space-sm text-on-surface-variant truncate max-w-xs" title="ملاحظات على كفاءة استعلامات قاعدة البيانات في الـ Middleware">
+              ملاحظات على كفاءة استعلامات الـ DB في الـ Middleware
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors" title="تعديل درجات الطالب">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 8: Reem Al-Hussein -->
+<tr class="h-9 hover:bg-surface-container-high transition-colors bg-surface-container group" data-category="completed">
+<td class="p-space-xs text-center text-outline font-code-sm">8</td>
+<td class="p-space-sm font-code-sm text-primary-fixed">220194945</td>
+<td class="p-space-sm font-title-md text-on-surface">ريم الحسين</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">4.0</td>
+<td class="p-space-xs text-center font-code-sm text-on-surface">3.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-primary bg-primary/5">
+              19.0
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs text-[11px] text-outline opacity-70">
+                — لا توجد أعلام
+              </span>
+</td>
+<td class="p-space-sm text-on-surface-variant truncate max-w-xs" title="تصميم نمطي رائع والالتزام ممتاز بمفاهيم Clean Architecture">
+              تصميم نمطي رائع والتزام ممتاز بمفاهيم المعمارية
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded hover:bg-surface-container-highest text-on-surface-variant hover:text-primary transition-colors" title="تعديل درجات الطالب">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 9: Youssef Khalil (Under 50% / Needs Oral Review) -->
+<tr class="h-9 hover:bg-secondary-container/20 transition-colors bg-secondary-container/10 group" data-category="flagged low">
+<td class="p-space-xs text-center text-secondary font-code-sm">9</td>
+<td class="p-space-sm font-code-sm text-secondary">220194958</td>
+<td class="p-space-sm font-title-md text-on-surface">يوسف خليل</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">2.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">2.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">2.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">2.0</td>
+<td class="p-space-xs text-center font-code-sm text-secondary">1.0</td>
+<td class="p-space-sm text-center font-code-sm font-headline-sm text-secondary bg-secondary-container/30">
+              09.0
+            </td>
+<td class="p-space-sm">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-[2px] rounded-full bg-secondary-container/40 text-secondary text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[12px]">record_voice_over</span>
+                ⚠️ Flag: يحتاج مراجعة شفوية
+              </span>
+</td>
+<td class="p-space-sm text-secondary truncate max-w-xs font-body-sm" title="شبه تشابه في هيكلية AuthController مع مشروع خارجي">
+              شبه تشابه في كود AuthController (مراجعة شفوية)
+            </td>
+<td class="p-space-xs text-center">
+<button class="p-1 rounded bg-secondary-container/30 hover:bg-secondary-container text-secondary hover:text-on-secondary transition-colors" title="تفاصيل الاشتباه">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Desktop Paging Status -->
+<div class="flex items-center justify-between px-space-md py-space-xs bg-surface-container-high font-label-sm text-on-surface-variant">
+<span>عرض 9 طلاب من أصل 42 (معاينة أولية تفاعلية للمسودة)</span>
+<div class="flex items-center gap-space-sm">
+<span>صفحة 1 من 5</span>
+<div class="flex items-center gap-1">
+<button class="p-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant transition-colors disabled:opacity-40" disabled="">
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</button>
+<button class="p-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[14px]">chevron_left</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- EXPORT TARGET PATH & LOCAL METADATA INFO PANEL -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md mb-space-md">
+<!-- Local Target File Path Box -->
+<div class="lg:col-span-2 flex flex-col justify-between p-space-md rounded-xl bg-surface-container shadow-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-on-surface-variant flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">drive_file_move</span>
+            مسار حفظ ملف الإكسل المحلي المعتمد (Local Output Path):
+          </span>
+<span class="font-code-sm text-primary text-[11px] px-space-xs py-[2px] rounded bg-primary/10">مجلد محلي محمي</span>
+</div>
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest font-code-sm text-on-surface text-[12px] shadow-inner select-all overflow-x-auto">
+<span class="text-primary material-symbols-outlined text-[16px]">folder</span>
+<span>D:\Grading\2026-Spring\submissions\PHP2026\hw3-auth-middleware\grades_draft.xlsx</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-sm mt-space-xs text-on-surface-variant font-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>الملف يحتوي على: <strong>صفحة الدرجات RTL</strong> + <strong>معادلات المجاميع التلقائية</strong> + <strong>صفحة التحليل الإحصائي (Stats Sheet)</strong>.</span>
+</div>
+<button class="flex items-center gap-space-2xs text-primary hover:text-primary-fixed transition-colors text-label-sm font-label-md" id="copyPathBtn">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+          نسخ المسار
+        </button>
+</div>
+</div>
+<!-- Instruction Card For Manual Upload (Safety Confirmation) -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-high shadow-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-secondary font-label-md">
+<span class="material-symbols-outlined text-[18px]">info</span>
+          تعليمات الرفع اليدوي الآمن:
+        </div>
+<p class="font-body-sm text-on-surface-variant">
+          1. اضغط "تصدير المسودة" لتوليد ملف الإكسل محلياً.<br/>
+          2. افتح متصفحك وسجّل الدخول إلى Google Classroom بنفسك.<br/>
+          3. استورد ملف <span class="font-code-sm text-on-surface">grades_draft.xlsx</span> مباشرة من واجهة الواجب.
+        </p>
+</div>
+<div class="pt-space-xs flex items-center justify-between text-label-sm text-outline">
+<span>بدون أي تفويض OAuth سحابي</span>
+<span class="text-primary font-code-sm">100% Offline Safe</span>
+</div>
+</div>
+</div>
+<!-- NATIVE STATUS TOAST (Hidden by default, triggered on Export) -->
+<div class="fixed bottom-12 left-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none" id="exportToast">
+<div class="flex items-center gap-space-md p-space-md rounded-xl bg-surface-container-highest shadow-2xl text-on-surface min-w-[340px]">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-label-md text-on-surface">تم تصدير ملف الإكسل بنجاح!</span>
+<span class="font-code-sm text-primary text-[11px]">grades_draft.xlsx جاهز في مجلد الواجب</span>
+</div>
+<button class="text-outline hover:text-on-surface mr-auto" onclick="document.getElementById('exportToast').classList.add('translate-y-24','opacity-0')">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+<!-- BOTTOM DESKTOP STATUS BAR (PySide6 / Qt Aesthetic) -->
+<div class="flex items-center justify-between px-space-md h-status-bar-height bg-surface-container-lowest text-on-surface-variant font-code-sm text-code-sm rounded-lg shadow-inner">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-space-2xs text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+        PySide6 TableView Active
+      </span>
+<span class="text-outline/40">|</span>
+<span>UTF-8 Arabic Encoding</span>
+<span class="text-outline/40">|</span>
+<span>Active Rubric: hw3_auth_middleware.yaml</span>
+<span class="text-outline/40">|</span>
+<span class="text-on-surface">Formulas: Valid (=SUM)</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="text-secondary flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-[13px]">cloud_off</span>
+        Safe Offline Sandbox Mode
+      </span>
+<span class="text-outline/40">|</span>
+<span>42 Records Indexed</span>
+</div>
+</div>
+<!-- Inline Script for Native Desktop Micro-Interactions -->
+<script>
+    (function() {
+      // Export Button Toast Interaction
+      const exportBtn = document.getElementById('exportExcelBtn');
+      const toast = document.getElementById('exportToast');
+      const copyPathBtn = document.getElementById('copyPathBtn');
+      const recalcBtn = document.getElementById('recalcBtn');
+      const openFolderBtn = document.getElementById('openFolderBtn');
+
+      if (exportBtn && toast) {
+        exportBtn.addEventListener('click', function() {
+          toast.classList.remove('translate-y-24', 'opacity-0');
+          toast.classList.add('translate-y-0', 'opacity-100');
+          
+          setTimeout(function() {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-24', 'opacity-0');
+          }, 4000);
+        });
+      }
+
+      if (copyPathBtn) {
+        copyPathBtn.addEventListener('click', function() {
+          const originalText = copyPathBtn.innerHTML;
+          navigator.clipboard.writeText('D:\\Grading\\2026-Spring\\submissions\\PHP2026\\hw3-auth-middleware\\grades_draft.xlsx');
+          copyPathBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">done</span> تم النسخ!';
+          setTimeout(function() {
+            copyPathBtn.innerHTML = originalText;
+          }, 2000);
+        });
+      }
+
+      if (recalcBtn) {
+        recalcBtn.addEventListener('click', function() {
+          const icon = recalcBtn.querySelector('.material-symbols-outlined');
+          if (icon) icon.classList.add('animate-spin');
+          setTimeout(function() {
+            if (icon) icon.classList.remove('animate-spin');
+          }, 700);
+        });
+      }
+
+      if (openFolderBtn) {
+        openFolderBtn.addEventListener('click', function() {
+          alert('ميزة سطح المكتب (PySide6 QDesktopServices): جاري فتح مجلد الواجب في مستكشف ويندوز (Windows Explorer):\n\nD:\\Grading\\2026-Spring\\submissions\\PHP2026\\hw3-auth-middleware');
+        });
+      }
+
+      // Filter Chips Interactivity
+      const filterChips = document.querySelectorAll('.filter-chip');
+      const rows = document.querySelectorAll('#draftGradesTable tbody tr');
+
+      filterChips.forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          filterChips.forEach(function(c) {
+            c.classList.remove('bg-primary', 'text-on-primary');
+            c.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+          });
+          chip.classList.add('bg-primary', 'text-on-primary');
+          chip.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+
+          const filterVal = chip.getAttribute('data-filter');
+          rows.forEach(function(row) {
+            if (filterVal === 'all') {
+              row.style.display = '';
+            } else {
+              const categories = row.getAttribute('data-category') || '';
+              if (categories.includes(filterVal)) {
+                row.style.display = '';
+              } else {
+                row.style.display = 'none';
+              }
+            }
+          });
+        });
+      });
+
+      // Quick Search input filtering
+      const searchInput = document.getElementById('studentSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+          const term = e.target.value.toLowerCase().trim();
+          rows.forEach(function(row) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(term) ? '' : 'none';
+          });
+        });
+      }
+    })();
+  </script>
+</div></main></body></html>

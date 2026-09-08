@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface select-none">
+<!-- Windows Application Desktop Chrome Topbar -->
+<header class="h-[48px] bg-surface-container-lowest px-space-md flex items-center justify-between rounded-t-xl">
+<div class="flex items-center gap-space-md">
+<!-- Course Selector Trigger -->
+<div class="flex items-center gap-space-sm bg-surface-container px-space-md py-1.5 rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer" id="courseDropdownBtn">
+<span class="material-symbols-outlined text-primary text-[18px]">school</span>
+<div class="flex flex-col text-right">
+<span class="font-headline-sm text-headline-sm text-primary leading-tight">PHP2026 — تطوير تطبيقات الويب المتقدمة</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-none">الشعبة 1 • الفصل الثاني 2025/2026</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px] mr-space-xs">expand_more</span>
+</div>
+<!-- Local First Draft Guarantee Badge -->
+<div class="flex items-center gap-1.5 bg-secondary-container/20 px-space-sm py-1 rounded-full text-secondary">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-sm text-label-sm tracking-wide">مسودة محلية — لن تُرفع الدرجات تلقائياً إطلاقاً</span>
+</div>
+</div>
+<!-- Right Side (LRS Bi-directional status & tooltips) -->
+<div class="flex items-center gap-space-lg">
+<!-- Service Connectivity Badges -->
+<div class="flex items-center gap-space-md bg-surface-container-low px-space-md py-1 rounded-full">
+<!-- Google Status -->
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Google Classroom: <strong class="text-on-surface">متصل</strong></span>
+</div>
+<span class="w-1 h-3 bg-surface-container-highest rounded-full"></span>
+<!-- Claude Status -->
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Claude 3.5 Sonnet: <strong class="text-on-surface">نشط</strong></span>
+</div>
+</div>
+<!-- Engine Version & System Status -->
+<div class="flex items-center gap-space-sm text-outline font-code-sm text-code-sm">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-on-surface-variant">v2.4-local (Qt Engine)</span>
+<button class="p-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">terminal</span>
+</button>
+<button class="p-1.5 rounded-lg hover:bg-surface-container hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Desktop Window Area -->
+<div class="flex w-full min-h-[760px] bg-surface-container-lowest overflow-hidden">
+<!-- Right Sidebar Desktop Navigation (260px Fixed) -->
+<aside class="w-[260px] bg-surface-container-low flex flex-col justify-between p-space-md shrink-0">
+<div class="flex flex-col gap-space-sm">
+<div class="px-space-sm py-space-xs text-on-surface-variant font-label-sm text-label-sm tracking-wider">
+          التنقل السريع
+        </div>
+<nav class="flex flex-col gap-1">
+<!-- Active Item -->
+<a class="flex items-center justify-between px-space-md py-2.5 rounded-lg bg-primary/10 text-primary font-title-md text-title-md transition-all" href="#">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>لوحة التحكم الرئيسية</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</a>
+<!-- Other Navigation Items -->
+<a class="flex items-center justify-between px-space-md py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-body-md text-body-md transition-colors" href="#">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[20px]">layers</span>
+<span>المساقات والشُعب</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">3</span>
+</a>
+<!-- Current Assignment Subtree -->
+<div class="flex flex-col mt-space-xs">
+<div class="flex items-center justify-between px-space-md py-2 rounded-lg text-on-surface-variant hover:bg-surface-container font-body-md text-body-md cursor-pointer">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+<span>الواجب النشط</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+<!-- Sub-items with subtle indent -->
+<div class="flex flex-col pr-space-2xl pl-space-xs gap-0.5 mt-1 border-r border-outline-variant/30">
+<a class="py-1 px-space-sm rounded text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-colors" href="#">السحب والتحديث</a>
+<a class="py-1 px-space-sm rounded text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-colors" href="#">تحضير واستخراج الكود</a>
+<a class="py-1 px-space-sm rounded text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-colors" href="#">كشف الطلاب ومطابقة Git</a>
+<a class="py-1 px-space-sm rounded text-primary font-label-md text-label-md bg-primary/5 flex items-center justify-between" href="#">
+<span>محرر التصحيح المحلي</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</a>
+<a class="py-1 px-space-sm rounded text-on-surface-variant hover:text-primary font-body-sm text-body-sm transition-colors" href="#">تصدير المسودة (XLSX)</a>
+</div>
+</div>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-body-md text-body-md transition-colors mt-space-xs" href="#">
+<span class="material-symbols-outlined text-[20px]">insights</span>
+<span>تقرير المتابعة التراكمي</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-body-md text-body-md transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dns</span>
+<span>الاتصالات والفحص الفني</span>
+</a>
+<a class="flex items-center gap-space-md px-space-md py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-body-md text-body-md transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span>إعدادات التطبيق والتخزين</span>
+</a>
+</nav>
+</div>
+<!-- User Profile & Workspace Info -->
+<div class="bg-surface-container p-space-sm rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container/40 flex items-center justify-center text-primary font-title-md text-title-md">
+            م
+          </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface leading-tight">د. مصطفى</span>
+<span class="font-code-sm text-code-sm text-outline">محلي: D:\Grading</span>
+</div>
+</div>
+<button class="p-1.5 text-outline hover:text-on-surface hover:bg-surface-container-high rounded transition-colors" title="إعادة تشغيل بيئة العمل">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+</button>
+</div>
+</aside>
+<!-- Center Workspace & Content Body -->
+<div class="flex-1 bg-surface-container-low/50 p-space-xl overflow-y-auto flex flex-col gap-space-xl">
+<!-- Greeting Header & Quick Actions -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">أهلاً بك، د. مصطفى</h1>
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">جلسة نشطة</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            الفصل الأكاديمي الثاني 2025/2026 • لديك <span class="text-secondary font-semibold">واجبان</span> في مرحلة المعالجة الحالية.
+          </p>
+</div>
+<!-- Quick Top Action Buttons -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-[36px] px-space-lg rounded-full bg-primary text-on-primary font-title-md text-title-md flex items-center gap-space-sm hover:brightness-110 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+<span>اسحب واجب جديد (Pull)</span>
+</button>
+<button class="h-[36px] px-space-lg rounded-full bg-surface-container-high text-on-surface font-title-md text-title-md flex items-center gap-space-sm hover:bg-surface-container-highest active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[18px] text-primary">rate_review</span>
+<span>أكمل التصحيح الجاري</span>
+</button>
+<button class="h-[36px] px-space-md rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+<span class="font-label-md text-label-md">تقرير المتابعة</span>
+</button>
+</div>
+</div>
+<!-- Quick Stats Metrics Row (4 Bento Counters) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Stat 1 -->
+<div class="bg-surface-container p-space-md rounded-xl flex flex-col justify-between relative overflow-hidden shadow-sm group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">الواجبات المسحوبة محلياً</span>
+<span class="p-2 rounded-lg bg-primary/10 text-primary material-symbols-outlined text-[20px]">folder_zip</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display-lg text-display-lg text-on-surface">3</span>
+<span class="font-label-sm text-label-sm text-primary font-medium">واجبات مفهرسة</span>
+</div>
+<div class="mt-space-xs text-outline font-body-sm text-body-sm">
+            آخر سحب كود: قبل ساعتين
+          </div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container p-space-md rounded-xl flex flex-col justify-between relative overflow-hidden shadow-sm group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">الطلاب في الكشف الحالي</span>
+<span class="p-2 rounded-lg bg-surface-bright text-on-surface material-symbols-outlined text-[20px]">group</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display-lg text-display-lg text-on-surface">48</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">طالباً مسجلاً</span>
+</div>
+<div class="mt-space-xs text-outline font-body-sm text-body-sm">
+            الشعبة 1 • معمل الحوسبة 4
+          </div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container p-space-md rounded-xl flex flex-col justify-between relative overflow-hidden shadow-sm group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">إجمالي التسليمات المصححة</span>
+<span class="p-2 rounded-lg bg-secondary/10 text-secondary material-symbols-outlined text-[20px]">checklist</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display-lg text-display-lg text-on-surface">38<span class="font-headline-sm text-headline-sm text-outline">/48</span></span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">79% مكتمل</span>
+</div>
+<!-- Progress microbar -->
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-space-xs overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 79%;"></div>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="bg-surface-container p-space-md rounded-xl flex flex-col justify-between relative overflow-hidden shadow-sm group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">متوسط درجات المساق</span>
+<span class="p-2 rounded-lg bg-primary-container/20 text-primary material-symbols-outlined text-[20px]">query_stats</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display-lg text-display-lg text-primary">17.4</span>
+<span class="font-headline-sm text-headline-sm text-outline">/ 20</span>
+</div>
+<div class="mt-space-xs flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+<span>انحراف معياري: ±1.8</span>
+<span class="text-primary font-medium">أداء مرتفع</span>
+</div>
+</div>
+</div>
+<!-- Main Modular Interactive Grid (Card A, Card B, Card C, Card D) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- CARD A: Last Pull (آخر سحب نشط) - Spans 7 cols -->
+<section class="xl:col-span-7 bg-surface-container p-space-lg rounded-xl flex flex-col justify-between gap-space-md shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-md">
+<div class="p-3 bg-primary/10 text-primary rounded-lg">
+<span class="material-symbols-outlined text-[24px]">cloud_sync</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm px-space-sm py-0.5 rounded bg-primary/20 text-primary">أحدث عملية سحب</span>
+<span class="font-code-sm text-code-sm text-outline">اليوم، 10:15 ص</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mt-1">واجب 3: بناء نظام المصادقة والـ API (Auth &amp; Middleware)</h2>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-1.5 rounded-lg hover:bg-surface-container-high transition-colors" title="خيارات إضافية">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<!-- Status Indicators Metric Pill Bar -->
+<div class="grid grid-cols-3 gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex flex-col items-center justify-center p-2 rounded bg-surface-container">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="font-title-md text-title-md">42</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">مسلّم في الوقت</span>
+</div>
+<div class="flex flex-col items-center justify-center p-2 rounded bg-surface-container">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-title-md text-title-md">4</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">تسليم متأخر</span>
+</div>
+<div class="flex flex-col items-center justify-center p-2 rounded bg-surface-container">
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+<span class="font-title-md text-title-md">2</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">لم يسلّموا بعد</span>
+</div>
+</div>
+<!-- Extraction & Preparation Log Status -->
+<div class="flex items-center justify-between p-space-sm bg-surface-container-highest/40 rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">check_box</span>
+<span class="font-body-md text-body-md text-on-surface">تم استخراج <strong class="text-primary">46 ملف كود</strong> محلياً بنجاح (مستودعات جاهزة ومطابقة)</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">MD5 Validated</span>
+</div>
+<!-- Card Actions Footer -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<button class="h-[32px] px-space-md rounded-full bg-primary text-on-primary font-title-md text-title-md flex items-center gap-space-xs hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[16px]">assignment_turned_in</span>
+<span>فتح كشف الواجب (Roster)</span>
+</button>
+<button class="h-[32px] px-space-md rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest font-title-md text-title-md flex items-center gap-space-xs transition-colors">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>إعادة السحب (Re-pull)</span>
+</button>
+</div>
+<span class="font-label-sm text-label-sm text-outline">حجم الحزمة: 34.2 MB</span>
+</div>
+</section>
+<!-- CARD B: Draft In Progress (مسودة التصحيح الحالية) - Spans 5 cols -->
+<section class="xl:col-span-5 bg-surface-container p-space-lg rounded-xl flex flex-col justify-between gap-space-md shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm px-space-sm py-0.5 rounded bg-secondary/20 text-secondary">قيد الإنجاز</span>
+<span class="font-label-sm text-label-sm text-outline">المسودة الأخيرة: 11:20 ص</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mt-1">واجب 2: معمارية MVC وقواعد البيانات</h2>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">draw</span>
+</div>
+</div>
+<!-- Progress Overview -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="text-on-surface">إنجاز التصحيح ورصد التقييمات</span>
+<span class="font-title-md text-title-md text-secondary">44 / 46 طالب (95%)</span>
+</div>
+<div class="w-full bg-surface-container-low h-2.5 rounded-full overflow-hidden p-0.5">
+<div class="bg-secondary h-full rounded-full transition-all duration-500" style="width: 95%;"></div>
+</div>
+</div>
+<!-- AI Status & Flagged alerts -->
+<div class="flex flex-col gap-space-xs">
+<!-- AI assist status -->
+<div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm bg-surface-container-low px-space-sm py-2 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[18px]">auto_awesome</span>
+<span>اقتراحات Claude جاهزة لـ <strong>طالبين متبقيين</strong> في الطابور.</span>
+</div>
+<!-- Flagged review item -->
+<div class="flex items-center gap-space-sm text-secondary font-body-sm text-body-sm bg-secondary-container/10 px-space-sm py-2 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[18px]">warning</span>
+<span><strong>تنبيه:</strong> 2 طلاب بحاجة لمراجعة شفوية أو فحص تشابه Git.</span>
+</div>
+</div>
+<!-- Action Button -->
+<div class="pt-space-xs">
+<button class="w-full h-[36px] px-space-md rounded-full bg-secondary-container/30 hover:bg-secondary-container/50 text-secondary font-title-md text-title-md flex items-center justify-center gap-space-sm transition-colors">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+<span>الانتقال إلى مساحة التصحيح (Open Workspace)</span>
+</button>
+</div>
+</section>
+<!-- CARD C: Connections Health Summary (حالة الربط والجاهزية) - Spans 5 cols -->
+<section class="xl:col-span-5 bg-surface-container p-space-lg rounded-xl flex flex-col justify-between gap-space-md shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">lan</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">حالة الاتصال والبيئة المحلية</h2>
+</div>
+<span class="font-label-sm text-label-sm px-space-sm py-0.5 rounded bg-primary/10 text-primary">النظام جاهز 100%</span>
+</div>
+<!-- Detailed Service Status List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Classroom Connection -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-md">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Google Classroom &amp; Drive</span>
+<span class="font-body-sm text-body-sm text-outline">OAuth نشط • 5 مساقات دراسية متاحة</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-2 py-0.5 rounded">متصل</span>
+</div>
+<!-- Claude AI Grader -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-md">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">محرك الذكاء الاصطناعي (Claude AI)</span>
+<span class="font-body-sm text-body-sm text-outline">API Key مشفر محلياً • Sonnet 3.5</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary/10 px-2 py-0.5 rounded">جاهز للاقتراح</span>
+</div>
+<!-- Local Directory Storage -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-md">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">مجلد العمل المحلي (Windows NVMe)</span>
+<span class="font-code-sm text-code-sm text-outline truncate max-w-[200px]" dir="ltr">D:\Grading\2026-Spring\PHP</span>
+</div>
+</div>
+<div class="text-left font-label-sm text-label-sm text-on-surface-variant">
+                متاح 142 GB
+              </div>
+</div>
+</div>
+<!-- Diagnostics Link -->
+<div class="pt-space-xs flex items-center justify-between">
+<a class="font-label-md text-label-md text-primary hover:underline flex items-center gap-1" href="#">
+<span>فحص الاتصالات والتشخيص الكامل للخدمات</span>
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</a>
+<span class="font-code-sm text-code-sm text-outline">SSL 1.3 Active</span>
+</div>
+</section>
+<!-- CARD D: Recent Local Activity Log (سجل النشاط المحلي) - Spans 7 cols -->
+<section class="xl:col-span-7 bg-surface-container p-space-lg rounded-xl flex flex-col justify-between gap-space-md shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[22px]">history</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">سجل العمليات والنشاط المحلي الأخير</h2>
+</div>
+<button class="font-label-sm text-label-sm text-primary hover:underline">عرض كل السجلات (Full Log)</button>
+</div>
+<!-- Activity Rows List -->
+<div class="flex flex-col divide-y divide-surface-container-high/40">
+<!-- Item 1 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[18px] text-primary">file_download</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">تم تصدير مسودة واجب 1 (Final Draft)</span>
+<span class="font-code-sm text-code-sm text-outline">grades_draft_w1_final.xlsx — حفظ محلي</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">11:32 ص</span>
+</div>
+<!-- Item 2 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[18px] text-secondary">sync_alt</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">سحب تسليمات واجب 3 وتوليد أرشيف الكود</span>
+<span class="font-body-sm text-body-sm text-outline">تم استخراج وتفكيك 46 مشروع طالب بنجاح</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">10:15 ص</span>
+</div>
+<!-- Item 3 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[18px] text-primary">verified_user</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">فحص تفويض OAuth الخاص بحساب التدريس</span>
+<span class="font-body-sm text-body-sm text-outline">تم التحقق من الصلاحيات وتحديث التوكن (Token Refreshed)</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">09:00 ص</span>
+</div>
+<!-- Item 4 -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="material-symbols-outlined text-[18px] text-outline">backup</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">نسخة احتياطية لقاعدة بيانات التقييمات المحلية</span>
+<span class="font-code-sm text-code-sm text-outline">SQLite DB snapshot created automatically</span>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">أمس، 08:30 م</span>
+</div>
+</div>
+<!-- Bottom micro-status -->
+<div class="flex items-center justify-between pt-space-xs text-outline font-label-sm text-label-sm">
+<span>التخزين مشفر باستخدام Windows DPAPI</span>
+<div class="flex items-center gap-1 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>سجل التدقيق نشط ومحمي</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Windows App Desktop Status Bar (Bottom 28px) -->
+<footer class="h-[28px] bg-surface-container-lowest px-space-md flex items-center justify-between font-label-sm text-label-sm text-outline select-none rounded-b-xl">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-on-surface-variant">النظام جاهز للاستخدام</span>
+</div>
+<span class="text-surface-container-highest">•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">hard_drive</span>
+<span>القرص D: 142 GB متاح</span>
+</div>
+<span class="text-surface-container-highest">•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">memory</span>
+<span>استهلاك الرام: 218 MB</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Classroom-Tool v2.4 (Qt 6.7 RTL)</span>
+<span>|</span>
+<span>مُصمم للعمل دون اتصال دائم</span>
+</div>
+</footer>
+<!-- Micro Interaction Script for Interactive Desktop Feel -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const courseBtn = document.getElementById('courseDropdownBtn');
+      if (courseBtn) {
+        courseBtn.addEventListener('click', () => {
+          courseBtn.classList.toggle('bg-surface-container-highest');
+        });
+      }
+    });
+  </script>
+</div></main></body></html>
