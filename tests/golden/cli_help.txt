@@ -1,0 +1,17 @@
+Usage: cli.py [OPTIONS] COMMAND [ARGS]...
+
+  أداة إدارة تسليمات Google Classroom.
+
+Options:
+  --config TEXT  مسار ملف الإعدادات
+  --help         Show this message and exit.
+
+Commands:
+  auth        تسجيل الدخول لأول مرة أو تجديد التوكن.
+  courses     عرض كل المساقات مع الـ IDs (انسخها إلى config.yaml).
+  doctor      فحص صحة الإعداد: ملفات، توكن، صلاحيات ممنوحة، واتصال فعلي...
+  prepare     فك ضغط الأرشيفات وبناء فهرس للمراجعة.
+  pull        تحميل تسليمات واجب بأسماء منظّمة.
+  reset-auth  يحذف token.json لإجبار إعادة تسجيل الدخول من الصفر.
+  status      تقرير متابعة لكل الطلاب عبر كل الواجبات.
+  work        عرض واجبات مساق معيّن.

@@ -1,0 +1,21 @@
+# Lint config — the mechanical gate's baseline (execution plan, Haiku check 4).
+# Deliberately excludes the opinionated security / datetime-tz / blind-except
+# rule families (S, DTZ, BLE, TRY...) that the existing classroom_tool code
+# predates; "no new violations vs baseline" is enforced against this set.
+
+target-version = "py313"
+line-length = 100
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = [
+    "E501",   # long lines: Arabic strings + URLs, not worth wrapping
+    "B008",   # click uses function calls in argument defaults by design
+]
+
+[lint.per-file-ignores]
+"dev/*" = ["ALL"]          # throwaway diagnostics, not maintained
+"tests/*" = ["B011", "S"]
+
+[lint.isort]
+known-first-party = ["classroom_tool", "gui"]

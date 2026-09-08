@@ -1,0 +1,6 @@
+Usage: cli.py work [OPTIONS] COURSE
+
+  عرض واجبات مساق معيّن.
+
+Options:
+  --help  Show this message and exit.

@@ -1,0 +1,9 @@
+Usage: cli.py status [OPTIONS] COURSE
+
+  تقرير متابعة لكل الطلاب عبر كل الواجبات.
+
+  مثال: classroom status SE2026
+
+Options:
+  --threshold FLOAT  عتبة الإنذار لنسبة التسليم
+  --help             Show this message and exit.

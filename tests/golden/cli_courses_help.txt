@@ -1,0 +1,6 @@
+Usage: cli.py courses [OPTIONS]
+
+  عرض كل المساقات مع الـ IDs (انسخها إلى config.yaml).
+
+Options:
+  --help  Show this message and exit.

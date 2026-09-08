@@ -1,0 +1,9 @@
+Usage: cli.py pull [OPTIONS] COURSE ASSIGNMENT
+
+  تحميل تسليمات واجب بأسماء منظّمة.
+
+  مثال: classroom pull SE2026 HW03
+
+Options:
+  --no-files  اكشف بدون تحميل الملفات
+  --help      Show this message and exit.
