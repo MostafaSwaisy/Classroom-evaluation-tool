@@ -22,10 +22,10 @@ _MARK = {True: "✓", False: "✗", None: "⚠"}
 
 
 class FixAction(Enum):
-    """The concrete recovery a failing check maps to (a button in the GUI)."""
+    """The concrete recovery a check maps to (a button in the connections screen)."""
 
     GET_CREDENTIALS = "get_credentials"        # نزّل credentials.json من Google Cloud Console
-    RUN_AUTH = "run_auth"                      # python cli.py auth
+    RUN_AUTH = "run_auth"                      # python cli.py auth (لسا ما سجّلت دخول)
     RESET_THEN_AUTH = "reset_then_auth"        # reset-auth ثم auth (صلاحية ناقصة / توكن تالف)
     RECONNECT = "reconnect"                    # أعد بناء الاتصال / حاول ثانية
     CHECK_COURSE_SCOPE = "check_course_scope"  # صلاحية coursework على هذا المساق
@@ -37,8 +37,17 @@ class CheckResult:
     ok: bool | None          # True → ✓ , False → ✗ , None → ⚠ (تحذير، مش فشل)
     label: str
     cause: str = ""
-    fix_action: FixAction | None = None
+    fix_action: FixAction | None = None   # may be set on warn rows too (e.g. RUN_AUTH)
     section: str | None = None
+
+
+class DoctorAborted(SystemExit):
+    """`get_services()` aborted the run; `partial` holds the rows computed so far
+    (files + scopes + the الاتصال header) so the CLI can still render them."""
+
+    def __init__(self, exc: SystemExit, partial: list[CheckResult]) -> None:
+        super().__init__(exc.code)
+        self.partial = partial
 
 
 def reset_token() -> None:
@@ -79,7 +88,8 @@ def _check_files() -> tuple[list[CheckResult], bool]:
         out.append(CheckResult("files.token", True, f"{TOKEN_FILE} موجود", section=_SEC_FILES))
     else:
         out.append(CheckResult("files.token", None,
-                               f"{TOKEN_FILE} مفقود — لسا ما سجّلت دخول", section=_SEC_FILES))
+                               f"{TOKEN_FILE} مفقود — لسا ما سجّلت دخول",
+                               fix_action=FixAction.RUN_AUTH, section=_SEC_FILES))
 
     return out, files_ok
 
@@ -89,7 +99,7 @@ def _check_scopes() -> tuple[list[CheckResult], bool]:
     if not token_path.exists():
         return [CheckResult("scopes.no_token", None,
                             "ما في توكن لفحص الصلاحيات — شغّل auth الأول",
-                            fix_action=None, section=_SEC_SCOPES)], False
+                            fix_action=FixAction.RUN_AUTH, section=_SEC_SCOPES)], False
 
     try:
         data = json.loads(token_path.read_text(encoding="utf-8"))
@@ -127,7 +137,7 @@ def _check_scopes() -> tuple[list[CheckResult], bool]:
 def _check_live(course_id: str | None) -> tuple[list[CheckResult], bool]:
     if not (project_root() / TOKEN_FILE).exists():
         return [CheckResult("live.no_token", None, "تخطّيت الاتصال — ما في توكن محفوظ",
-                            section=_SEC_LIVE)], False
+                            fix_action=FixAction.RUN_AUTH, section=_SEC_LIVE)], False
 
     try:
         classroom, _ = get_services()
@@ -173,7 +183,14 @@ def doctor(course_id: str | None = None) -> list[CheckResult]:
     scopes, scopes_ok = _check_scopes()
 
     if files_ok:
-        live, live_ok = _check_live(course_id)
+        try:
+            live, live_ok = _check_live(course_id)
+        except SystemExit as exc:
+            # get_services() aborted (e.g. routine token expiry). Pre-refactor the
+            # user had already seen files + scopes + the الاتصال header on stdout;
+            # carry that out so the CLI can still render it.
+            header_only = CheckResult("live.header_only", None, "", section=_SEC_LIVE)
+            raise DoctorAborted(exc, [*files, *scopes, header_only]) from exc
     else:
         live = [CheckResult("live.skipped", None, "تخطّيت الاتصال — صلّح الملفات الأول",
                             section=_SEC_LIVE)]
@@ -188,8 +205,13 @@ def doctor(course_id: str | None = None) -> list[CheckResult]:
     return [*files, *scopes, *live, summary]
 
 
-def render_text(results: list[CheckResult]) -> str:
-    """يعيد بناء نص الـ CLI القديم حرفياً من قائمة CheckResult."""
+def render_text(results: list[CheckResult], *, summary: bool = True) -> str:
+    """يعيد بناء نص الـ CLI القديم حرفياً من قائمة CheckResult.
+
+    كل مجموعة (section) لازم ترجّع صفاً واحداً على الأقل حتى يظهر عنوانها؛ الصف
+    الوحيد المسموح بلابل فاضي هو صف عنوان-فقط عند إجهاض الفحص. `summary=False`
+    يوقف السطر الفاصل والملخّص (لمسار الإجهاض).
+    """
     lines: list[str] = []
     seen: list[str] = []
     for r in results:
@@ -198,12 +220,14 @@ def render_text(results: list[CheckResult]) -> str:
         if r.section not in seen:
             seen.append(r.section)
             lines.append(f"\n== {r.section} ==")
-        lines.append(f"  {_MARK[r.ok]} {r.label}")
+        if r.label != "":
+            lines.append(f"  {_MARK[r.ok]} {r.label}")
 
-    overall = next((r for r in results if r.key == "overall"), None)
-    lines.append("")
-    if overall is not None:
-        lines.append(f"{_MARK[overall.ok]} {overall.label}")
+    if summary:
+        overall = next((r for r in results if r.key == "overall"), None)
+        lines.append("")
+        if overall is not None:
+            lines.append(f"{_MARK[overall.ok]} {overall.label}")
     return "\n".join(lines) + "\n"
 
 
