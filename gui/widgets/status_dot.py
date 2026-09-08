@@ -1,7 +1,7 @@
 """StatusDot — a small coloured dot + optional label (connection / check state)."""
 from __future__ import annotations
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
@@ -37,11 +37,14 @@ class _Dot(QWidget):
 
 
 class StatusDot(QWidget):
-    """`set_status("ok"|"warn"|"error"|"idle", text="")`."""
+    """`set_status("ok"|"warn"|"error"|"idle", text="")`. Emits `clicked` on press."""
+
+    clicked = Signal()
 
     def __init__(self, text: str = "", state: str = "idle",
                  parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
         lay = QHBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(6)
@@ -51,6 +54,11 @@ class StatusDot(QWidget):
         lay.addWidget(self._dot)
         lay.addWidget(self._label)
         self.set_status(state, text)
+
+    def mousePressEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
 
     def set_status(self, state: str, text: str | None = None) -> None:
         self._state = state
