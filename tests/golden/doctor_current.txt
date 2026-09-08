@@ -1,0 +1,18 @@
+
+== الملفات ==
+  ✓ credentials.json موجود
+  ✓ config.yaml موجود
+  ✓ token.json موجود
+
+== الصلاحيات (scopes) ==
+  ✓ classroom.courses.readonly
+  ✓ classroom.coursework.students.readonly
+  ✓ classroom.rosters.readonly
+  ✓ classroom.student-submissions.students.readonly
+  ✓ drive.readonly
+  ✓ كل الصلاحيات المطلوبة ممنوحة
+
+== الاتصال الفعلي ==
+  ✓ list_courses شغّال — 7 مساق نشط
+
+✓ كله تمام
