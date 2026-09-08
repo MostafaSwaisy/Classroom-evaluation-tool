@@ -14,7 +14,7 @@ _CURRENT = "الواجب الحالي"
 # (key, nav label, section group)
 NAV: list[tuple[str, str, str | None]] = [
     ("dashboard", "الرئيسية", None),
-    ("courses", "المساقات", None),
+    ("courses_aliases", "المساقات", None),
     ("assignments", "الواجبات", _CURRENT),
     ("pull", "السحب", _CURRENT),
     ("prepare", "التحضير", _CURRENT),
