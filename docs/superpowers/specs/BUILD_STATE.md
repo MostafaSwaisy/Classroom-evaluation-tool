@@ -10,12 +10,14 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
   P1-U7 (assignments screen; `StateView.set_error` gained an optional action button,
-  `navigation_requested(key, ctx)` signal wired in `main_window`).
-- **Next:** P1-U8 (roster screen) → P1-U9 (tracking report screen) →
+  `navigation_requested(key, ctx)` signal wired in `main_window`) ·
+  P1-U8 (roster screen; R6 read via worker, state/late/has-files filters + search,
+  `NoEditTriggers` + always-on read-only banner, `active_assignment_dir` on `AppServices`).
+  **Opus review pending** (mandatory — `submissions/` / `_roster.xlsx` surface).
+- **Next:** P1-U9 (tracking report screen) → Opus review of P1-U8 →
   Phase 1 Fable checkpoint → merge to `main`.
-- **Test count:** 126 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
-- **Carry into P1-U8:** roster screen must have `NoEditTriggers` + read-only banner (grep-checked).
-  **P4-U5 (setup wizard):** `reset_token()` still prints/returns None — needs a structured result.
+- **Test count:** 137 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
+- **Carry:** **P4-U5 (setup wizard):** `reset_token()` still prints/returns None — needs a structured result.
 
 ## Working method (Fable ruling — see plan §"Working method")
 
