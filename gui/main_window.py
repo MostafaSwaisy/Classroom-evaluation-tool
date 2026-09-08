@@ -179,8 +179,10 @@ class MainWindow(QMainWindow):
         )
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
-        # Best effort here; P5-U2 adds a blocking "جاري الإلغاء…" state if the
-        # first wait times out. The BackendThread stays referenced via services.
-        if not self.services.backend.shutdown():
-            self.services.backend.shutdown(3000)
-        super().closeEvent(event)
+        # If the worker won't stop, refuse the close rather than let a running
+        # QThread be destroyed at interpreter shutdown (abort). A proper blocking
+        # "جاري الإلغاء…" dialog is P5-U4; this is the safe interim.
+        if self.services.backend.shutdown() or self.services.backend.shutdown(3000):
+            super().closeEvent(event)
+        else:
+            event.ignore()
