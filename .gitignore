@@ -1,9 +1,18 @@
+# --- secrets / credentials ---
 credentials.json
+0credentials.json
 token.json
+claude_token.json
 config.yaml
+config.yaml.bak
+
+# --- python ---
 .venv/
 __pycache__/
 *.pyc
+
+# --- tool output ---
 submissions/
 grades.json
 *_draft.xlsx
+_status_*.xlsx

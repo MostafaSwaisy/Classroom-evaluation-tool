@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface select-none font-body-md" dir="rtl">
+<!-- Persistent Security & Safety Banner (Mandatory Local Workspace Guard) -->
+<div class="w-full bg-surface-container-lowest px-space-lg py-space-xs flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">shield_lock</span>
+<span class="font-label-sm text-secondary tracking-wide">مسودة محلية — لن تُرفع الدرجات أو التعديلات إلى خادم الجامعة إطلاقاً (Local Workspace Mode • Safe Sandbox)</span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-code-sm text-[11px]">
+<span class="flex items-center gap-space-2xs">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+        SQLite: grading_cache.db (Read/Write)
+      </span>
+<span>•</span>
+<span>PID: 14892 (PySide6 Runtime)</span>
+</div>
+</div>
+<!-- Main Toolbar & Execution Controller -->
+<header class="w-full bg-surface-container-low px-space-xl py-space-md flex flex-wrap items-center justify-between gap-space-md shadow-md">
+<div class="flex items-center gap-space-md">
+<div class="p-space-sm bg-surface-container-high rounded-lg text-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[26px]">folder_zip</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">التحضير وفك الأرشيفات والفهرسة</h1>
+<span class="font-code-sm text-code-sm text-primary px-space-sm py-[2px] bg-primary/10 rounded-full font-semibold">CLI: prepare</span>
+<span class="font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant px-space-sm py-[2px] rounded-full">واجب #784910284210</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-space-xs">
+<span>مقرر PHP2026</span>
+<span class="text-outline-variant">/</span>
+<span>الواجب 3: بناء نظام المصادقة والـ Middleware (Auth &amp; API Middleware)</span>
+<span class="text-outline-variant">/</span>
+<span class="font-code-sm text-[11px] text-tertiary font-medium ltr:text-left" dir="ltr">D:\Grading\2026-Spring\submissions\PHP2026\hw3-auth-middleware</span>
+</p>
+</div>
+</div>
+<!-- Execution & Transition Actions -->
+<div class="flex items-center gap-space-md">
+<button class="flex items-center gap-space-xs bg-surface-container-high hover:bg-surface-bright text-on-surface px-space-lg py-space-sm rounded-full transition-all duration-150 shadow-sm cursor-pointer active:scale-95" id="btn-re-run">
+<span class="material-symbols-outlined text-primary text-[18px]" id="spinner-icon">sync</span>
+<span class="font-title-md text-title-md font-semibold">إعادة فك الضغط والفهرسة (Run Prepare)</span>
+</button>
+<button class="flex items-center gap-space-sm bg-primary text-on-primary font-bold px-space-xl py-space-sm rounded-full shadow-lg shadow-primary/20 hover:bg-primary-fixed hover:shadow-primary/30 transition-all duration-150 cursor-pointer active:scale-95" id="btn-start-grading">
+<span class="font-title-md text-title-md">ابدأ التصحيح (Start Grading)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+</div>
+</header>
+<!-- Metric Summary Cards Ribbon -->
+<section class="w-full px-space-xl py-space-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1: Total Archives Processed -->
+<div class="bg-surface-container rounded-xl p-space-md flex items-center gap-space-md shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[28px]">inventory_2</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">إجمالي الأرشيفات المحملة</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-on-surface font-bold">42</span>
+<span class="font-label-md text-label-md text-primary font-semibold">أرشيف (100%)</span>
+</div>
+<span class="font-code-sm text-[11px] text-on-surface-variant">الحجم الكلي: 68.4 MB</span>
+</div>
+</div>
+<!-- Card 2: Successful Extractions -->
+<div class="bg-surface-container rounded-xl p-space-md flex items-center gap-space-md shadow-sm relative overflow-hidden">
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]">verified</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">فك ضغط وفهرسة ناجحة</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-primary font-bold">38</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">طالباً جاهزاً</span>
+</div>
+<span class="font-code-sm text-[11px] text-primary/80">342 ملف كود (.php, .sql, .env)</span>
+</div>
+<div class="absolute -left-3 -bottom-3 w-16 h-16 bg-primary/5 rounded-full blur-xl pointer-events-none"></div>
+</div>
+<!-- Card 3: Skipped / Unsupported Format -->
+<div class="bg-surface-container rounded-xl p-space-md flex items-center gap-space-md shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[28px]">warning_amber</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">صيغ أرشيف متخطاة</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-secondary font-bold">3</span>
+<span class="font-label-md text-label-md text-secondary font-semibold">ملفات (.rar / .7z)</span>
+</div>
+<span class="font-code-sm text-[11px] text-secondary">تتطلب استخراجاً يدوياً</span>
+</div>
+</div>
+<!-- Card 4: Corrupted / Failed Extraction -->
+<div class="bg-surface-container rounded-xl p-space-md flex items-center gap-space-md shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-error-container/40 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[28px]">dangerous</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">فشل الاستخراج / تالف</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-display-lg text-display-lg text-error font-bold">1</span>
+<span class="font-label-md text-label-md text-error font-semibold">ملف غير قابل للقراءة</span>
+</div>
+<span class="font-code-sm text-[11px] text-error/80">CRC32 Bad Header / Truncated</span>
+</div>
+</div>
+</section>
+<!-- Split Screen Desktop Layout -->
+<div class="w-full px-space-xl pb-space-xl grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- Right Panel: Submissions Extraction Roster Table (7 cols on xl) -->
+<section class="xl:col-span-7 flex flex-col bg-surface-container rounded-xl shadow-md overflow-hidden">
+<!-- Table Header & Controls Toolbar -->
+<div class="p-space-md bg-surface-container-high flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">table_chart</span>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">تقرير فك الأرشيف وفحص المحتويات</h2>
+<span class="px-space-sm py-[1px] bg-surface-container rounded-full text-on-surface-variant font-code-sm text-[11px]">42 طالب</span>
+</div>
+<!-- Filter Chips -->
+<div class="flex items-center gap-space-xs bg-surface-container-lowest p-[3px] rounded-full text-label-sm font-label-sm">
+<button class="px-space-md py-[4px] rounded-full bg-primary text-on-primary font-semibold shadow-xs">الكل (42)</button>
+<button class="px-space-md py-[4px] rounded-full text-on-surface-variant hover:text-on-surface">ناجح (38)</button>
+<button class="px-space-md py-[4px] rounded-full text-secondary hover:text-secondary-fixed">متخطى (3)</button>
+<button class="px-space-md py-[4px] rounded-full text-error hover:text-on-error-container">فشل (1)</button>
+</div>
+</div>
+<!-- Search & Sorting Filter Bar -->
+<div class="px-space-md py-space-sm bg-surface-container flex items-center justify-between gap-space-md">
+<div class="relative flex-1 max-w-sm">
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder:text-outline text-body-sm font-body-sm rounded-lg pr-9 pl-space-md py-[6px] focus:outline-none focus:ring-1 focus:ring-primary shadow-inner" placeholder="بحث بالرقم الجامعي أو اسم ملف الأرشيف..." type="text"/>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+<span>الترتيب:</span>
+<span class="text-on-surface font-medium cursor-pointer">الحالة أولاً ↓</span>
+</div>
+</div>
+<!-- High-Density Desktop Data Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-right text-body-sm font-body-sm border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md font-semibold">الرقم الجامعي</th>
+<th class="py-space-sm px-space-md font-semibold">اسم ملف الأرشيف</th>
+<th class="py-space-sm px-space-md font-semibold">نتيجة الفك والمحتوى</th>
+<th class="py-space-sm px-space-md font-semibold">الحجم والترميز</th>
+<th class="py-space-sm px-space-md font-semibold text-center">إجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/40">
+<!-- Row 1: Healthy ZIP -->
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-on-surface font-bold">120210123</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px]">folder_zip</span>
+<span>Swaisy_Auth_HW3.zip</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-medium">استُخرج 12 ملف كود</span>
+<span class="text-on-surface-variant text-[11px]">(Controllers, Middleware)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-on-surface-variant">1.4 MB • UTF-8</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="p-[4px] hover:bg-surface-bright rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer" title="فتح مجلد الاستخراج المحلي">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Healthy tar.gz -->
+<tr class="hover:bg-surface-container-high/60 transition-colors bg-surface-container-low/40">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-on-surface font-bold">120210145</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px]">archive</span>
+<span>Middleware_Project_src.tar.gz</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-medium">استُخرج 9 ملفات كود</span>
+<span class="text-on-surface-variant text-[11px]">(Kernel.php, routes/api)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-on-surface-variant">890 KB • UTF-8</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="p-[4px] hover:bg-surface-bright rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer" title="فتح مجلد الاستخراج المحلي">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Healthy ZIP -->
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-on-surface font-bold">120210189</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px]">folder_zip</span>
+<span>auth_jwt_assignment3.zip</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-medium">استُخرج 15 ملف كود</span>
+<span class="text-on-surface-variant text-[11px]">(JWTAuth.php, migrations)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-on-surface-variant">2.1 MB • UTF-8</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="p-[4px] hover:bg-surface-bright rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer" title="فتح مجلد الاستخراج المحلي">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Skipped RAR format -->
+<tr class="hover:bg-surface-container-high/60 transition-colors bg-secondary/5">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-secondary font-bold">120210204</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-secondary font-semibold">
+<span class="material-symbols-outlined text-secondary text-[16px]">inventory_2</span>
+<span>HW3_Submission.rar</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[16px]">warning</span>
+<span class="text-secondary font-semibold">تُخطّي: صيغة RAR غير مدعومة افتراضياً</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-secondary">3.4 MB • غير محدد</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="px-space-sm py-[2px] bg-secondary-container text-on-secondary font-label-sm font-semibold rounded-md hover:bg-secondary transition-colors cursor-pointer" title="فك يدوي باستخدام 7-Zip خارجي">
+                  فك يدوي
+                </button>
+</td>
+</tr>
+<!-- Row 5: Healthy ZIP -->
+<tr class="hover:bg-surface-container-high/60 transition-colors">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-on-surface font-bold">120210255</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-on-surface">
+<span class="material-symbols-outlined text-primary text-[16px]">folder_zip</span>
+<span>Homework3_API.zip</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="text-primary font-medium">استُخرج 8 ملفات كود</span>
+<span class="text-on-surface-variant text-[11px]">(api.php, AuthController)</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-on-surface-variant">720 KB • UTF-8</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="p-[4px] hover:bg-surface-bright rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer" title="فتح مجلد الاستخراج المحلي">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: Skipped 7z archive -->
+<tr class="hover:bg-surface-container-high/60 transition-colors bg-secondary/5">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-secondary font-bold">120210280</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-secondary font-semibold">
+<span class="material-symbols-outlined text-secondary text-[16px]">folder_zip</span>
+<span>project_v2.7z</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[16px]">warning</span>
+<span class="text-secondary font-semibold">تُخطّي: أرشيف 7z غير مدعوم</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-secondary">1.8 MB • غير مفهرس</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="px-space-sm py-[2px] bg-secondary-container text-on-secondary font-label-sm font-semibold rounded-md hover:bg-secondary transition-colors cursor-pointer" title="فك يدوي باستخدام 7-Zip خارجي">
+                  فك يدوي
+                </button>
+</td>
+</tr>
+<!-- Row 7: Corrupted ZIP Archive -->
+<tr class="hover:bg-surface-container-high/60 transition-colors bg-error-container/20">
+<td class="py-space-sm px-space-md font-code-sm text-code-sm text-error font-bold">120210312</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs font-code-sm text-[12px] text-error font-semibold">
+<span class="material-symbols-outlined text-error text-[16px]">report</span>
+<span>corrupt_archive.zip</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-error text-[16px]">cancel</span>
+<span class="text-error font-semibold">فشل: ملف ZIP تالف أو ناقص من المصدر</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md font-code-sm text-[11px] text-error/80">34 KB • CRC Error</td>
+<td class="py-space-sm px-space-md text-center">
+<button class="px-space-sm py-[2px] bg-error-container text-on-error-container font-label-sm font-semibold rounded-md hover:bg-error hover:text-on-error transition-colors cursor-pointer" title="إشعار الطالب أو مراجعة يدوية">
+                  إبلاغ
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & Status Sub-bar -->
+<div class="p-space-sm bg-surface-container-high flex items-center justify-between text-on-surface-variant font-label-sm text-[12px]">
+<span>عرض 1 إلى 7 من أصل 42 تسليماً</span>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-[2px] rounded bg-surface-container hover:bg-surface-bright text-on-surface font-code-sm">السابق</button>
+<span class="px-space-sm font-code-sm text-primary font-bold">1 / 6</span>
+<button class="px-space-sm py-[2px] rounded bg-surface-container hover:bg-surface-bright text-on-surface font-code-sm">التالي</button>
+</div>
+</div>
+</section>
+<!-- Left Panel: Auto-Generated Markdown Index Preview (_index.md & Tree) (5 cols on xl) -->
+<aside class="xl:col-span-5 flex flex-col bg-surface-container rounded-xl shadow-md overflow-hidden">
+<!-- Viewer Header & Local Path Bar -->
+<div class="p-space-md bg-surface-container-high flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[20px]">description</span>
+<h2 class="font-title-md text-title-md text-on-surface font-semibold">معاينة الفهرس التلقائي (_index.md)</h2>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-[4px] hover:bg-surface-bright rounded-md text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" id="btn-copy-path" title="نسخ المسار الكامل">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+<button class="p-[4px] hover:bg-surface-bright rounded-md text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" title="فتح بمحرر نصوص خارجي (VS Code / Notepad++)">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Location breadcrumb pill -->
+<div class="px-space-md py-space-xs bg-surface-container-lowest flex items-center justify-between text-[11px] font-code-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs truncate" dir="ltr">
+<span class="material-symbols-outlined text-[14px] text-primary">folder</span>
+<span class="truncate">submissions/PHP2026/hw3-auth-middleware/_index.md</span>
+</div>
+<span class="text-primary font-semibold">Ready • UTF-8</span>
+</div>
+<!-- Native Code Editor Styled Markdown View Box -->
+<div class="p-space-md bg-surface-container-lowest font-code-sm text-[12px] leading-relaxed text-on-surface overflow-y-auto max-h-[460px] select-text">
+<!-- Rendered Code Structure -->
+<div class="text-tertiary font-bold mb-space-xs"># فهرس واجب 3: بناء نظام المصادقة (Auth &amp; API Middleware)</div>
+<div class="text-on-surface-variant mb-space-sm">
+          - <span class="text-on-surface font-medium">تاريخ التوليد:</span> 2026-09-08 11:45:18 AST<br/>
+          - <span class="text-on-surface font-medium">عدد الطلاب المقيدين:</span> 42 | <span class="text-primary font-semibold">38 جاهزون للتصحيح</span><br/>
+          - <span class="text-on-surface font-medium">إجمالي ملفات الأكواد المفهرسة:</span> 342 ملف (.php, .sql)
+        </div>
+<div class="text-tertiary font-bold mb-space-xs">## شجرة بنية المشروع النموذجية المكتشفة:</div>
+<pre class="text-[11px] text-on-surface-variant font-code-sm bg-surface-container-low p-space-sm rounded-lg mb-space-md" dir="ltr">hw3-auth-middleware/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/AuthController.php
+│   │   └── Middleware/EnsureTokenIsValid.php
+│   └── Models/User.php
+├── routes/
+│   └── api.php
+├── tests/
+│   └── Feature/AuthApiTest.php
+└── _index.md [Generated Index Manifest]</pre>
+<div class="text-tertiary font-bold mb-space-xs">## الطلاب الجاهزون للتصحيح التلقائي والمحلي:</div>
+<ul class="space-y-space-2xs text-on-surface-variant" dir="ltr">
+<li class="flex items-center justify-between hover:bg-surface-container p-[2px] rounded">
+<span>* [120210123] - ./extracted/120210123/</span>
+<span class="text-primary font-semibold">(12 files)</span>
+</li>
+<li class="flex items-center justify-between hover:bg-surface-container p-[2px] rounded">
+<span>* [120210145] - ./extracted/120210145/</span>
+<span class="text-primary font-semibold">(9 files)</span>
+</li>
+<li class="flex items-center justify-between hover:bg-surface-container p-[2px] rounded">
+<span>* [120210189] - ./extracted/120210189/</span>
+<span class="text-primary font-semibold">(15 files)</span>
+</li>
+<li class="flex items-center justify-between hover:bg-surface-container p-[2px] rounded">
+<span>* [120210255] - ./extracted/120210255/</span>
+<span class="text-primary font-semibold">(8 files)</span>
+</li>
+<li class="flex items-center justify-between text-on-surface-variant/60 italic">
+<span>... +34 طلاب مفهرسون بنجاح</span>
+<span>(298 files)</span>
+</li>
+</ul>
+</div>
+<!-- Warning Callout Box for Students Requiring Manual Intervention -->
+<div class="m-space-md p-space-md bg-secondary-container/15 rounded-xl flex flex-col gap-space-xs shadow-sm">
+<div class="flex items-center gap-space-xs text-secondary font-title-md text-title-md font-bold">
+<span class="material-symbols-outlined text-[20px]">notification_important</span>
+<span>تنبيه المراجع: 4 طلاب بحاجة إلى معالجة استثنائية</span>
+</div>
+<p class="text-on-surface-variant font-body-sm text-body-sm leading-normal">
+          تم تدوين التنبيهات في ملف <code class="font-code-sm text-secondary bg-surface-container-lowest px-1 rounded">_index.md</code> لمتابعتها أثناء التصحيح:
+        </p>
+<ul class="text-[12px] font-code-sm space-y-1 text-secondary mt-1">
+<li class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>120210204 (RAR format) - يتطلب فكاً بالبرنامج الخارجي.</span>
+</li>
+<li class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>120210280 (7z archive) - صيغة غير قياسية.</span>
+</li>
+<li class="flex items-center gap-space-xs text-error font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>120210312 (Corrupted Archive) - الأرشيف تالف، لا يمكن فتحه.</span>
+</li>
+</ul>
+</div>
+</aside>
+</div>
+<!-- Bottom Desktop Status Bar (Qt 6.7 Native Chrome Style) -->
+<footer class="w-full bg-surface-container-lowest px-space-lg py-[6px] flex flex-wrap items-center justify-between text-on-surface-variant font-code-sm text-[11px] shadow-lg">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">desktop_windows</span>
+<span>Qt 6.7.2 (x86_64-w64-mingw32)</span>
+</div>
+<span>•</span>
+<span>محرك الاستخراج: Native libarchive / zipfile-py3</span>
+<span>•</span>
+<span>ترميز الإخراج: Windows-1256 to UTF-8 Normalize</span>
+</div>
+<div class="flex items-center gap-space-md" dir="ltr">
+<span class="text-on-surface-variant">CLI Mirror:</span>
+<span class="bg-surface-container px-space-sm py-[2px] rounded text-primary font-medium tracking-tight">classroom-tool prepare PHP2026 784910284210</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+</footer>
+</div>
+<script>
+  // Desktop Micro-interaction script for the Prepare UI
+  document.getElementById('btn-re-run')?.addEventListener('click', function() {
+    const icon = document.getElementById('spinner-icon');
+    if (icon) {
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+      }, 1200);
+    }
+  });
+
+  document.getElementById('btn-copy-path')?.addEventListener('click', function() {
+    navigator.clipboard?.writeText('D:\\Grading\\2026-Spring\\submissions\\PHP2026\\hw3-auth-middleware\\_index.md');
+    const originalTitle = this.getAttribute('title');
+    this.setAttribute('title', 'تم النسخ بنجاح!');
+    setTimeout(() => {
+      this.setAttribute('title', originalTitle);
+    }, 2000);
+  });
+</script></main></body></html>

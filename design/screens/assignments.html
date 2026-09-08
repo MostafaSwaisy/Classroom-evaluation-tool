@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-bright":"#37393d","surface-container":"#1d2023","background":"#111417","tertiary-container":"#ffb9ec","error-container":"#93000a","on-secondary-fixed-variant":"#6800b4","primary":"#93ffdb","secondary-fixed":"#f0dbff","on-background":"#e1e2e7","on-error-container":"#ffdad6","inverse-surface":"#e1e2e7","inverse-on-surface":"#2e3034","on-tertiary-fixed-variant":"#742769","surface":"#111417","on-surface":"#e1e2e7","outline":"#84948d","on-secondary":"#490081","on-secondary-fixed":"#2c0051","on-tertiary-fixed":"#390034","tertiary-fixed":"#ffd7f1","on-secondary-container":"#d3a5ff","secondary-container":"#6b01b9","on-primary":"#00382a","on-error":"#690005","surface-container-lowest":"#0c0e12","on-primary-fixed-variant":"#00513f","secondary-fixed-dim":"#dcb8ff","primary-container":"#34e8bb","surface-container-highest":"#333539","tertiary":"#ffe3f4","on-primary-container":"#00644e","surface-variant":"#333539","on-tertiary-container":"#89397b","outline-variant":"#3b4a44","on-surface-variant":"#bacac2","surface-dim":"#111417","secondary":"#dcb8ff","surface-container-high":"#282a2e","primary-fixed":"#53fdce","inverse-primary":"#006b54","error":"#ffb4ab","surface-container-low":"#191c1f","primary-fixed-dim":"#23e0b3","on-primary-fixed":"#002118","on-tertiary":"#590c50","tertiary-fixed-dim":"#ffacea","surface-tint":"#23e0b3"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xs":"0.25rem","space-lg":"0.75rem","space-3xl":"1.5rem","space-md":"0.5rem","space-sm":"0.375rem","space-xl":"1rem","table-row-h":"2rem","toolbar-h":"2.5rem","panel-gutter":"0.5rem","space-2xl":"1.25rem","space-2xs":"0.125rem"},fontFamily:{"title-sm":["IBM Plex Sans"],"label-xs":["IBM Plex Sans"],"body-sm":["IBM Plex Sans"],"code-sm":["JetBrains Mono"],"label-md":["IBM Plex Sans"],"display-lg":["IBM Plex Sans"],"headline-md":["IBM Plex Sans"],"headline-lg":["IBM Plex Sans"],"body-md":["IBM Plex Sans"]},fontSize:{"title-sm":["0.9375rem",{"lineHeight":"1.375rem","letterSpacing":"0em","fontWeight":"500"}],"label-xs":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.04em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"500"}],"label-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"display-lg":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-md":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-lg":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="w-full min-h-screen flex items-center justify-center p-space-xl bg-surface"><div class="flex flex-col w-full text-on-surface select-none space-y-space-lg" dir="rtl">
+<!-- TOP CONTEXT BANNER & DESKTOP TOOLBAR -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md p-space-lg bg-surface-container rounded-xl shadow-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">assignment</span>
+</div>
+<div>
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-md text-headline-md text-on-surface">PHP2026 — تطوير تطبيقات الويب المتقدمة</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-code-sm text-code-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Classroom متصل
+          </span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-label-md text-label-md mt-0.5">
+<span>الفصل الدراسي: خريف 2025/2026</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span>الشعبة: 01 (قاعة المعمل B4)</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-code-sm">CLI: work PHP2026</span>
+</div>
+</div>
+</div>
+<!-- Actions & Sync Button -->
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md transition-all active:scale-95" id="refreshBtn" onclick="triggerRefresh()">
+<span class="material-symbols-outlined text-[18px]" id="refreshIcon">sync</span>
+<span>تحديث قائمة الواجبات من Classroom</span>
+</button>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">folder_zip</span>
+<span class="truncate max-w-[200px]" title="C:/ClassroomGrades/2025/PHP2026">~/ClassroomGrades/PHP2026</span>
+</div>
+</div>
+</div>
+<!-- SUMMARY STATS OVERVIEW -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Stat 1 -->
+<div class="p-space-md rounded-xl bg-surface-container flex items-center justify-between shadow-sm">
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">إجمالي التكليفات بالمساق</p>
+<p class="font-display-lg text-display-lg text-on-surface mt-1">4 <span class="font-label-md text-label-md text-on-surface-variant">واجبات معتمدة</span></p>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">list_alt</span>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="p-space-md rounded-xl bg-surface-container flex items-center justify-between shadow-sm">
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">حالة السحب المحلي</p>
+<p class="font-display-lg text-display-lg text-primary mt-1">3 <span class="font-label-md text-label-md text-on-surface-variant">من أصل 4 واجبات</span></p>
+</div>
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">download_done</span>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="p-space-md rounded-xl bg-surface-container flex items-center justify-between shadow-sm">
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">التسليمات المحفوظة محلياً</p>
+<p class="font-display-lg text-display-lg text-tertiary mt-1">138 <span class="font-label-md text-label-md text-on-surface-variant">ملف كود ومستند</span></p>
+</div>
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[22px]">inventory_2</span>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="p-space-md rounded-xl bg-surface-container flex items-center justify-between shadow-sm">
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">تسليمات تتطلب المزامنة</p>
+<p class="font-display-lg text-display-lg text-secondary mt-1">5 <span class="font-label-md text-label-md text-on-secondary-fixed-variant">تسليمات جديدة</span></p>
+</div>
+<div class="w-10 h-10 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">update</span>
+</div>
+</div>
+</div>
+<!-- SAFETY ADVISORY CALLOUT -->
+<div class="flex items-center justify-between p-space-md bg-surface-container-low rounded-xl text-on-surface shadow-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-primary">مسودة آمنة (Read-Only Prep Mode)</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">عمليات سحب الواجبات وملفات الطلاب تتم بهدف التحضير والتدقيق المحلي في بيئة سطح المكتب المعزولة. لن تُعدّل أي درجات أو تُنشر في Google Classroom دون اعتماد وتأكيد صريح منك.</p>
+</div>
+</div>
+<span class="hidden md:inline-flex items-center gap-1 text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+      --mode=offline-audit
+    </span>
+</div>
+<!-- FILTER & SEARCH DESKTOP BAR -->
+<div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md p-space-sm bg-surface-container rounded-xl">
+<!-- Filter tabs -->
+<div class="flex items-center gap-1 overflow-x-auto p-1 bg-surface-container-lowest rounded-lg">
+<button class="filter-tab px-space-md py-1 rounded font-label-md text-label-md bg-surface-container-high text-primary transition-all" onclick="filterTable('all', this)">الكل (4)</button>
+<button class="filter-tab px-space-md py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all" onclick="filterTable('pulled', this)">مسحوبة محلياً (3)</button>
+<button class="filter-tab px-space-md py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all" onclick="filterTable('pending', this)">بانتظار السحب (1)</button>
+<button class="filter-tab px-space-md py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all" onclick="filterTable('sync_needed', this)">بحاجة لتحديث (1)</button>
+</div>
+<!-- Search Input -->
+<div class="relative min-w-[280px]">
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface placeholder-on-surface-variant pr-8 pl-3 py-1.5 rounded font-body-sm text-body-sm outline-none focus:bg-surface-container-low transition-colors" id="searchInput" onkeyup="searchAssignments()" placeholder="ابحث برمز الواجب أو الاسم أو الوصف..." type="text"/>
+</div>
+</div>
+<!-- ASSIGNMENTS DATA TABLE -->
+<div class="bg-surface-container rounded-xl overflow-hidden shadow-md">
+<div class="overflow-x-auto">
+<table class="w-full text-right" id="assignmentsTable">
+<thead>
+<tr class="bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-3 px-4 w-[160px]">رمز الواجب (ID)</th>
+<th class="py-3 px-4">عنوان الواجب والتوصيف الأكاديمي</th>
+<th class="py-3 px-3 w-[100px] text-center">الدرجة</th>
+<th class="py-3 px-4 w-[170px]">موعد التسليم</th>
+<th class="py-3 px-4 w-[240px]">حالة السحب المحلي</th>
+<th class="py-3 px-4 w-[280px] text-center">الإجراءات التفاعلية</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-transparent font-body-sm text-body-sm">
+<!-- Row 1: Active Assignment, Needs Update -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors assignment-row" data-status="sync_needed pulled">
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm text-primary font-medium tracking-tight bg-surface-container-lowest px-2 py-1 rounded">784910284210</span>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary transition-colors" onclick="copyToClipboard('784910284210', this)" title="نسخ المعرف">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div>
+<span class="font-title-md text-title-md text-on-surface block">واجب 3: بناء نظام المصادقة والـ Middleware (Auth &amp; API)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">تنفيذ معايير JWT وحماية الـ Routes مع إدارة صلاحيات المستخدمين (RBAC) باستخدام PHP النقي.</span>
+</div>
+</td>
+<td class="py-3 px-3 align-middle text-center">
+<span class="font-code-sm text-code-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">20 نقطة</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">28 نوفمبر 2025</span>
+<span class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-secondary-container/20 text-secondary font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[12px]">schedule</span>
+                  متبقي 3 أيام
+                </span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-label-sm text-label-sm w-fit font-medium">
+<span class="material-symbols-outlined text-[13px]">notification_important</span>
+                  5 تسليمات جديدة بحاجة لإعادة السحب
+                </span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">مسحوب سابقاً: 42 ملف كود</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center justify-center gap-1.5">
+<button class="px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md font-medium hover:bg-primary-fixed transition-all flex items-center gap-1 active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">sync_alt</span>
+                  تحديث السحب
+                </button>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md transition-colors" title="سحب الكشف فقط">
+                  الكشف فقط
+                </button>
+<button class="p-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary transition-colors" title="الانتقال لدرجات الواجب">
+<span class="material-symbols-outlined text-[18px]">rate_review</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Fully Pulled & Closed -->
+<tr class="bg-surface-container-low hover:bg-surface-container-high transition-colors assignment-row" data-status="pulled">
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm text-primary font-medium tracking-tight bg-surface-container-lowest px-2 py-1 rounded">763198042189</span>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary transition-colors" onclick="copyToClipboard('763198042189', this)" title="نسخ المعرف">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div>
+<span class="font-title-md text-title-md text-on-surface block">واجب 2: معمارية MVC وتطوير واجهات RESTful API</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">تقسيم المشروع حسب معمارية Model-View-Controller مع معالجة طلبات HTTP والـ JSON Headers.</span>
+</div>
+</td>
+<td class="py-3 px-3 align-middle text-center">
+<span class="font-code-sm text-code-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">15 نقطة</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">14 نوفمبر 2025</span>
+<span class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[12px]">lock_clock</span>
+                  منتهي ومغلق
+                </span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary font-label-sm text-label-sm w-fit font-medium">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                  تم السحب محلياً ✓
+                </span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">48 ملف كود (محدث: 15 نوفمبر 10:20 ص)</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center justify-center gap-1.5">
+<button class="px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">folder_open</span>
+                  فتح المجلد
+                </button>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary font-label-md text-label-md transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">grading</span>
+                  التصحيح
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Pulled First Assignment -->
+<tr class="bg-surface-container hover:bg-surface-container-high transition-colors assignment-row" data-status="pulled">
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm text-primary font-medium tracking-tight bg-surface-container-lowest px-2 py-1 rounded">751092384112</span>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary transition-colors" onclick="copyToClipboard('751092384112', this)" title="نسخ المعرف">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div>
+<span class="font-title-md text-title-md text-on-surface block">واجب 1: أساسيات PHP والتعامل مع قواعد البيانات عبر PDO</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">إنشاء كلاسات الاتصال الآمن مع MySQL وإجراء عمليات CRUD وتطبيق Prepared Statements.</span>
+</div>
+</td>
+<td class="py-3 px-3 align-middle text-center">
+<span class="font-code-sm text-code-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">10 نقاط</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">25 أكتوبر 2025</span>
+<span class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[12px]">lock_clock</span>
+                  منتهي ومغلق
+                </span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary font-label-sm text-label-sm w-fit font-medium">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                  تم السحب محلياً ✓
+                </span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">48 ملف كود (مكتمل التصحيح)</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center justify-center gap-1.5">
+<button class="px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                  عرض الكشف
+                </button>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-primary font-label-md text-label-md transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">table_chart</span>
+                  الدرجات
+                </button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Midterm Project, NOT Pulled Yet -->
+<tr class="bg-surface-container-low hover:bg-surface-container-high transition-colors assignment-row" data-status="pending">
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center gap-1.5">
+<span class="font-code-sm text-code-sm text-primary font-medium tracking-tight bg-surface-container-lowest px-2 py-1 rounded">798401923055</span>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary transition-colors" onclick="copyToClipboard('798401923055', this)" title="نسخ المعرف">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+</button>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">مشروع الفصل النصفي: متجر إلكتروني مصغر (Mini E-Commerce)</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary-container/30 text-tertiary font-label-sm text-label-sm font-semibold">المشروع الأكبر</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1 mt-0.5">تطوير منصة بيع متكاملة تشمل سلة مشتريات، معالجة الدفع الوهمي، وتوليد الفواتير PDF آلياً.</span>
+</div>
+</td>
+<td class="py-3 px-3 align-middle text-center">
+<span class="font-code-sm text-code-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">30 نقطة</span>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">10 ديسمبر 2025</span>
+<span class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[12px]">event_upcoming</span>
+                  متبقي 15 يوماً
+                </span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[13px]">hourglass_empty</span>
+                  لم يُسحب بعد ⏳
+                </span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">بانتظار التحميل إلى الأرشيف المحلي</span>
+</div>
+</td>
+<td class="py-3 px-4 align-middle">
+<div class="flex items-center justify-center gap-1.5">
+<button class="px-3.5 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md font-medium hover:bg-primary-fixed transition-all flex items-center gap-1 active:scale-95 shadow-md" onclick="pullAssignment('798401923055', this)">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                  اسحب الواجب (Pull All)
+                </button>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" title="سحب الكشف فقط بدون الملفات">
+                  الكشف فقط
+                </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- TABLE FOOTER METRICS & PAGINATION -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm p-space-md bg-surface-container-lowest text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-space-md">
+<span>عرض <span class="text-on-surface font-semibold" id="visibleCount">4</span> من أصل <span class="text-on-surface font-semibold">4</span> تكليفات دراسية</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-code-sm text-code-sm">Storage: 284 MB used / 1.2 GB available</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1 font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+          تصدير التقرير العام (CSV)
+        </button>
+<button class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1 font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">folder_special</span>
+          فتح مجلد المساق الكامل
+        </button>
+</div>
+</div>
+</div>
+<!-- CLI QUICK CHEATSHEET ACCORDION -->
+<div class="p-space-md bg-surface-container rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-space-md text-on-surface shadow-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-7 h-7 rounded bg-surface-container-lowest flex items-center justify-center text-on-surface-variant font-code-sm">
+        &gt;_
+      </div>
+<div class="font-code-sm text-code-sm flex flex-wrap items-center gap-space-md text-on-surface-variant">
+<span>أوامر سريعة للطرفية:</span>
+<code class="text-primary bg-surface-container-lowest px-2 py-0.5 rounded">work pull --all</code>
+<code class="text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded">work pull 784910284210 --no-files</code>
+<code class="text-on-surface bg-surface-container-lowest px-2 py-0.5 rounded">work grade 763198042189</code>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Google Classroom API v1 • مزامنة مشفرة وآمنة</span>
+</div>
+<!-- CLIENT INTERACTION SCRIPT -->
+<script>
+    function triggerRefresh() {
+      const icon = document.getElementById('refreshIcon');
+      const btn = document.getElementById('refreshBtn');
+      icon.classList.add('animate-spin');
+      btn.disabled = true;
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        btn.disabled = false;
+      }, 1200);
+    }
+
+    function copyToClipboard(text, btnElement) {
+      navigator.clipboard.writeText(text).then(() => {
+        const icon = btnElement.querySelector('.material-symbols-outlined');
+        const prev = icon.textContent;
+        icon.textContent = 'check';
+        icon.classList.add('text-primary');
+        setTimeout(() => {
+          icon.textContent = prev;
+          icon.classList.remove('text-primary');
+        }, 1500);
+      });
+    }
+
+    function filterTable(filter, button) {
+      document.querySelectorAll('.filter-tab').forEach(t => {
+        t.classList.remove('bg-surface-container-high', 'text-primary');
+        t.classList.add('text-on-surface-variant');
+      });
+      button.classList.add('bg-surface-container-high', 'text-primary');
+      button.classList.remove('text-on-surface-variant');
+
+      const rows = document.querySelectorAll('.assignment-row');
+      let count = 0;
+      rows.forEach(row => {
+        const statuses = row.getAttribute('data-status') || '';
+        if (filter === 'all' || statuses.includes(filter)) {
+          row.style.display = '';
+          count++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      document.getElementById('visibleCount').textContent = count;
+    }
+
+    function searchAssignments() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.assignment-row');
+      let count = 0;
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(query)) {
+          row.style.display = '';
+          count++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      document.getElementById('visibleCount').textContent = count;
+    }
+
+    function pullAssignment(id, btn) {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> جاري السحب...';
+      btn.classList.add('opacity-80', 'pointer-events-none');
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">done</span> اكتمل السحب';
+        btn.classList.remove('opacity-80');
+        btn.classList.replace('bg-primary', 'bg-surface-container-high');
+        btn.classList.replace('text-on-primary', 'text-primary');
+      }, 1600);
+    }
+  </script>
+</div></main></body></html>
