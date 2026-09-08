@@ -12,11 +12,17 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   P1-U7 (assignments screen; `StateView.set_error` gained an optional action button,
   `navigation_requested(key, ctx)` signal wired in `main_window`) ·
   P1-U8 (roster screen; R6 read via worker, state/late/has-files filters + search,
-  `NoEditTriggers` + always-on read-only banner, `active_assignment_dir` on `AppServices`).
-  **Opus review pending** (mandatory — `submissions/` / `_roster.xlsx` surface).
-- **Next:** P1-U9 (tracking report screen) → Opus review of P1-U8 →
-  Phase 1 Fable checkpoint → merge to `main`.
-- **Test count:** 137 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
+  `NoEditTriggers` + always-on read-only banner, `active_assignment_dir` on `AppServices`) ·
+  P1-U9 (tracking report screen; R5 `compute_status` via worker, colour-coded ✓/⏰/✗
+  matrix, threshold slider reclassifies at-risk locally with no re-fetch, ascending
+  at-risk panel, Export `_status_YYYYMMDD.xlsx` via worker, charts placeholder for P5-U3).
+- **Phase 1 code complete (P1-U1…U9).** Remaining before merge to `main`:
+  **Opus review of P1-U8** (mandatory — `submissions/` / `_roster.xlsx` surface;
+  P1-U3 already `approved-with-nits`) → **Phase 1 Fable checkpoint** → `git merge --no-ff`.
+- **Test count:** 147 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
+- **Known flaky:** `tests/test_worker.py::test_progress_and_result_arrive_on_the_gui_thread`
+  failed once mid-P1-U9 with a cross-thread `killTimer` warning on QThread teardown;
+  passed isolated + 5 subsequent full runs. Pre-existing worker-infra fragility, not P1-U9.
 - **Carry:** **P4-U5 (setup wizard):** `reset_token()` still prints/returns None — needs a structured result.
 
 ## Working method (Fable ruling — see plan §"Working method")
