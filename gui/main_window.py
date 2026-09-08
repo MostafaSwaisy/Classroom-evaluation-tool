@@ -34,6 +34,8 @@ class AppServices:
 
     def __init__(self) -> None:
         self.backend = BackendThread()
+        self.config_path = None          # None -> config module uses the repo default
+        self.active_course_id = None     # set by the dashboard course selector (P2-U5)
 
 
 class MainWindow(QMainWindow):
