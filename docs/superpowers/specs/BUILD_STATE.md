@@ -23,8 +23,18 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 - **Phase 1 done & merged.** Fable checkpoint `3fcbd05`: PROCEED — Haiku green on
   `a227919`, Opus P1-U1 + P1-U8 both `approved-with-nits (filed)`, guardrail sweep
   clean, CLI `--help`/`doctor` goldens byte-identical, all four refactors (R2/R5/R6/R10)
-  landed + tested. **Next: Phase 2** — first unit **P2-U1** (see plan §"Phase 2").
-- **Test count:** 149 passed / 1 skipped (live-parity gate) on `main` @ `3fcbd05`.
+  landed + tested.
+- **Phase 2 in progress on `feat/gui-phase2`:**
+  - **P2-U1 (R3, `bd7547b`)** — `pull(..., *, progress, should_cancel) -> dict`
+    `{out_dir, submitted, late, missing, no_id[]}`. `print`→`_report(progress, msg, done, total)`;
+    per-file loop carries `done/total`. `cli.py` passes a print callback (per-file lines unchanged).
+    Cancel = `OperationCancelled`; downloads + roster land in a sibling `<slug>.partial.XXXX`
+    staging dir (`tempfile.mkdtemp`) promoted onto `out_dir` via per-entry `os.replace` only
+    after a clean finish — **cancel never touches `out_dir`; nothing under `submissions/` is
+    deleted** (`_promote` only `rmdir`s its own emptied scratch). `datetime.UTC` swap keeps
+    ruff clean on the changed file. TDD: `tests/test_pull.py` (9) written first.
+- **Test count:** 158 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `bd7547b`
+  (149 on `main` @ `3fcbd05`).
 - **Known flaky:** `tests/test_worker.py::test_progress_and_result_arrive_on_the_gui_thread`
   failed once mid-P1-U9 with a cross-thread `killTimer` warning on QThread teardown;
   passed isolated + 5 subsequent full runs. Pre-existing worker-infra fragility, not P1-U9.
