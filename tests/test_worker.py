@@ -63,7 +63,10 @@ def test_progress_and_result_arrive_on_the_gui_thread(qtbot, bt):
     job_id, result = sig.args
     assert job_id == "j1"
     assert result["worker_ident"] != MAIN_IDENT
-    assert rec.threads and all(t == MAIN_IDENT for t in rec.threads)
+    # progress is a queued cross-thread signal — `finished` can be delivered
+    # while the progress ticks are still sitting in the GUI event queue.
+    qtbot.waitUntil(lambda: len(rec.threads) >= 1, timeout=2000)
+    assert all(t == MAIN_IDENT for t in rec.threads)
 
 
 def test_running_job_cancel_emits_cancelled(qtbot, bt):
