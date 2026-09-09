@@ -89,7 +89,8 @@ def pull_cmd(ctx, course, assignment, no_files):
     classroom, drive = get_services()
     course_id = resolve_course_id(cfg, course)
     pull_mod.pull(classroom, drive, cfg, course, course_id, assignment,
-                  skip_files=no_files)
+                  skip_files=no_files,
+                  progress=lambda msg, done=None, total=None: print(msg))
 
 
 @cli.command("prepare")
