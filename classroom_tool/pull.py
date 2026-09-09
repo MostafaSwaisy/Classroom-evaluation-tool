@@ -1,8 +1,11 @@
 """الأمر pull: تحميل تسليمات واجب بأسماء منظّمة + كشف متابعة."""
 from __future__ import annotations
 
+import os
 import re
-from datetime import datetime, timezone
+import tempfile
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -10,7 +13,15 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from . import api
+from .errors import OperationCancelled
 from .naming import build_filename, extract_student_id, normalize_arabic, safe_filename
+
+#: A progress sink: ``progress(message, done, total)``. ``done``/``total`` are set
+#: only for the per-file download loop; other lines pass ``None`` for both. The CLI
+#: passes a printer; the GUI worker turns these into signals for a bar + log.
+ProgressFn = Callable[[str, "int | None", "int | None"], None]
+#: ``should_cancel()`` — polled at each per-item boundary; True → raise.
+CancelFn = Callable[[], bool]
 
 STATE_AR = {
     "NEW": "لم يبدأ",
@@ -40,7 +51,7 @@ def _due_datetime(work: dict) -> datetime | None:
     return datetime(
         date["year"], date["month"], date["day"],
         time_part.get("hours", 23), time_part.get("minutes", 59),
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
 
@@ -60,110 +71,190 @@ def build_student_index(classroom, course_id: str, id_pattern: str) -> dict:
     return index
 
 
+def _report(progress: ProgressFn | None, message: str,
+            done: int | None = None, total: int | None = None) -> None:
+    if progress is not None:
+        progress(message, done, total)
+
+
+def _count_drive_files(submissions: list[dict]) -> int:
+    return sum(
+        1
+        for sub in submissions
+        for att in (sub.get("assignmentSubmission") or {}).get("attachments", [])
+        if att.get("driveFile")
+    )
+
+
+def _promote(staging: Path, out_dir: Path) -> None:
+    """Move a *completed* staging dir onto ``out_dir`` with per-entry atomic
+    renames (same filesystem). Overwrites the files of a previous pull of the
+    same assignment; never deletes a tree — only its own now-empty scratch dirs.
+    """
+    if not out_dir.exists():
+        os.replace(staging, out_dir)
+        return
+    for item in staging.iterdir():
+        if item.is_dir():
+            target = out_dir / item.name
+            target.mkdir(exist_ok=True)
+            for f in item.iterdir():
+                os.replace(f, target / f.name)
+            item.rmdir()
+        else:
+            os.replace(item, out_dir / item.name)
+    staging.rmdir()
+
+
 def pull(classroom, drive, cfg: dict, course_key: str, course_id: str,
-         work_query: str, skip_files: bool = False) -> Path:
+         work_query: str, skip_files: bool = False, *,
+         progress: ProgressFn | None = None,
+         should_cancel: CancelFn | None = None) -> dict:
+    """Download a coursework's submissions under organised names + write the roster.
+
+    Reports each line through ``progress`` (nothing is printed here). Polls
+    ``should_cancel`` at every per-item boundary; downloads land in a sibling
+    ``.partial`` staging dir and are promoted onto ``out_dir`` atomically only
+    once the run completes, so a cancel raises ``OperationCancelled`` and leaves
+    nothing — no ``_roster.xlsx``, no half-downloaded file — under ``out_dir``.
+
+    Returns ``{out_dir: Path, submitted: int, late: int, missing: int,
+    no_id: list[{email, name}]}``.
+    """
+    def _bail_if_cancelled() -> None:
+        if should_cancel is not None and should_cancel():
+            raise OperationCancelled
+
     work = api.find_coursework(classroom, course_id, work_query)
     title = work.get("title", "coursework")
     max_points = work.get("maxPoints")
     due = _due_datetime(work)
 
-    print(f"\n📘 الواجب: {title}")
-    print(f"   العلامة الكاملة: {max_points or '—'}"
-          f"   |   آخر موعد: {due.strftime('%Y-%m-%d %H:%M') if due else '—'}")
+    _report(progress, f"\n📘 الواجب: {title}")
+    _report(progress,
+            f"   العلامة الكاملة: {max_points or '—'}"
+            f"   |   آخر موعد: {due.strftime('%Y-%m-%d %H:%M') if due else '—'}")
 
     students = build_student_index(classroom, course_id, cfg["student_id_pattern"])
-    print(f"   عدد الطلاب المسجّلين: {len(students)}")
+    _report(progress, f"   عدد الطلاب المسجّلين: {len(students)}")
 
     submissions = api.list_submissions(classroom, course_id, work["id"])
-    print(f"   عدد سجلات التسليم: {len(submissions)}")
+    _report(progress, f"   عدد سجلات التسليم: {len(submissions)}")
 
     slug = safe_filename(re.sub(r"\s+", "_", title))[:40]
     out_dir = Path(cfg["output_dir"]) / course_key / slug
-    files_dir = out_dir / "files"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=f"{slug}.partial.", dir=out_dir.parent))
+    files_dir = staging / "files"
 
+    total_files = 0 if skip_files else _count_drive_files(submissions)
+    done_files = 0
     no_id = []
     rows = []
 
-    for sub in submissions:
-        info = students.get(sub["userId"], {
-            "student_id": None, "full_name": f"(خارج القائمة {sub['userId']})",
-            "normalized": "", "email": "",
-        })
-        if not info["student_id"] and info["email"]:
-            no_id.append(info)
+    try:
+        for sub in submissions:
+            _bail_if_cancelled()
+            info = students.get(sub["userId"], {
+                "student_id": None, "full_name": f"(خارج القائمة {sub['userId']})",
+                "normalized": "", "email": "",
+            })
+            if not info["student_id"] and info["email"]:
+                no_id.append(info)
 
-        state = sub.get("state", "")
-        turned_in = _parse_ts(sub.get("updateTime")) if state in SUBMITTED_STATES else None
-        attachments = (sub.get("assignmentSubmission") or {}).get("attachments", [])
+            state = sub.get("state", "")
+            turned_in = (_parse_ts(sub.get("updateTime"))
+                         if state in SUBMITTED_STATES else None)
+            attachments = (sub.get("assignmentSubmission") or {}).get("attachments", [])
 
-        saved, links = [], []
-        drive_index = 0
-        for att in attachments:
-            drive_file = att.get("driveFile")
-            if drive_file:
-                drive_index += 1
-                if skip_files:
-                    saved.append("(تخطّي)")
-                    continue
-                original = drive_file.get("title", "") or api.drive_file_name(
-                    drive, drive_file["id"]
-                )
-                filename = build_filename(
-                    info["student_id"], info["full_name"], drive_index, original,
-                    latin=cfg.get("latin_filenames", False),
-                )
-                ok, message = api.download_drive_file(
-                    drive, drive_file["id"], files_dir / filename,
-                    cfg["google_export"], cfg["max_file_mb"],
-                )
-                saved.append(message if ok else f"✗ {message}")
-                print(f"   {'✓' if ok else '✗'} {info['student_id'] or '?'} → {message}")
-            elif att.get("link"):
-                links.append(att["link"].get("url", ""))
-            elif att.get("youTubeVideo"):
-                links.append(att["youTubeVideo"].get("alternateLink", ""))
+            saved, links = [], []
+            drive_index = 0
+            for att in attachments:
+                drive_file = att.get("driveFile")
+                if drive_file:
+                    drive_index += 1
+                    if skip_files:
+                        saved.append("(تخطّي)")
+                        continue
+                    _bail_if_cancelled()
+                    original = drive_file.get("title", "") or api.drive_file_name(
+                        drive, drive_file["id"]
+                    )
+                    filename = build_filename(
+                        info["student_id"], info["full_name"], drive_index, original,
+                        latin=cfg.get("latin_filenames", False),
+                    )
+                    ok, message = api.download_drive_file(
+                        drive, drive_file["id"], files_dir / filename,
+                        cfg["google_export"], cfg["max_file_mb"],
+                    )
+                    saved.append(message if ok else f"✗ {message}")
+                    done_files += 1
+                    _report(
+                        progress,
+                        f"   {'✓' if ok else '✗'} {info['student_id'] or '?'} → {message}",
+                        done_files, total_files,
+                    )
+                elif att.get("link"):
+                    links.append(att["link"].get("url", ""))
+                elif att.get("youTubeVideo"):
+                    links.append(att["youTubeVideo"].get("alternateLink", ""))
 
-        rows.append({
-            "student_id": info["student_id"] or "",
-            "name": info["full_name"],
-            "email": info["email"],
-            "state": STATE_AR.get(state, state),
-            "late": "نعم" if sub.get("late") else "",
-            "turned_in": turned_in.strftime("%Y-%m-%d %H:%M") if turned_in else "",
-            "n_files": len([s for s in saved if not s.startswith("✗")]),
-            "files": " | ".join(saved),
-            "links": " | ".join(links),
-            "current_grade": sub.get("assignedGrade", ""),
-            "submission_id": sub["id"],
-            "submitted": state in SUBMITTED_STATES,
-        })
+            rows.append({
+                "student_id": info["student_id"] or "",
+                "name": info["full_name"],
+                "email": info["email"],
+                "state": STATE_AR.get(state, state),
+                "late": "نعم" if sub.get("late") else "",
+                "turned_in": turned_in.strftime("%Y-%m-%d %H:%M") if turned_in else "",
+                "n_files": len([s for s in saved if not s.startswith("✗")]),
+                "files": " | ".join(saved),
+                "links": " | ".join(links),
+                "current_grade": sub.get("assignedGrade", ""),
+                "submission_id": sub["id"],
+                "submitted": state in SUBMITTED_STATES,
+            })
+    except OperationCancelled:
+        # staging stays where it is — a sibling `.partial` dir, outside the
+        # review path; `out_dir` was never touched. Nothing to roll back.
+        raise
 
     rows.sort(key=lambda r: (r["student_id"] == "", r["student_id"]))
 
-    roster_path = out_dir / "_roster.xlsx"
-    _write_roster(roster_path, rows, title, max_points, due)
+    _write_roster(staging / "_roster.xlsx", rows, title, max_points, due)
 
     missing = [r for r in rows if not r["submitted"]]
-    (out_dir / "_missing.txt").write_text(
+    (staging / "_missing.txt").write_text(
         f"لم يسلّموا واجب: {title}\nالعدد: {len(missing)}\n\n"
         + "\n".join(f"{r['student_id']}\t{r['name']}" for r in missing),
         encoding="utf-8",
     )
 
+    _promote(staging, out_dir)
+
     submitted_count = len(rows) - len(missing)
-    print(f"\n✅ خلص — {out_dir}")
-    print(f"   سلّم: {submitted_count}/{len(rows)}"
-          f"   |   متأخر: {sum(1 for r in rows if r['late'])}"
-          f"   |   لم يسلّم: {len(missing)}")
+    late_count = sum(1 for r in rows if r["late"])
+    _report(progress, f"\n✅ خلص — {out_dir}")
+    _report(progress,
+            f"   سلّم: {submitted_count}/{len(rows)}"
+            f"   |   متأخر: {late_count}"
+            f"   |   لم يسلّم: {len(missing)}")
 
     if no_id:
-        print(f"\n⚠️  {len(no_id)} طالب ما قدرت أستخرج رقمه الجامعي من الإيميل:")
+        _report(progress,
+                f"\n⚠️  {len(no_id)} طالب ما قدرت أستخرج رقمه الجامعي من الإيميل:")
         for info in no_id[:5]:
-            print(f"     {info['email']}  ({info['full_name']})")
-        print("   عدّل student_id_pattern في config.yaml ليطابق صيغة إيميلات كليتك.")
+            _report(progress, f"     {info['email']}  ({info['full_name']})")
+        _report(progress,
+                "   عدّل student_id_pattern في config.yaml ليطابق صيغة إيميلات كليتك.")
 
-    return out_dir
+    return {
+        "out_dir": out_dir,
+        "submitted": submitted_count,
+        "late": late_count,
+        "missing": len(missing),
+        "no_id": [{"email": i["email"], "name": i["full_name"]} for i in no_id],
+    }
 
 
 def _write_roster(path: Path, rows: list[dict], title: str,
