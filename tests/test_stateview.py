@@ -42,3 +42,17 @@ def test_set_error_sets_text_and_flips_state(qapp):
     sv = StateView()
     sv.set_error("توكن منتهي")
     assert sv.state == "error"
+    assert sv._error_button.isHidden()
+
+
+def test_set_error_optional_action_button(qapp):
+    sv = StateView()
+    hits = []
+    sv.set_error("فشل", "أعد المحاولة", lambda: hits.append(1))
+    assert not sv._error_button.isHidden()
+    assert sv._error_button.text() == "أعد المحاولة"
+    sv._error_button.click()
+    assert hits == [1]
+    # a plain set_error afterwards hides the button again
+    sv.set_error("خطأ تاني")
+    assert sv._error_button.isHidden()

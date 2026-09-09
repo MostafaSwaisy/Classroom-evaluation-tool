@@ -34,3 +34,10 @@ class ScreenBase(QWidget):
     def load(self) -> None:
         """Populate the screen. Base implementation: show the empty state."""
         self.state_view.set_state("empty")
+
+    # --- shared helpers ------------------------------------------------
+    def _svc(self, attr: str, default: object = None) -> object:
+        return getattr(self.services, attr, default)
+
+    def _backend(self):
+        return getattr(self.services, "backend", None)

@@ -175,6 +175,74 @@ plan + reason. 9) DECISION: PROCEED / HALT + what unblocks it. 10) Risks touched
 
 ---
 
+## Working method
+
+Rulings from the oversight lead (2026-09-08), binding on Sonnet for Phases 1–5. "Checkable" =
+verifiable from git history / gate output at the next Fable checkpoint.
+
+### A. Branching — one branch per phase, merged to `main` at each PROCEED
+
+- **One integration branch per phase:** `feat/gui-phase<N>`, cut from the current tip of `main`.
+- **Commits:** units land directly on the phase branch, one commit per unit, message
+  `P<N>-U<n>: <summary>`; review-fix commits `P<N>-U<n> review fixes: <summary>`. No per-unit
+  branches (solo dev — pure overhead). No single long-lived branch (keeps `main` unverified and
+  defeats checkpoint gating).
+- **Merge to `main`:** exactly once per phase, at the Fable checkpoint, on PROCEED, as
+  `git merge --no-ff` with message `Phase N: <one line>`. Preconditions for the merge:
+  every unit's done-command green on branch HEAD, Haiku green on that HEAD, **every**
+  Opus-mandatory verdict for the phase recorded `approved` (on the exact commit, review-fix
+  commits included), CLI parity diff byte-identical (`cli.py --help` tree + one real run of every
+  subcommand the phase touched vs the pre-phase golden), Fable PROCEED written.
+- **Opus "before merge" = before the phase merges to `main`;** Opus reviews the unit on the
+  phase branch. HALT authority stays at phase boundaries.
+- **Fix current state before Phase 1 continues:** `feat/gui-phase0` currently carries Phase 0
+  **and** P1-U1. Steps, in order: (1) land the Opus re-verdict on `43a95ea`; (2) merge
+  `feat/gui-phase0` → `main` (Phase 0); (3) cut `feat/gui-phase1` from the new `main`;
+  (4) rebase/cherry-pick the P1-U1 commit onto it; (5) delete `feat/gui-phase0`.
+
+### B. Clean code — new code held to it; R-refactors preserve behaviour
+
+- **New code** (all of `gui/`; new modules `classroom_tool/roster_read.py`, `rubric.py`,
+  `claude_provider.py`, `grading_assist.py`, `gui/state.py`): held to clean-code standards.
+  Checkable floor: functions ≤ ~40 lines (Qt `__init__`/layout builders and screen `load()`
+  exempt, but extract helpers); intention-revealing names; **no blind `except Exception`** —
+  catch named types (the one sanctioned broad catch is `gui/worker.py`'s documented
+  `BaseException` slot boundary); **no `SystemExit`/`sys.exit()` outside `cli.py`**; no
+  print-driven control flow — return or raise, emit via injected `log`/`progress`; dependency
+  direction inward — `classroom_tool/` never imports `gui/` or PySide6.
+- **R-refactors (R1–R11):** behaviour-preserving is the hard constraint — the CLI parity diff
+  must stay byte-identical. Clean **only inside the seam** being extracted (new signature,
+  print→callback, splitting the extracted function). Do not reformat the file, do not touch
+  untouched code in the same module, do not "fix" unrelated blind excepts. Each R diff must read
+  as "extracted X, remainder unchanged". A broader cleanup that a refactor genuinely needs is a
+  separate, separately-justified commit — never folded in.
+- **"Match surrounding style"** covers mechanical conventions only (import order, name casing,
+  docstring form, reuse of existing helpers). It does **not** license copying anti-patterns:
+  new code in an old module still gets named exceptions and still returns instead of printing.
+  Old code beside it is left alone until an R touches it.
+
+### C. TDD — strict test-first for backend; test-after-with-a-bar for GUI screens
+
+- **Backend units** (every R1–R11, every change to `classroom_tool/*.py` and
+  `tools/write_grades.py`, plus `gui/state.py`): **strict red-green-refactor.** Checkable: the
+  test (or the new test cases) appears in a commit **at or before** the implementation commit,
+  **or** the unit commit message records the red→green (test written first, observed failure,
+  then impl). Fable spot-checks with `git log -p` on test vs impl paths. Impl+tests landing
+  together with no red evidence → the unit bounces.
+- **GUI screen units** (`gui/screens/*.py`, P1-U5 onward): test-after is allowed; the bar is
+  (a) a construction/smoke test — instantiate with a stubbed `services`, `load()` runs without
+  raising; (b) a state test exercising **every** state the unit's "4 states" flag / done row
+  requires; (c) one behavioural test per interactive affordance the done-condition names
+  (filter reduces rows; a button submits the expected job to a **stubbed** worker; a confirm
+  dialog gates the destructive path). Assert on the job submitted, never on a live backend.
+- **GUI infra** (`gui/worker.py`, `gui/widgets/`, `gui/theme.py`, `gui/main_window.py`):
+  test-first where practical (worker, widget logic); test-alongside acceptable for pure
+  layout/QSS.
+- **Universal floor:** a unit is not "done" if its test count is below what its plan-row "done"
+  bullet enumerates; full suite green; no new skips; no `xfail`.
+
+---
+
 ## 4. Open questions
 
 **Phase 0 is unblocked.** (§6 confirms the two prior open items — wizard theme, Claude connection — closed.)
