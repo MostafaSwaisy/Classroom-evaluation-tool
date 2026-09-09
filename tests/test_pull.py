@@ -161,6 +161,30 @@ def test_cancel_checked_before_first_download(tmp_path):
                       should_cancel=cancel_on_second_check)
 
 
+def test_promote_retries_a_transient_permissionerror(tmp_path, monkeypatch):
+    """Windows AV/indexer briefly locks the fresh staging tree — _promote must
+    retry os.replace the way config.save_config already does (Fable HALT fix)."""
+    import os as _os
+
+    from classroom_tool import config as _config
+
+    real_replace = _os.replace
+    state = {"fails": 3}
+
+    def flaky_replace(src, dst):
+        if state["fails"] > 0:
+            state["fails"] -= 1
+            raise PermissionError(5, "Access is denied")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(_config.os, "replace", flaky_replace)
+
+    out = _run(tmp_path)["out_dir"]
+    assert (out / "_roster.xlsx").is_file()
+    assert len(list((out / "files").iterdir())) == 3
+    assert state["fails"] == 0  # the retries were actually exercised
+
+
 def _snapshot(root: Path) -> dict[str, bytes]:
     return {str(p.relative_to(root)): p.read_bytes()
             for p in sorted(root.rglob("*")) if p.is_file()}

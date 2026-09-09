@@ -100,7 +100,7 @@ def save_config(
     try:
         with tmp.open("w", encoding="utf-8", newline="\n") as f:
             _yaml().dump(doc, f)
-        _replace_with_retry(tmp, cfg_path)
+        replace_with_retry(tmp, cfg_path)
     finally:
         tmp.unlink(missing_ok=True)
     return cfg_path
@@ -113,7 +113,7 @@ def dump_config(doc: CommentedMap | dict) -> str:
     return buf.getvalue()
 
 
-def _replace_with_retry(src: Path, dst: Path, *, attempts: int = 6) -> None:
+def replace_with_retry(src: Path, dst: Path, *, attempts: int = 6) -> None:
     """os.replace, retried — a Windows AV / indexer can briefly lock a new file."""
     for i in range(attempts):
         try:
