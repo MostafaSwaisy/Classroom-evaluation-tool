@@ -28,16 +28,27 @@ class DataTable(QTableView):
         self._model = QStandardItemModel(self)
         self.setModel(self._model)
 
-    def set_rows(self, headers: Sequence[str], rows: Sequence[Sequence[object]]) -> None:
+    def set_rows(
+        self,
+        headers: Sequence[str],
+        rows: Sequence[Sequence[object]],
+        row_keys: Sequence[object] | None = None,
+    ) -> None:
+        """Fill the table. `row_keys[i]` (if given) is stashed on row i's first
+        item under `Qt.ItemDataRole.UserRole` so callers can recover row identity
+        after the user sorts — positional lookup into a parallel list breaks then.
+        """
         self._model.clear()
         self._model.setHorizontalHeaderLabels(list(headers))
-        for r in rows:
+        for i, r in enumerate(rows):
             items = []
             for value in r:
                 it = QStandardItem("" if value is None else str(value))
                 it.setEditable(False)
                 it.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 items.append(it)
+            if row_keys is not None and items:
+                items[0].setData(row_keys[i], Qt.ItemDataRole.UserRole)
             self._model.appendRow(items)
         self.resizeColumnsToContents()
 

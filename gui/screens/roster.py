@@ -10,7 +10,7 @@ from __future__ import annotations
 import contextlib
 from pathlib import Path
 
-from PySide6.QtCore import Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -83,7 +83,6 @@ class Screen(ScreenBase):
         super().__init__(services, parent)
         self._rows: list[dict] = []
         self._missing: list[str] = []
-        self._visible: list[dict] = []
         self._sel_model = None
         b = self._backend()
         if b is not None:
@@ -217,8 +216,10 @@ class Screen(ScreenBase):
             return
         rows = self._visible_rows()
         self._table.set_rows(
-            _HEADERS, [[_cell(k, r) for k, _h in _COLUMNS] for r in rows])
-        self._visible = rows
+            _HEADERS,
+            [[_cell(k, r) for k, _h in _COLUMNS] for r in rows],
+            row_keys=rows,  # recover identity after a header-click sort
+        )
         self._wire_selection()  # set_rows can swap the view's selection model
         submitted = sum(1 for r in rows if r.get("state") == "سلّم")
         late = sum(1 for r in rows if r.get("late"))
@@ -250,8 +251,8 @@ class Screen(ScreenBase):
         picked = self._table.selectionModel().selectedRows()
         if not picked:
             return None
-        idx = picked[0].row()
-        return self._visible[idx] if 0 <= idx < len(self._visible) else None
+        row = picked[0].data(Qt.ItemDataRole.UserRole)
+        return row if isinstance(row, dict) else None
 
     def _open_selected(self) -> None:
         row = self._selected_row()
