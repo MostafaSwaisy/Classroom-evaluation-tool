@@ -74,7 +74,10 @@ class MainWindow(QMainWindow):
             self.stack.addWidget(screen)
             nav_signal = getattr(screen, "navigation_requested", None)
             if nav_signal is not None:
-                nav_signal.connect(lambda target, _ctx=None: self.navigate(target))
+                nav_signal.connect(lambda target, ctx=None: self.navigate(target, ctx))
+            course_signal = getattr(screen, "course_changed", None)
+            if course_signal is not None:
+                course_signal.connect(self._on_course_changed)
 
         self.navigate("dashboard")
 
@@ -136,11 +139,19 @@ class MainWindow(QMainWindow):
         return side
 
     # --- behaviour ------------------------------------------------------
-    def navigate(self, key: str) -> None:
-        self.stack.setCurrentWidget(self._screens[key])
+    def navigate(self, key: str, ctx: object = None) -> None:
+        screen = self._screens[key]
+        self.stack.setCurrentWidget(screen)
         if key in self._nav_buttons:
             self._nav_buttons[key].setChecked(True)
-        self._screens[key].load()
+        apply_context = getattr(screen, "apply_context", None)
+        if ctx is not None and callable(apply_context):
+            apply_context(ctx)
+        screen.load()
+
+    def _on_course_changed(self, course_id: str, label: str) -> None:
+        self.services.active_course_id = course_id or None
+        self.course_chip.setText(label or "لا مساق مُحدَّد")
 
     @property
     def current_key(self) -> str:

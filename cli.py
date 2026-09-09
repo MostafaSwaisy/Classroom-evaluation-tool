@@ -89,7 +89,8 @@ def pull_cmd(ctx, course, assignment, no_files):
     classroom, drive = get_services()
     course_id = resolve_course_id(cfg, course)
     pull_mod.pull(classroom, drive, cfg, course, course_id, assignment,
-                  skip_files=no_files)
+                  skip_files=no_files,
+                  progress=lambda msg, done=None, total=None: print(msg))
 
 
 @cli.command("prepare")
@@ -108,14 +109,24 @@ def prepare_cmd(ctx, work_dir):
         raise SystemExit(f"✗ ما لقيت {files_dir} — شغّل pull أول.")
 
     extracted = base / "extracted"
-    report = extract.extract_archives(files_dir, extracted)
+    results = extract.extract_archives(files_dir, extracted)
 
-    for name, count in report["extracted"]:
-        click.echo(f"  ✓ {name} — {count} ملف كود")
-    for name, reason in report["skipped"]:
-        click.echo(f"  ⊘ {name} — {reason}")
-    for name, reason in report["failed"]:
-        click.echo(f"  ✗ {name} — {reason}")
+    def _skip_reason(r):
+        if r.detail == "unsupported":
+            return "صيغة غير مدعومة"
+        if r.detail == "too_many":
+            return f"{r.count} ملف — أكثر من الحد"
+        return r.detail
+
+    for r in results:
+        if r.outcome == "extracted":
+            click.echo(f"  ✓ {Path(r.name).stem} — {r.count} ملف كود")
+    for r in results:
+        if r.outcome == "skipped":
+            click.echo(f"  ⊘ {r.name} — {_skip_reason(r)}")
+    for r in results:
+        if r.outcome == "failed":
+            click.echo(f"  ✗ {r.name} — {r.detail}")
 
     index = extract.build_index(extracted, files_dir)
     index_path = base / "_index.md"

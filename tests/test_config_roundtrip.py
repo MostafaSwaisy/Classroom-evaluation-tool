@@ -95,3 +95,15 @@ def test_load_config_missing_file_uses_defaults(tmp_path, capsys):
     assert data["courses"] == {}
     assert data["student_id_pattern"] == r"^(\d+)@"
     assert "ما لقيت" in capsys.readouterr().out
+
+
+def test_dump_config_matches_what_save_config_writes(cfg_copy):
+    """dump_config (for the Settings diff preview) == the bytes save_config produces."""
+    doc = cfgmod.load_config_doc(cfg_copy)
+    doc["max_file_mb"] = 123
+    dumped = cfgmod.dump_config(doc)
+
+    cfgmod.save_config(doc, cfg_copy, make_backup=False)
+    assert dumped == cfg_copy.read_text(encoding="utf-8")
+    assert "# نمط استخراج الرقم الجامعي" in dumped  # comments preserved in the preview
+    assert "max_file_mb: 123" in dumped
