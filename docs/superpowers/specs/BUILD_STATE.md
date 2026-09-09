@@ -4,8 +4,8 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 ## Position (updated as units land)
 
-- **main:** Phase 0 merged (`49d9e84`).
-- **Working branch:** `feat/gui-phase1`.
+- **main:** Phase 0 merged (`49d9e84`) · **Phase 1 merged (`3fcbd05`, Fable checkpoint PROCEED)**.
+- **Working branch:** `feat/gui-phase2` (cut from `main` at `3fcbd05`). `feat/gui-phase1` kept for now.
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
@@ -20,10 +20,11 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   P1-U9 (tracking report screen; R5 `compute_status` via worker, colour-coded ✓/⏰/✗
   matrix, threshold slider reclassifies at-risk locally with no re-fetch, ascending
   at-risk panel, Export `_status_YYYYMMDD.xlsx` via worker, charts placeholder for P5-U3).
-- **Phase 1 code complete (P1-U1…U9); Opus reviews of P1-U3 + P1-U8 both
-  `approved-with-nits`, merge unblocked.** Remaining before merge to `main`:
-  **Phase 1 Fable checkpoint** → `git merge --no-ff`.
-- **Test count:** 149 passed / 1 skipped (live-parity gate) on `feat/gui-phase1`.
+- **Phase 1 done & merged.** Fable checkpoint `3fcbd05`: PROCEED — Haiku green on
+  `a227919`, Opus P1-U1 + P1-U8 both `approved-with-nits (filed)`, guardrail sweep
+  clean, CLI `--help`/`doctor` goldens byte-identical, all four refactors (R2/R5/R6/R10)
+  landed + tested. **Next: Phase 2** — first unit **P2-U1** (see plan §"Phase 2").
+- **Test count:** 149 passed / 1 skipped (live-parity gate) on `main` @ `3fcbd05`.
 - **Known flaky:** `tests/test_worker.py::test_progress_and_result_arrive_on_the_gui_thread`
   failed once mid-P1-U9 with a cross-thread `killTimer` warning on QThread teardown;
   passed isolated + 5 subsequent full runs. Pre-existing worker-infra fragility, not P1-U9.
