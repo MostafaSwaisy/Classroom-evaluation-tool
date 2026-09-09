@@ -75,6 +75,9 @@ class MainWindow(QMainWindow):
             nav_signal = getattr(screen, "navigation_requested", None)
             if nav_signal is not None:
                 nav_signal.connect(lambda target, ctx=None: self.navigate(target, ctx))
+            course_signal = getattr(screen, "course_changed", None)
+            if course_signal is not None:
+                course_signal.connect(self._on_course_changed)
 
         self.navigate("dashboard")
 
@@ -145,6 +148,10 @@ class MainWindow(QMainWindow):
         if ctx is not None and callable(apply_context):
             apply_context(ctx)
         screen.load()
+
+    def _on_course_changed(self, course_id: str, label: str) -> None:
+        self.services.active_course_id = course_id or None
+        self.course_chip.setText(label or "لا مساق مُحدَّد")
 
     @property
     def current_key(self) -> str:
