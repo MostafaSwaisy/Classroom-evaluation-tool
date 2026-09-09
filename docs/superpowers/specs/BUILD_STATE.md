@@ -42,11 +42,25 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     byte-identical to `golden/prepare_fixture.txt`. TDD: `tests/test_extract.py` (8) first;
     the CLI-parity test uses a short `tempfile.mkdtemp` (pytest `tmp_path` + deep Arabic
     zip trees exceed Windows MAX_PATH → spurious failures).
-- **Test count:** 166 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `640414e`
+  - **P2-U3 (`0e6b2b7`)** — `gui/screens/pull.py`: runs `pull` (R3) once on the worker.
+    StateView `empty`/`ok`/`error`; inside `ok` a 3-phase stack (form → running → result).
+    Running phase: overall bar (indeterminate → `0..total`) + per-file log from
+    `worker.progress` + Cancel (`backend.cancel()` → staging means `out_dir` untouched).
+    Result: counts + no-ID emails panel → Settings shortcut; on `finished`
+    `services.active_assignment_dir = out_dir` for prepare/roster.
+    `main_window.navigate(key, ctx=None)` now forwards `ctx` to a screen's
+    `apply_context()` before `load()` (the `navigation_requested` ctx was dropped since
+    P1-U7). Tests: `tests/test_screen_pull.py` (15) + 2 `test_main_window.py`.
+  - **De-flake (`37f43a4`)** — `test_worker.py::test_progress_and_result_arrive_on_the_gui_thread`
+    asserted `rec.threads` immediately after `waitSignal(finished)`; `progress` is queued
+    cross-thread so it raced (~50 % of full runs as the suite grew). Added
+    `qtbot.waitUntil(len(rec.threads) >= 1)`. Test-only.
+- **Test count:** 183 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `0e6b2b7`
   (149 on `main` @ `3fcbd05`).
-- **Known flaky:** `tests/test_worker.py::test_progress_and_result_arrive_on_the_gui_thread`
-  failed once mid-P1-U9 with a cross-thread `killTimer` warning on QThread teardown;
-  passed isolated + 5 subsequent full runs. Pre-existing worker-infra fragility, not P1-U9.
+- **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
+  Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
+  under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
+  single serialised runs are clean).
 - **Carry:** **P4-U5 (setup wizard):** `reset_token()` still prints/returns None — needs a structured result.
 - **Carry (P1-U8 Opus nits — Phase 1 checkpoint sweep unless noted):**
   - `DataTable` sort indicator goes stale after any `set_rows` refill (model.clear + appendRow
