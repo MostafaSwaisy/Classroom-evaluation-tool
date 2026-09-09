@@ -21,6 +21,15 @@ latin_filenames: false
 """
 
 
+_MINIMAL_CFG = """\
+# top comment
+output_dir: "~/submissions"
+student_id_pattern: '^(\\d+)@'
+courses:
+  PHP2026: "111"   # PHP course
+"""
+
+
 class _Services:
     def __init__(self, config_path) -> None:  # noqa: ANN001
         self.config_path = config_path
@@ -31,6 +40,18 @@ def cfg_file(tmp_path: Path) -> Path:
     p = tmp_path / "config.yaml"
     p.write_text(_CFG_TEXT, encoding="utf-8")
     return p
+
+
+@pytest.fixture
+def minimal_cfg(tmp_path: Path) -> Path:
+    p = tmp_path / "config.yaml"
+    p.write_text(_MINIMAL_CFG, encoding="utf-8")
+    return p
+
+
+def _write_button(screen):
+    return next(b for b in screen.findChildren(type(screen._save_btn))
+               if b.text() == "اكتب إلى config.yaml")
 
 
 @pytest.fixture
@@ -118,6 +139,45 @@ def test_discard_reloads_from_disk_and_toasts(screen):
     assert screen._max_mb.value() == 50
     assert screen._pattern.text() == r"^(\d+)@"
     assert _toast(screen) is not None
+
+
+# --- Opus must-fix regressions -------------------------------
+def test_noop_save_leaves_file_byte_identical(qtbot, minimal_cfg):
+    before = minimal_cfg.read_text(encoding="utf-8")
+    s = Screen(_Services(str(minimal_cfg)))
+    qtbot.addWidget(s)
+    s.load()
+    s._save_btn.click()          # preview only
+    _write_button(s).click()     # write the previewed (unchanged) doc
+    assert minimal_cfg.read_text(encoding="utf-8") == before
+
+
+def test_save_does_not_pin_defaults_or_expand_output_dir(qtbot, minimal_cfg):
+    s = Screen(_Services(str(minimal_cfg)))
+    qtbot.addWidget(s)
+    s.load()
+    s._max_mb.setValue(99)       # one real change
+    s._save_btn.click()
+    _write_button(s).click()
+
+    saved = minimal_cfg.read_text(encoding="utf-8")
+    assert "max_file_mb: 99" in saved
+    assert 'output_dir: "~/submissions"' in saved   # never expanduser'd
+    assert "google_export" not in saved             # DEFAULTS not materialised
+    assert "latin_filenames" not in saved
+    assert "# PHP course" in saved
+
+
+def test_write_is_inert_after_the_form_changes_post_preview(screen, cfg_file):
+    before = cfg_file.read_text(encoding="utf-8")
+    screen._max_mb.setValue(77)
+    screen._save_btn.click()
+    assert not screen._diff_panel.isHidden()
+
+    screen._pattern.setText(r"^(\d+")   # break the regex AFTER previewing
+    assert screen._diff_panel.isHidden()   # stale preview dropped
+    _write_button(screen).click()
+    assert cfg_file.read_text(encoding="utf-8") == before
 
 
 # --- guardrail --------------------------------------------
