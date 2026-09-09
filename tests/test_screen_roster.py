@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from PySide6.QtCore import QItemSelectionModel, QObject, Signal
+from PySide6.QtCore import QItemSelectionModel, QObject, Qt, Signal
 from PySide6.QtWidgets import QAbstractItemView
 
 from classroom_tool.roster_read import read_missing, read_roster
@@ -157,3 +157,26 @@ def test_open_button_gated_by_selection_and_emits_nav(screen):
 
     assert seen and seen[-1][0] == "grading_workspace"
     assert seen[-1][1]["name"] == _ROWS[0]["name"]
+
+
+def test_open_after_sort_emits_the_displayed_student(screen):
+    """Sorting permutes model rows; the emitted student must match what's shown."""
+    seen: list[tuple[str, object]] = []
+    screen.navigation_requested.connect(lambda k, c: seen.append((k, c)))
+    _loaded(screen)
+
+    screen._table.sortByColumn(1, Qt.SortOrder.AscendingOrder)  # "الاسم"
+    _select_row(screen, 0)
+    displayed = screen._table.model().index(0, 1).data()
+    screen._open_btn.click()
+
+    assert displayed != _ROWS[0]["name"], "fixture must actually reorder under sort"
+    assert seen[-1][1]["name"] == displayed
+
+
+def test_filters_and_search_do_not_refetch(screen):
+    _loaded(screen)
+    screen._search.setText("رامي")
+    screen._state_filter.setCurrentText("لم يسلّم")
+    screen._late_only.setChecked(True)
+    assert screen.services.backend.calls == [_JOB_LOAD]
