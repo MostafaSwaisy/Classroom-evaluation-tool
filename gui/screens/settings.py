@@ -60,14 +60,20 @@ class Screen(ScreenBase):
     # --- lifecycle ------------------------------------------------
     @Slot()
     def load(self) -> None:
+        self._reload_or_error()
+
+    def _reload_or_error(self) -> bool:
+        """Populate the form from disk; route a malformed config to the error
+        state (used by both `load` and Discard). Returns True on success."""
         self.state_view.set_state("loading")
         try:
             self._populate_from_disk()
         except Exception as exc:  # noqa: BLE001 - surface a bad config as a state
             self.state_view.set_error(f"تعذّرت قراءة config.yaml: {exc}")
-            return
+            return False
         self._diff_panel.hide()
         self.state_view.set_state("ok")
+        return True
 
     def _cfg_path(self):
         return getattr(self.services, "config_path", None)
@@ -80,7 +86,9 @@ class Screen(ScreenBase):
         d = config.DEFAULTS
         self._output_dir.setText(str(doc.get("output_dir", d["output_dir"])))
         self._pattern.setText(str(doc.get("student_id_pattern", d["student_id_pattern"])))
-        export = doc.get("google_export") or d["google_export"]
+        export = doc.get("google_export")
+        if not isinstance(export, dict):
+            export = d["google_export"]
         for mime, combo in self._export_combos.items():
             combo.setCurrentText(str(export.get(mime, d["google_export"].get(mime, "pdf"))))
         self._max_mb.setValue(int(doc.get("max_file_mb", d["max_file_mb"])))
@@ -301,11 +309,11 @@ class Screen(ScreenBase):
             return
         config.save_config(self._pending_doc, self._cfg_path())
         self._show_toast("تم الحفظ في config.yaml.", "success")
-        self._populate_from_disk()
+        self._reload_or_error()
 
     def _on_discard(self) -> None:
-        self._populate_from_disk()
-        self._show_toast("تم التراجع — أُعيدت القيم من القرص.", "info")
+        if self._reload_or_error():
+            self._show_toast("تم التراجع — أُعيدت القيم من القرص.", "info")
 
     # --- toast slot -------------------------------------
     def _show_toast(self, text: str, level: str) -> None:

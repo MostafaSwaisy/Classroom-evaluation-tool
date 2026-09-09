@@ -168,6 +168,12 @@ def test_save_does_not_pin_defaults_or_expand_output_dir(qtbot, minimal_cfg):
     assert "# PHP course" in saved
 
 
+def test_discard_routes_a_corrupted_config_to_the_error_state(screen, cfg_file):
+    cfg_file.write_text("output_dir: [unterminated\n", encoding="utf-8")
+    screen._on_discard()
+    assert screen.state_view.state == "error"
+
+
 def test_write_is_inert_after_the_form_changes_post_preview(screen, cfg_file):
     before = cfg_file.read_text(encoding="utf-8")
     screen._max_mb.setValue(77)
