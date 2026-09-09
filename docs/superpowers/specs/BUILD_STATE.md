@@ -55,8 +55,29 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     asserted `rec.threads` immediately after `waitSignal(finished)`; `progress` is queued
     cross-thread so it raced (~50 % of full runs as the suite grew). Added
     `qtbot.waitUntil(len(rec.threads) >= 1)`. Test-only.
-- **Test count:** 183 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `0e6b2b7`
-  (149 on `main` @ `3fcbd05`).
+  - **P2-U4 (`fb4a046`)** — `gui/screens/prepare.py`: `extract_archives` (R4) + `build_index`
+    once on the worker, writes `_index.md`. Target from ctx `work_dir` / `active_assignment_dir`.
+    StateView `empty`/`loading`/`ok`/`error`; inside `ok` form → report (`DataTable` one row per
+    `ArchiveResult`; `.rar` → "تُخطّي: صيغة غير مدعومة") + read-only `QTextBrowser` `_index.md`
+    preview + "ابدأ التصحيح" gated on ≥1 `extracted` → nav `grading_workspace`.
+    Tests: `tests/test_screen_prepare.py` (11).
+  - **P2-U5 (`66bf203`)** — `gui/screens/dashboard.py`: active-course `QComboBox` from
+    `config.yaml` `courses:` (R10); pick → `services.active_course_id`, persist `last_course`
+    (`load_config_doc`+`save_config`), emit `course_changed(id, alias)` → `main_window` updates
+    the top-bar chip. One worker job: health card from `doctor()` (R2, errors caught → card
+    not raise) + last-pull/draft cards from a disk scan of `output_dir/<alias>/*/_roster.xlsx`
+    (`roster_read`). StateView `empty` (no aliases)/`ok`/`error`. `main_window` wires
+    `course_changed` alongside `navigation_requested`. Tests: `tests/test_screen_dashboard.py` (10).
+  - **P2-U6 (`8d22f57`)** — `gui/screens/settings.py`: typed editor for every `config.yaml`
+    key; `student_id_pattern` live tester (`naming.extract_student_id`) + 3 presets; invalid
+    regex → inline error + Save disabled. Save → unified-diff preview vs on-disk, second click
+    writes via `save_config` (R10 atomic + `.bak`). Discard → reload + "تم التراجع" Toast.
+    New `config.dump_config(doc) -> str` (== `save_config` bytes) for the preview (R-B).
+    StateView `loading`/`ok`/`error`. Tests: `tests/test_screen_settings.py` (9) +
+    `test_config_roundtrip.py::test_dump_config_matches_what_save_config_writes`.
+- **Phase 2 code complete (P2-U1…U6).** Next: **Phase 2 Fable checkpoint** → `git merge --no-ff`.
+- **Test count:** 214 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `8d22f57`
+  (149 on `main` @ `3fcbd05`). Full suite ~3 min; watch teardown flakes at the checkpoint.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
