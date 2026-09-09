@@ -99,11 +99,15 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   `config._replace_with_retry` → public `config.replace_with_retry`; `_promote` routes every
   rename through it; +retry regression test. Cancel path unchanged (promote only runs after a
   clean loop). Full suite 3× green, `test_pull.py` isolated 10× green.
-- **Phase 2 code complete (P2-U1…U6) + Fable-HALT fix; Opus-mandatory P2-U1/P2-U6 both
-  `approved-with-nits`; P2-U1 re-touch on `a7ee113` pending.** Next: **Phase 2 Fable
-  checkpoint #2** → `git merge --no-ff`.
-- **Test count:** 220 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `a7ee113`
-  (149 on `main` @ `3fcbd05`). Full suite ~3 min.
+- **Phase 2 code complete (P2-U1…U6) + Fable-HALT fix `a7ee113` + re-touch nits `03fbf4e`.**
+  Opus-mandatory: **P2-U1 `approved-with-nits`** (re-touch on `a7ee113` confirmed the retry
+  doesn't weaken the cancel guarantee — `_promote` runs 0× on both cancel paths; nits A/C
+  folded in `03fbf4e`, nit B `replace_with_retry`→`fsutil.py` is a carry), **P2-U6
+  `approved-with-nits`**. Both mandatory verdicts recorded. Next: **Phase 2 Fable checkpoint
+  #2** → `git merge --no-ff`.
+- **Test count:** 220 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `03fbf4e`
+  (149 on `main` @ `3fcbd05`). Full suite ~2.5 min; `test_pull.py` isolated 10× green,
+  full suite 3× green after the `_promote` retry fix.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
