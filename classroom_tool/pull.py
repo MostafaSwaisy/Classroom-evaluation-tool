@@ -19,7 +19,7 @@ from .naming import build_filename, extract_student_id, normalize_arabic, safe_f
 #: A progress sink: ``progress(message, done, total)``. ``done``/``total`` are set
 #: only for the per-file download loop; other lines pass ``None`` for both. The CLI
 #: passes a printer; the GUI worker turns these into signals for a bar + log.
-ProgressFn = Callable[[str, "int | None", "int | None"], None]
+ProgressFn = Callable[[str, int | None, int | None], None]
 #: ``should_cancel()`` — polled at each per-item boundary; True → raise.
 CancelFn = Callable[[], bool]
 
@@ -90,11 +90,16 @@ def _promote(staging: Path, out_dir: Path) -> None:
     """Move a *completed* staging dir onto ``out_dir`` with per-entry atomic
     renames (same filesystem). Overwrites the files of a previous pull of the
     same assignment; never deletes a tree — only its own now-empty scratch dirs.
+
+    ``_roster.xlsx`` is moved **last**: if a rename fails part-way (e.g. the
+    grader has the old roster open in Excel), the directory is never left with a
+    roster newer than the files it indexes.
     """
     if not out_dir.exists():
         os.replace(staging, out_dir)
         return
-    for item in staging.iterdir():
+    items = sorted(staging.iterdir(), key=lambda p: p.name == "_roster.xlsx")
+    for item in items:
         if item.is_dir():
             target = out_dir / item.name
             target.mkdir(exist_ok=True)
@@ -144,7 +149,9 @@ def pull(classroom, drive, cfg: dict, course_key: str, course_id: str,
     slug = safe_filename(re.sub(r"\s+", "_", title))[:40]
     out_dir = Path(cfg["output_dir"]) / course_key / slug
     out_dir.parent.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix=f"{slug}.partial.", dir=out_dir.parent))
+    # leading "." so a leaked staging dir (non-cancel failure) is not mistaken
+    # for an assignment folder by disk scans (dashboard, assignments screen).
+    staging = Path(tempfile.mkdtemp(prefix=f".{slug}.partial.", dir=out_dir.parent))
     files_dir = staging / "files"
 
     total_files = 0 if skip_files else _count_drive_files(submissions)

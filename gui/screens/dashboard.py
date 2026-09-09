@@ -42,8 +42,10 @@ def _scan_last_pull(course_dir: Path) -> tuple[dict | None, dict | None]:
     """(last_pull, draft) from the newest `_roster.xlsx` under an alias folder."""
     if not course_dir.is_dir():
         return None, None
-    rosters = sorted(course_dir.glob("*/_roster.xlsx"),
-                     key=lambda p: p.stat().st_mtime, reverse=True)
+    rosters = sorted(
+        (p for p in course_dir.glob("*/_roster.xlsx")
+         if not p.parent.name.startswith(".")),   # skip pull's `.…partial…` staging
+        key=lambda p: p.stat().st_mtime, reverse=True)
     if not rosters:
         return None, None
     roster, assignment_dir = rosters[0], rosters[0].parent

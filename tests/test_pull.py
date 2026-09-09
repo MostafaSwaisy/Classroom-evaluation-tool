@@ -159,3 +159,31 @@ def test_cancel_checked_before_first_download(tmp_path):
     with pytest.raises(OperationCancelled):
         pull_mod.pull(object(), object(), _cfg(tmp_path), "PHP2026", "999", "HW03",
                       should_cancel=cancel_on_second_check)
+
+
+def _snapshot(root: Path) -> dict[str, bytes]:
+    return {str(p.relative_to(root)): p.read_bytes()
+            for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def test_cancel_after_downloads_leaves_a_preexisting_out_dir_untouched(tmp_path):
+    """Staging holds files and out_dir already has unrelated grader work."""
+    cfg = _cfg(tmp_path)
+    out_dir = Path(cfg["output_dir"]) / "PHP2026" / "HW03_Eloquent"
+    (out_dir / "extracted" / "stud").mkdir(parents=True)
+    (out_dir / "extracted" / "stud" / "old.php").write_text("<?php // graded")
+    (out_dir / "grades_draft.xlsx").write_bytes(b"draft-bytes")
+    before = _snapshot(out_dir)
+
+    calls = {"n": 0}
+
+    def cancel_after_first_download() -> bool:
+        calls["n"] += 1
+        return calls["n"] >= 4   # polls: s_A top, before f_A1, s_B top, >>here<<
+
+    with pytest.raises(OperationCancelled):
+        pull_mod.pull(object(), object(), cfg, "PHP2026", "999", "HW03",
+                      should_cancel=cancel_after_first_download)
+
+    assert _snapshot(out_dir) == before
+    assert not (out_dir / "_roster.xlsx").exists()
