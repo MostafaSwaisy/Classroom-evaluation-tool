@@ -93,10 +93,17 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
       config corrupted while the screen is open → error state, not a raised slot. +4 tests.
       Carry: `_edited_doc`'s `existing.update(chosen)` still fills unpinned `google_export`
       MIME keys (shows in the diff; low risk) — later sweep.
-- **Phase 2 code complete (P2-U1…U6); both Opus-mandatory reviews `approved-with-nits`,
-  merge unblocked.** Next: **Phase 2 Fable checkpoint** → `git merge --no-ff`.
-- **Test count:** 219 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `6862658`
-  (149 on `main` @ `3fcbd05`). Full suite ~3 min; watch teardown flakes at the checkpoint.
+- **Phase 2 Fable checkpoint #1 → HALT** (`a678328`): `pull._promote` used bare `os.replace`
+  → `PermissionError [WinError 5]` in ~66 % of full runs (Windows AV/indexer locking the
+  fresh staging tree — the hazard `config.save_config` already guards). **Fixed `a7ee113`:**
+  `config._replace_with_retry` → public `config.replace_with_retry`; `_promote` routes every
+  rename through it; +retry regression test. Cancel path unchanged (promote only runs after a
+  clean loop). Full suite 3× green, `test_pull.py` isolated 10× green.
+- **Phase 2 code complete (P2-U1…U6) + Fable-HALT fix; Opus-mandatory P2-U1/P2-U6 both
+  `approved-with-nits`; P2-U1 re-touch on `a7ee113` pending.** Next: **Phase 2 Fable
+  checkpoint #2** → `git merge --no-ff`.
+- **Test count:** 220 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `a7ee113`
+  (149 on `main` @ `3fcbd05`). Full suite ~3 min.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
