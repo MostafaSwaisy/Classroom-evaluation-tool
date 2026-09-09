@@ -34,6 +34,9 @@ class AppServices:
 
     def __init__(self) -> None:
         self.backend = BackendThread()
+        self.config_path = None            # None -> config module uses the repo default
+        self.active_course_id = None       # set by the dashboard course selector (P2-U5)
+        self.active_assignment_dir = None  # set by the assignments / pull flow (P2)
 
 
 class MainWindow(QMainWindow):
@@ -69,6 +72,9 @@ class MainWindow(QMainWindow):
             screen = screen_class(key)(services=self.services)
             self._screens[key] = screen
             self.stack.addWidget(screen)
+            nav_signal = getattr(screen, "navigation_requested", None)
+            if nav_signal is not None:
+                nav_signal.connect(lambda target, _ctx=None: self.navigate(target))
 
         self.navigate("dashboard")
 

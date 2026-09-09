@@ -1,4 +1,9 @@
-"""الأمر status: تقرير متابعة لكل طالب عبر كل واجبات المساق."""
+"""الأمر status: تقرير متابعة لكل طالب عبر كل واجبات المساق.
+
+`compute_status()` يبني البيانات (matrix / rows / summary) بدون أي I/O للملفات
+أو طباعة — شاشة تقرير المتابعة بتستهلكها مباشرة. `write_status_xlsx()` يكتب نفس
+ملف الإكسل القديم من تلك البيانات. `status()` يربط الاثنين ويطبع كما قبل.
+"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -11,32 +16,86 @@ from openpyxl.utils import get_column_letter
 from . import api
 from .pull import SUBMITTED_STATES, build_student_index
 
+_GOOD = "جيد"
+_AT_RISK = "⚠️ متابعة"
 
-def status(classroom, cfg: dict, course_key: str, course_id: str,
-           risk_threshold: float = 0.6) -> Path:
-    works = api.list_coursework(classroom, course_id)
-    works = [w for w in works if w.get("workType") == "ASSIGNMENT"]
+
+def compute_status(classroom, cfg: dict, course_id: str,
+                   risk_threshold: float = 0.6) -> dict:
+    """{works, matrix[uid][workId], rows[...], summary} — pure computation."""
+    works = [w for w in api.list_coursework(classroom, course_id)
+             if w.get("workType") == "ASSIGNMENT"]
     if not works:
         raise SystemExit("✗ ما في واجبات في هذا المساق.")
 
     students = build_student_index(classroom, course_id, cfg["student_id_pattern"])
-    print(f"📊 {len(students)} طالب  ×  {len(works)} واجب")
 
-    # userId -> workId -> record
-    grid: dict[str, dict[str, dict]] = {uid: {} for uid in students}
-
+    matrix: dict[str, dict[str, dict]] = {uid: {} for uid in students}
     for work in works:
-        print(f"   ← {work.get('title')}")
         for sub in api.list_submissions(classroom, course_id, work["id"]):
-            if sub["userId"] not in grid:
+            uid = sub["userId"]
+            if uid not in matrix:
                 continue
-            grid[sub["userId"]][work["id"]] = {
+            matrix[uid][work["id"]] = {
                 "submitted": sub.get("state") in SUBMITTED_STATES,
                 "late": bool(sub.get("late")),
                 "grade": sub.get("assignedGrade"),
             }
 
-    out_dir = Path(cfg["output_dir"]) / course_key
+    ordered = sorted(
+        students.items(),
+        key=lambda kv: (kv[1]["student_id"] is None, kv[1]["student_id"] or ""),
+    )
+
+    rows: list[dict] = []
+    for uid, info in ordered:
+        done = late_count = 0
+        grades: list[float] = []
+        cells: list[str] = []
+        for work in works:
+            rec = matrix[uid].get(work["id"])
+            if rec and rec["submitted"]:
+                done += 1
+                if rec["late"]:
+                    late_count += 1
+                    cells.append("late")
+                else:
+                    cells.append("ok")
+                if rec["grade"] is not None:
+                    grades.append(rec["grade"])
+            else:
+                cells.append("missing")
+
+        ratio = done / len(works) if works else 0
+        avg = sum(grades) / len(grades) if grades else None
+        rows.append({
+            "user_id": uid,
+            "student_id": info["student_id"] or "",
+            "name": info["full_name"],
+            "cells": cells,
+            "done": done,
+            "ratio": ratio,
+            "late": late_count,
+            "avg": round(avg, 2) if avg is not None else None,
+            "status": _AT_RISK if ratio < risk_threshold else _GOOD,
+        })
+
+    at_risk = sorted((r for r in rows if r["ratio"] < risk_threshold),
+                     key=lambda r: r["ratio"])
+    summary = {
+        "course_id": course_id,
+        "total_students": len(students),
+        "total_works": len(works),
+        "threshold": risk_threshold,
+        "at_risk": at_risk,
+    }
+    return {"works": works, "matrix": matrix, "rows": rows, "summary": summary}
+
+
+def write_status_xlsx(computed: dict, course_key: str, out_dir: Path) -> Path:
+    """يكتب `_status_YYYYMMDD.xlsx` من مخرجات `compute_status` (نفس التنسيق القديم)."""
+    works = computed["works"]
+    rows = computed["rows"]
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"_status_{datetime.now():%Y%m%d}.xlsx"
 
@@ -66,7 +125,8 @@ def status(classroom, cfg: dict, course_key: str, course_id: str,
         cell.font = header_font
         cell.fill = header_fill
         cell.alignment = Alignment(horizontal="center", vertical="center",
-                                   wrap_text=True, textRotation=45 if 2 < col <= 2 + len(works) else 0)
+                                   wrap_text=True,
+                                   textRotation=45 if 2 < col <= 2 + len(works) else 0)
     ws.column_dimensions["A"].width = 14
     ws.column_dimensions["B"].width = 28
     for col in range(3, 3 + len(works)):
@@ -75,51 +135,26 @@ def status(classroom, cfg: dict, course_key: str, course_id: str,
         ws.column_dimensions[get_column_letter(col)].width = 13
     ws.row_dimensions[start].height = 70
 
-    ordered = sorted(
-        students.items(),
-        key=lambda item: (item[1]["student_id"] is None, item[1]["student_id"] or ""),
-    )
-
-    at_risk = []
-    for offset, (uid, info) in enumerate(ordered, start=1):
+    _mark = {"ok": ("✓", ok_fill), "late": ("⏰", late_fill), "missing": ("✗", miss_fill)}
+    for offset, row in enumerate(rows, start=1):
         r = start + offset
-        ws.cell(row=r, column=1, value=info["student_id"] or "")
-        ws.cell(row=r, column=2, value=info["full_name"])
+        ws.cell(row=r, column=1, value=row["student_id"])
+        ws.cell(row=r, column=2, value=row["name"])
 
-        done = late_count = 0
-        grades = []
-        for i, work in enumerate(works):
-            rec = grid[uid].get(work["id"])
-            col = 3 + i
-            cell = ws.cell(row=r, column=col)
+        for i, kind in enumerate(row["cells"]):
+            cell = ws.cell(row=r, column=3 + i)
             cell.alignment = Alignment(horizontal="center")
-            if rec and rec["submitted"]:
-                done += 1
-                if rec["late"]:
-                    late_count += 1
-                    cell.value, cell.fill = "⏰", late_fill
-                else:
-                    cell.value, cell.fill = "✓", ok_fill
-                if rec["grade"] is not None:
-                    grades.append(rec["grade"])
-            else:
-                cell.value, cell.fill = "✗", miss_fill
+            cell.value, cell.fill = _mark[kind]
 
-        ratio = done / len(works) if works else 0
-        avg = sum(grades) / len(grades) if grades else None
         base = 3 + len(works)
-        ws.cell(row=r, column=base, value=ratio).number_format = "0%"
-        ws.cell(row=r, column=base + 1, value=late_count)
+        ws.cell(row=r, column=base, value=row["ratio"]).number_format = "0%"
+        ws.cell(row=r, column=base + 1, value=row["late"])
         ws.cell(row=r, column=base + 2,
-                value=round(avg, 2) if avg is not None else "—")
+                value=row["avg"] if row["avg"] is not None else "—")
 
-        flag = ws.cell(row=r, column=base + 3)
-        if ratio < risk_threshold:
-            flag.value = "⚠️ متابعة"
+        flag = ws.cell(row=r, column=base + 3, value=row["status"])
+        if row["status"] == _AT_RISK:
             flag.fill = risk_fill
-            at_risk.append((info["student_id"], info["full_name"], ratio))
-        else:
-            flag.value = "جيد"
 
         for col in range(1, base + 4):
             cell = ws.cell(row=r, column=col)
@@ -127,12 +162,27 @@ def status(classroom, cfg: dict, course_key: str, course_id: str,
                 cell.font = Font(name="Arial", size=9)
 
     ws.freeze_panes = ws.cell(row=start + 1, column=3)
-    ws.auto_filter.ref = f"A{start}:{get_column_letter(len(headers))}{start + len(ordered)}"
+    ws.auto_filter.ref = (
+        f"A{start}:{get_column_letter(len(headers))}{start + len(rows)}"
+    )
     wb.save(path)
+    return path
 
+
+def status(classroom, cfg: dict, course_key: str, course_id: str,
+           risk_threshold: float = 0.6) -> Path:
+    computed = compute_status(classroom, cfg, course_id, risk_threshold)
+    s = computed["summary"]
+    print(f"📊 {s['total_students']} طالب  ×  {s['total_works']} واجب")
+    for work in computed["works"]:
+        print(f"   ← {work.get('title')}")
+
+    path = write_status_xlsx(computed, course_key, Path(cfg["output_dir"]) / course_key)
     print(f"\n✅ {path}")
+
+    at_risk = s["at_risk"]
     if at_risk:
         print(f"\n⚠️  {len(at_risk)} طالب تحت عتبة {risk_threshold:.0%}:")
-        for sid, name, ratio in sorted(at_risk, key=lambda x: x[2])[:10]:
-            print(f"     {sid or '?':<12} {name:<28} {ratio:.0%}")
+        for row in at_risk[:10]:
+            print(f"     {row['student_id'] or '?':<12} {row['name']:<28} {row['ratio']:.0%}")
     return path

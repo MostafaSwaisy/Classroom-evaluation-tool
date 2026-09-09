@@ -1,10 +1,18 @@
-"""تحميل ملف الإعدادات."""
+"""تحميل وحفظ ملف الإعدادات.
+
+يستخدم ruamel.yaml بوضع round-trip (`rt`) للقراءة والكتابة معاً، فتُحفظ
+التعليقات البشرية في `config.yaml` كما هي — بما فيها تعليقات نهاية السطر على
+أسماء المساقات. `save_config` يكتب بشكل ذرّي ويحتفظ بنسخة `config.yaml.bak`.
+"""
 from __future__ import annotations
 
 import os
+import shutil
+import time
 from pathlib import Path
 
-import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
 
 DEFAULTS = {
     "output_dir": "./submissions",
@@ -20,18 +28,43 @@ DEFAULTS = {
 }
 
 
+def _yaml() -> YAML:
+    y = YAML()  # typ="rt" by default — keeps comments, anchors, key order
+    y.preserve_quotes = True
+    y.indent(mapping=2, sequence=4, offset=2)
+    y.width = 4096  # never line-wrap long values (regex patterns, paths)
+    return y
+
+
 def project_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
-def load_config(path: str | None = None) -> dict:
-    """يقرأ config.yaml ويدمجه مع القيم الافتراضية."""
-    cfg_path = Path(path) if path else project_root() / "config.yaml"
+def _resolve(path: str | os.PathLike[str] | None) -> Path:
+    return Path(path) if path else project_root() / "config.yaml"
+
+
+def load_config_doc(path: str | os.PathLike[str] | None = None) -> CommentedMap:
+    """The raw round-trippable document (comments intact, defaults NOT merged).
+
+    Use this for the Settings / Courses editors: mutate it and hand it back to
+    `save_config`.
+    """
+    cfg_path = _resolve(path)
+    if not cfg_path.exists():
+        return CommentedMap()
+    with cfg_path.open("r", encoding="utf-8") as f:
+        loaded = _yaml().load(f)
+    return loaded if isinstance(loaded, CommentedMap) else CommentedMap()
+
+
+def load_config(path: str | os.PathLike[str] | None = None) -> dict:
+    """القيم الفعلية للاستخدام: الافتراضيات + ما في الملف، مع توسيع المسارات."""
+    cfg_path = _resolve(path)
     data = dict(DEFAULTS)
 
     if cfg_path.exists():
-        with open(cfg_path, "r", encoding="utf-8") as f:
-            user_cfg = yaml.safe_load(f) or {}
+        user_cfg = load_config_doc(cfg_path)
         for key, value in user_cfg.items():
             if isinstance(value, dict) and isinstance(data.get(key), dict):
                 data[key] = {**data[key], **value}
@@ -42,6 +75,41 @@ def load_config(path: str | None = None) -> dict:
 
     data["output_dir"] = os.path.expanduser(str(data["output_dir"]))
     return data
+
+
+def save_config(
+    doc: CommentedMap | dict,
+    path: str | os.PathLike[str] | None = None,
+    *,
+    make_backup: bool = True,
+) -> Path:
+    """يكتب `doc` إلى config.yaml بشكل ذرّي، مع `config.yaml.bak` للنسخة السابقة."""
+    cfg_path = _resolve(path)
+    cfg_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if make_backup and cfg_path.exists():
+        shutil.copy2(cfg_path, cfg_path.with_name(cfg_path.name + ".bak"))
+
+    tmp = cfg_path.with_name(f"{cfg_path.name}.tmp{os.getpid()}")
+    try:
+        with tmp.open("w", encoding="utf-8", newline="\n") as f:
+            _yaml().dump(doc, f)
+        _replace_with_retry(tmp, cfg_path)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return cfg_path
+
+
+def _replace_with_retry(src: Path, dst: Path, *, attempts: int = 6) -> None:
+    """os.replace, retried — a Windows AV / indexer can briefly lock a new file."""
+    for i in range(attempts):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if i == attempts - 1:
+                raise
+            time.sleep(0.05 * (i + 1))
 
 
 def resolve_course_id(cfg: dict, key: str) -> str:
