@@ -75,8 +75,23 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     New `config.dump_config(doc) -> str` (== `save_config` bytes) for the preview (R-B).
     StateView `loading`/`ok`/`error`. Tests: `tests/test_screen_settings.py` (9) +
     `test_config_roundtrip.py::test_dump_config_matches_what_save_config_writes`.
-- **Phase 2 code complete (P2-U1…U6).** Next: **Phase 2 Fable checkpoint** → `git merge --no-ff`.
-- **Test count:** 214 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `8d22f57`
+  - **Opus mandatory reviews (Phase 2 = P2-U1 R3 + P2-U6 R10):**
+    - **P2-U1 → `approved-with-nits`.** CLI parity proven byte-identical (old vs new stubbed
+      side-by-side); cancel-leaves-`out_dir`-untouched verified against a pre-seeded dir.
+      Nits fixed in `45acd0b`: staging dir now `.`-prefixed + dashboard scan skips dot-dirs
+      (a leaked `.partial` was shown as an assignment); `_promote` moves `_roster.xlsx` last;
+      `int | None` unquoted; +1 cancel-after-download test. Carry: the inert
+      `except OperationCancelled: raise` in `pull()` (de-indenting 60 lines not worth it now).
+    - **P2-U6 → `must-fix` → fixed in `6dce5d0`, re-review pending.** MF-1: `_write_now`
+      rebuilt the doc, so edits after the preview (incl. a broken regex) were written
+      unpreviewed → now `_on_save` caches `_pending_doc`, `_write_now` writes only that,
+      any edit calls `_discard_pending`. MF-2: form populated from `load_config` (DEFAULTS +
+      expanduser) and wrote all keys → a no-op Save pinned defaults and rewrote `~/…` →
+      now populate from `load_config_doc`, `_set_if_meaningful` writes a key only if already
+      present or ≠ DEFAULT. `config.resolve_config_path()` added. +3 regression tests.
+- **Phase 2 code complete (P2-U1…U6) + review fixes.** Next: **P2-U6 Opus re-verdict** →
+  **Phase 2 Fable checkpoint** → `git merge --no-ff`.
+- **Test count:** 218 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `45acd0b`
   (149 on `main` @ `3fcbd05`). Full suite ~3 min; watch teardown flakes at the checkpoint.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
