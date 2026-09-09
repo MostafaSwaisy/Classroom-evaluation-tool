@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 
+import io
 import os
 import shutil
 import time
@@ -98,6 +99,13 @@ def save_config(
     finally:
         tmp.unlink(missing_ok=True)
     return cfg_path
+
+
+def dump_config(doc: CommentedMap | dict) -> str:
+    """Serialise `doc` exactly as `save_config` would write it — for a diff preview."""
+    buf = io.StringIO()
+    _yaml().dump(doc, buf)
+    return buf.getvalue()
 
 
 def _replace_with_retry(src: Path, dst: Path, *, attempts: int = 6) -> None:
