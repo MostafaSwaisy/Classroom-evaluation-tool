@@ -1,7 +1,6 @@
 """الأمر pull: تحميل تسليمات واجب بأسماء منظّمة + كشف متابعة."""
 from __future__ import annotations
 
-import os
 import re
 import tempfile
 from collections.abc import Callable
@@ -13,6 +12,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from . import api
+from .config import replace_with_retry
 from .errors import OperationCancelled
 from .naming import build_filename, extract_student_id, normalize_arabic, safe_filename
 
@@ -95,8 +95,10 @@ def _promote(staging: Path, out_dir: Path) -> None:
     grader has the old roster open in Excel), the directory is never left with a
     roster newer than the files it indexes.
     """
+    # replace_with_retry, not bare os.replace: a Windows AV / indexer can briefly
+    # lock the just-written staging tree (same hazard config.save_config guards).
     if not out_dir.exists():
-        os.replace(staging, out_dir)
+        replace_with_retry(staging, out_dir)
         return
     items = sorted(staging.iterdir(), key=lambda p: p.name == "_roster.xlsx")
     for item in items:
@@ -104,10 +106,10 @@ def _promote(staging: Path, out_dir: Path) -> None:
             target = out_dir / item.name
             target.mkdir(exist_ok=True)
             for f in item.iterdir():
-                os.replace(f, target / f.name)
+                replace_with_retry(f, target / f.name)
             item.rmdir()
         else:
-            os.replace(item, out_dir / item.name)
+            replace_with_retry(item, out_dir / item.name)
     staging.rmdir()
 
 
