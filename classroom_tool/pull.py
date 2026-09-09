@@ -94,6 +94,10 @@ def _promote(staging: Path, out_dir: Path) -> None:
     ``_roster.xlsx`` is moved **last**: if a rename fails part-way (e.g. the
     grader has the old roster open in Excel), the directory is never left with a
     roster newer than the files it indexes.
+
+    There is deliberately **no** ``should_cancel`` poll in here — promotion runs
+    only after a clean download loop, and its all-or-nothing character is what
+    lets a cancel elsewhere guarantee ``out_dir`` is untouched. Do not add one.
     """
     # replace_with_retry, not bare os.replace: a Windows AV / indexer can briefly
     # lock the just-written staging tree (same hazard config.save_config guards).
