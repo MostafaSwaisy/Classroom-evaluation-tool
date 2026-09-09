@@ -79,3 +79,15 @@ def test_close_event_shuts_down_backend(win):
     assert win.services.backend.is_running
     win.close()
     assert win.services.backend.is_running is False
+
+
+def test_navigate_forwards_context_to_a_screen_that_accepts_it(win):
+    seen = {}
+    win._screens["pull"].apply_context = lambda ctx: seen.update(ctx)
+    win.navigate("pull", {"assignment": {"id": "w9", "title": "T"}})
+    assert seen == {"assignment": {"id": "w9", "title": "T"}}
+
+
+def test_navigate_without_context_is_still_fine(win):
+    win.navigate("pull")            # positional, no ctx — must not raise
+    assert win.current_key == "pull"
