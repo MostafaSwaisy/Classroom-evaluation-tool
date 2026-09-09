@@ -4,8 +4,10 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 ## Position (updated as units land)
 
-- **main:** Phase 0 merged (`49d9e84`) · **Phase 1 merged (`3fcbd05`, Fable checkpoint PROCEED)**.
-- **Working branch:** `feat/gui-phase2` (cut from `main` at `3fcbd05`). `feat/gui-phase1` kept for now.
+- **main:** Phase 0 (`49d9e84`) · Phase 1 (`3fcbd05`) · **Phase 2 merged (`38a3229`, Fable
+  checkpoint #2 PROCEED — #1 HALTed on `_promote`, fixed `a7ee113`)**.
+- **Working branch:** `feat/gui-phase3` (cut from `main` at `38a3229`). `feat/gui-phase1`,
+  `feat/gui-phase2` kept for now.
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
@@ -24,7 +26,7 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   `a227919`, Opus P1-U1 + P1-U8 both `approved-with-nits (filed)`, guardrail sweep
   clean, CLI `--help`/`doctor` goldens byte-identical, all four refactors (R2/R5/R6/R10)
   landed + tested.
-- **Phase 2 in progress on `feat/gui-phase2`:**
+- **Phase 2 done & merged (`38a3229`).**
   - **P2-U1 (R3, `bd7547b`)** — `pull(..., *, progress, should_cancel) -> dict`
     `{out_dir, submitted, late, missing, no_id[]}`. `print`→`_report(progress, msg, done, total)`;
     per-file loop carries `done/total`. `cli.py` passes a print callback (per-file lines unchanged).
@@ -103,11 +105,15 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   Opus-mandatory: **P2-U1 `approved-with-nits`** (re-touch on `a7ee113` confirmed the retry
   doesn't weaken the cancel guarantee — `_promote` runs 0× on both cancel paths; nits A/C
   folded in `03fbf4e`, nit B `replace_with_retry`→`fsutil.py` is a carry), **P2-U6
-  `approved-with-nits`**. Both mandatory verdicts recorded. Next: **Phase 2 Fable checkpoint
-  #2** → `git merge --no-ff`.
-- **Test count:** 220 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `03fbf4e`
-  (149 on `main` @ `3fcbd05`). Full suite ~2.5 min; `test_pull.py` isolated 10× green,
-  full suite 3× green after the `_promote` retry fix.
+  `approved-with-nits`**. Both mandatory verdicts recorded.
+- **Phase 2 Fable checkpoint #2 → PROCEED (`38a3229` merged to `main`).** Haiku green on
+  `e783c69`; both Opus-mandatory `approved-with-nits`; R-C sweep clean; R3/R4/R10-ext landed
+  + tested; `_promote` red gate closed and reproduced green. `feat/gui-phase3` cut from
+  `main` @ `38a3229`. **Next: Phase 3** — grading without AI (R1, R7, R11); first unit **P3-U1**.
+  Fable recommended a Phase-3 intake housekeeping commit: fold nit B
+  (`replace_with_retry` → `classroom_tool/fsutil.py`) + `.partial` cleanup-on-cancel.
+- **Test count:** 221 collected → 220 passed / 1 skipped (live-parity gate) on `main` @
+  `38a3229` (149 on `main` @ `3fcbd05`). Full suite ~2.5–3 min.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
