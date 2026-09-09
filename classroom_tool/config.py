@@ -45,6 +45,11 @@ def _resolve(path: str | os.PathLike[str] | None) -> Path:
     return Path(path) if path else project_root() / "config.yaml"
 
 
+def resolve_config_path(path: str | os.PathLike[str] | None = None) -> Path:
+    """The file `load_config`/`save_config` would use for `path` (public alias)."""
+    return _resolve(path)
+
+
 def load_config_doc(path: str | os.PathLike[str] | None = None) -> CommentedMap:
     """The raw round-trippable document (comments intact, defaults NOT merged).
 
