@@ -3,7 +3,25 @@ from __future__ import annotations
 
 import shutil
 import zipfile
+from dataclasses import dataclass
 from pathlib import Path
+
+
+@dataclass(frozen=True)
+class ArchiveResult:
+    """One row of the prepare report.
+
+    ``outcome`` is ``"extracted"`` | ``"skipped"`` | ``"failed"``. ``detail`` is a
+    stable token for the categorised skips (``"unsupported"``, ``"too_many"``) or
+    the underlying error text for ``"failed"``; empty for ``"extracted"``.
+    ``count`` is the code-file count for ``"extracted"`` and the member count for
+    a ``"too_many"`` skip.
+    """
+
+    name: str
+    outcome: str
+    detail: str = ""
+    count: int = 0
 
 # مجلدات وملفات ما إلها لزمة في المراجعة
 JUNK_DIRS = {
@@ -27,18 +45,18 @@ def _is_junk(path: Path, root: Path) -> bool:
 
 
 def extract_archives(files_dir: Path, dest_dir: Path,
-                     max_files_per_student: int = 200) -> dict:
+                     max_files_per_student: int = 200) -> list[ArchiveResult]:
     """
     يفك كل أرشيف في files/ إلى extracted/{اسم_الملف_بدون_امتداد}/
-    وينظّف المجلدات الزايدة. يرجّع تقرير بالنتائج.
+    وينظّف المجلدات الزايدة. يرجّع سطر ``ArchiveResult`` لكل أرشيف.
     """
     dest_dir.mkdir(parents=True, exist_ok=True)
-    report = {"extracted": [], "skipped": [], "failed": []}
+    results: list[ArchiveResult] = []
 
     for archive in sorted(files_dir.glob("*")):
         if archive.suffix.lower() not in {".zip"}:
             if archive.suffix.lower() in {".rar", ".7z"}:
-                report["skipped"].append((archive.name, "صيغة غير مدعومة"))
+                results.append(ArchiveResult(archive.name, "skipped", "unsupported"))
             continue
 
         target = dest_dir / archive.stem
@@ -50,9 +68,8 @@ def extract_archives(files_dir: Path, dest_dir: Path,
             with zipfile.ZipFile(archive) as zf:
                 members = [m for m in zf.namelist() if not m.endswith("/")]
                 if len(members) > max_files_per_student:
-                    report["skipped"].append(
-                        (archive.name, f"{len(members)} ملف — أكثر من الحد")
-                    )
+                    results.append(ArchiveResult(
+                        archive.name, "skipped", "too_many", count=len(members)))
                     shutil.rmtree(target)
                     continue
                 for member in members:
@@ -64,7 +81,7 @@ def extract_archives(files_dir: Path, dest_dir: Path,
                     with zf.open(member) as src, open(out, "wb") as dst:
                         shutil.copyfileobj(src, dst)
         except (zipfile.BadZipFile, OSError) as exc:
-            report["failed"].append((archive.name, str(exc)))
+            results.append(ArchiveResult(archive.name, "failed", str(exc)))
             shutil.rmtree(target, ignore_errors=True)
             continue
 
@@ -93,9 +110,10 @@ def extract_archives(files_dir: Path, dest_dir: Path,
 
         code_files = [p for p in target.rglob("*")
                       if p.is_file() and p.suffix.lower() in CODE_EXTENSIONS]
-        report["extracted"].append((archive.stem, len(code_files)))
+        results.append(ArchiveResult(
+            archive.name, "extracted", count=len(code_files)))
 
-    return report
+    return results
 
 
 def build_index(extracted_dir: Path, files_dir: Path) -> str:
