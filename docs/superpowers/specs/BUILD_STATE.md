@@ -33,7 +33,16 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     after a clean finish — **cancel never touches `out_dir`; nothing under `submissions/` is
     deleted** (`_promote` only `rmdir`s its own emptied scratch). `datetime.UTC` swap keeps
     ruff clean on the changed file. TDD: `tests/test_pull.py` (9) written first.
-- **Test count:** 158 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `bd7547b`
+  - **P2-U2 (R4, `640414e`)** — `extract_archives() -> list[ArchiveResult]`
+    (`@dataclass(frozen=True)` `{name, outcome, detail, count}`; `outcome ∈ {extracted,
+    skipped, failed}`). `.rar`/`.7z` → `("skipped", "unsupported")`; oversized →
+    `("skipped", "too_many", count=n)`; `BadZipFile`/`OSError` → `("failed", str(exc))`.
+    Extraction / junk-cleanup / flatten logic untouched. `cli.py prepare` renders the list
+    grouped extracted→skipped→failed and maps the tokens back to Arabic → report
+    byte-identical to `golden/prepare_fixture.txt`. TDD: `tests/test_extract.py` (8) first;
+    the CLI-parity test uses a short `tempfile.mkdtemp` (pytest `tmp_path` + deep Arabic
+    zip trees exceed Windows MAX_PATH → spurious failures).
+- **Test count:** 166 passed / 1 skipped (live-parity gate) on `feat/gui-phase2` @ `640414e`
   (149 on `main` @ `3fcbd05`).
 - **Known flaky:** `tests/test_worker.py::test_progress_and_result_arrive_on_the_gui_thread`
   failed once mid-P1-U9 with a cross-thread `killTimer` warning on QThread teardown;
