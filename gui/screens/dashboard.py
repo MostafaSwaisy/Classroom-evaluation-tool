@@ -44,7 +44,7 @@ def _scan_last_pull(course_dir: Path) -> tuple[dict | None, dict | None]:
         return None, None
     rosters = sorted(
         (p for p in course_dir.glob("*/_roster.xlsx")
-         if not p.parent.name.startswith(".")),   # skip pull's `.…partial…` staging
+         if ".partial." not in p.parent.name),   # skip pull's `.<slug>.partial.XXXX` staging
         key=lambda p: p.stat().st_mtime, reverse=True)
     if not rosters:
         return None, None
