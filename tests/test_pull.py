@@ -143,10 +143,9 @@ def test_cancel_mid_loop_raises_and_leaves_nothing_under_out_dir(tmp_path):
     base = Path(cfg["output_dir"])
     assert list(base.rglob("_roster.xlsx")) == []
     assert [p for p in base.rglob("files/*") if p.is_file()] == []
-    # nothing was promoted: any leftover dir is a sibling `.partial` staging dir
-    promoted = [d for d in base.rglob("*")
-                if d.is_dir() and d.name == "files" and ".partial." not in str(d.parent)]
-    assert promoted == []
+    assert [d for d in base.rglob("*") if d.is_dir() and d.name == "files"] == []
+    # cancel also removes its own `.partial` staging dir — no scratch left behind
+    assert [p for p in base.rglob("*") if ".partial." in p.name] == []
 
 
 def test_cancel_checked_before_first_download(tmp_path):
@@ -159,6 +158,15 @@ def test_cancel_checked_before_first_download(tmp_path):
     with pytest.raises(OperationCancelled):
         pull_mod.pull(object(), object(), _cfg(tmp_path), "PHP2026", "999", "HW03",
                       should_cancel=cancel_on_second_check)
+
+
+def test_cancel_removes_the_partial_staging_dir(tmp_path):
+    cfg = _cfg(tmp_path)
+    with pytest.raises(OperationCancelled):
+        pull_mod.pull(object(), object(), cfg, "PHP2026", "999", "HW03",
+                      should_cancel=lambda: True)
+    base = Path(cfg["output_dir"])
+    assert [p for p in base.rglob("*") if ".partial." in p.name] == []
 
 
 def test_promote_retries_a_transient_permissionerror(tmp_path, monkeypatch):
@@ -179,7 +187,7 @@ def test_promote_retries_a_transient_permissionerror(tmp_path, monkeypatch):
             raise PermissionError(5, "Access is denied")
         return real_replace(src, dst)
 
-    monkeypatch.setattr("classroom_tool.config.os.replace", flaky_replace)
+    monkeypatch.setattr("classroom_tool.fsutil.os.replace", flaky_replace)
 
     out = _run(tmp_path)["out_dir"]
     assert (out / "_roster.xlsx").is_file()
