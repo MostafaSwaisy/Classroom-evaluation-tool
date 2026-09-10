@@ -17,6 +17,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QFont, QSyntaxHighlighter, QTextCharFormat
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDoubleSpinBox,
     QGroupBox,
     QHBoxLayout,
@@ -27,18 +28,44 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QSplitter,
+    QStackedWidget,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
-from classroom_tool import config
+from classroom_tool import claude_provider, config
 from classroom_tool.naming import normalize_arabic
 from classroom_tool.roster_read import read_roster
+from gui.grading_ai import ai_suggest_job
 from gui.grading_io import resolve_rubric
 from gui.screens.base import ScreenBase
 from gui.state import GradingState
+
+_JOB_AI = "grading_workspace.ai_batch"
+
+_AI_INSTRUCTIONS = (
+    "أنت مساعد تصحيح، لا مصحّح مستقل. قيّم كل معيار من نطاقه، اكتب ملاحظات "
+    "محدّدة بالعربي (المصطلحات التقنية بالإنجليزي)، ولمّا تتردد أعطِ الدرجة "
+    "الأعلى وضع flag. لا تقرّر أن طالباً غشّ — استخدم flags فقط."
+)
+
+_AI_STATES = ("not_connected", "not_logged_in", "running", "shown", "error")
+
+_AI_STATE_TEXT = {
+    "not_connected": "Claude غير مربوط — مساعدة الدرجات معطّلة (التصحيح اليدوي شغّال).",
+    "not_logged_in": "`claude` مثبَّت لكن غير مُسجَّل دخول.",
+    "running": "جارٍ سؤال Claude… (أبطأ من نداء API مباشر)",
+    "error": "تعذّر جلب المقترح.",
+}
+
+
+def _safe_status(cfg: dict) -> str:
+    try:
+        return claude_provider.provider_status(cfg).state
+    except Exception:  # noqa: BLE001 - a probe failure == not usable
+        return "not_installed"
 
 _BATCH = 10
 _DEFAULT_MAX = 100.0
@@ -105,7 +132,12 @@ class Screen(ScreenBase):
         self._extracted: dict[str, Path] = {}
         self._current_key: str | None = None
         self._score_inputs: dict[str, QDoubleSpinBox] = {}
+        self._suggestions: dict[str, dict] = {}
         self._loading = False
+        b = self._backend()
+        if b is not None:
+            b.worker.finished.connect(self._on_ai_finished)
+            b.worker.failed.connect(self._on_ai_failed)
         self.state_view.set_content(self._build_page())
 
     # --- context + lifecycle -----------------------------------
@@ -149,6 +181,12 @@ class Screen(ScreenBase):
 
     def _cfg_path(self):
         return getattr(self.services, "config_path", None)
+
+    def _cfg(self) -> dict:
+        try:
+            return config.load_config(self._cfg_path())
+        except Exception:  # noqa: BLE001 - a bad config must not break AI wiring
+            return {}
 
     # --- resolve rubric + extracted dirs ----------------------
     def _resolve_rubric(self, wd: Path) -> dict:
@@ -221,6 +259,10 @@ class Screen(ScreenBase):
 
         self._editor_lay.addWidget(self._build_flags_box())
         self._editor_lay.addWidget(self._build_ai_box())
+
+        self._reviewed_cb = QCheckBox("راجعت هذا الطالب — علّمه «مكتمل»")
+        self._reviewed_cb.toggled.connect(self._on_reviewed_toggled)
+        self._editor_lay.addWidget(self._reviewed_cb)
         return w
 
     def _build_flags_box(self) -> QWidget:
@@ -249,13 +291,186 @@ class Screen(ScreenBase):
         return box
 
     def _build_ai_box(self) -> QWidget:
-        box = QGroupBox("مساعدة AI (Claude)")
-        box.setEnabled(False)
+        box = QGroupBox("مساعدة Claude — مقترح، ليس قراراً")
         lay = QVBoxLayout(box)
-        self._ai_link = QLabel('<a href="#connect">اربط Claude</a>')
-        self._ai_link.setToolTip("تُفعَّل بعد ربط Claude (P4)")
-        lay.addWidget(self._ai_link)
+
+        hint = QLabel("لمّا تتردد: الدرجة الأعلى + flag. راجع كل طالب قبل الاعتماد.")
+        hint.setProperty("role", "muted")
+        hint.setWordWrap(True)
+        lay.addWidget(hint)
+
+        row = QHBoxLayout()
+        self._ai_one_btn = QPushButton("اقترح لهذا الطالب")
+        self._ai_one_btn.clicked.connect(lambda: self._run_ai(whole_batch=False))
+        row.addWidget(self._ai_one_btn)
+        self._ai_batch_btn = QPushButton("اقترح للدفعة")
+        self._ai_batch_btn.clicked.connect(lambda: self._run_ai(whole_batch=True))
+        row.addWidget(self._ai_batch_btn)
+        row.addStretch(1)
+        lay.addLayout(row)
+
+        self._ai_stack = QStackedWidget()
+        self._ai_msgs: dict[str, QLabel] = {}
+        for state in _AI_STATES:
+            page = QWidget()
+            pl = QVBoxLayout(page)
+            if state == "shown":
+                self._ai_shown_body = QVBoxLayout()
+                pl.addLayout(self._ai_shown_body)
+                foot = QHBoxLayout()
+                accept_all = QPushButton("اعتمد الكل")
+                accept_all.clicked.connect(self._accept_all)
+                foot.addWidget(accept_all)
+                dismiss = QPushButton("تجاهل")
+                dismiss.clicked.connect(lambda: self._ai_show("not_connected"))
+                foot.addWidget(dismiss)
+                foot.addStretch(1)
+                pl.addLayout(foot)
+            else:
+                lbl = QLabel(_AI_STATE_TEXT[state])
+                lbl.setWordWrap(True)
+                self._ai_msgs[state] = lbl
+                pl.addWidget(lbl)
+                if state in ("not_connected", "not_logged_in"):
+                    link = QLabel('<a href="#wizard">افتح معالج ربط Claude</a>')
+                    link.linkActivated.connect(
+                        lambda _u: self.navigation_requested.emit("setup_wizard", None))
+                    pl.addWidget(link)
+            pl.addStretch(1)
+            self._ai_stack.addWidget(page)
+        lay.addWidget(self._ai_stack)
+        self._ai_show("not_connected")
         return box
+
+    # --- AI: state machine --------------------------------
+    def _ai_show(self, state: str, detail: str = "") -> None:
+        self._ai_stack.setCurrentIndex(_AI_STATES.index(state))
+        if detail and state in self._ai_msgs:
+            self._ai_msgs[state].setText(f"{_AI_STATE_TEXT[state]}\n{detail}")
+        elif state in self._ai_msgs:
+            self._ai_msgs[state].setText(_AI_STATE_TEXT[state])
+
+    def _run_ai(self, *, whole_batch: bool) -> None:
+        if self._current_key is None:
+            return
+        status = _safe_status(self._cfg())
+        if status in ("not_installed", "disabled", "no_api_key"):
+            self._ai_show("not_connected")
+            return
+        if status == "not_logged_in":
+            self._ai_show("not_logged_in")
+            return
+        b = self._backend()
+        if b is None:
+            self._ai_show("error", "لا يوجد عامل خلفية.")
+            return
+        students = self._collect_ai_students(whole_batch)
+        if not students:
+            self._ai_show("error", "لا ملفات مستخرَجة لهذا الطالب.")
+            return
+        self._ai_show("running")
+        b.submit(_JOB_AI, ai_suggest_job(
+            students, self._rubric, instructions=_AI_INSTRUCTIONS,
+            cfg=self._cfg(), cwd=str(self._work_dir) if self._work_dir else None))
+
+    def _collect_ai_students(self, whole_batch: bool) -> dict[str, dict[str, str]]:
+        if whole_batch:
+            item = self._list.currentItem()
+            idx = (item.data(Qt.ItemDataRole.UserRole + 1) if item else 0) or 0
+            start = (idx // _BATCH) * _BATCH
+            rows = self._students[start:start + _BATCH]
+        else:
+            row = self._row_for_key(self._current_key)
+            rows = [row] if row else []
+        out: dict[str, dict[str, str]] = {}
+        for row in rows:
+            files = self._read_student_files(row)
+            if files:
+                out[self._entry_key(row)] = files
+        return out
+
+    def _read_student_files(self, row: dict) -> dict[str, str]:
+        path = self._dir_for_student(row)
+        if path is None:
+            return {}
+        files: dict[str, str] = {}
+        for f in sorted(path.rglob("*")):
+            if f.is_file() and f.suffix.lower() in _CODE_SUFFIXES:
+                try:
+                    files[str(f.relative_to(path))] = f.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError):
+                    continue
+        return files
+
+    @Slot(str, object)
+    def _on_ai_finished(self, job_id: str, result: object) -> None:
+        if job_id != _JOB_AI:
+            return
+        self._suggestions = result if isinstance(result, dict) else {}
+        self._render_suggestion()
+
+    @Slot(str, str, str, str)
+    def _on_ai_failed(self, job_id: str, exc_type: str, message: str, _tb: str) -> None:
+        if job_id != _JOB_AI:
+            return
+        self._ai_show("error", f"({exc_type}) {message}")
+
+    def _render_suggestion(self) -> None:
+        while self._ai_shown_body.count():
+            item = self._ai_shown_body.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+        sugg = self._suggestions.get(self._current_key or "")
+        if not sugg:
+            self._ai_show("error", "لا مقترح لهذا الطالب في نتيجة الدفعة.")
+            return
+        if sugg.get("error"):
+            self._ai_show("error", str(sugg["error"]))
+            return
+        for ckey, spin in self._score_inputs.items():
+            val = (sugg.get("scores") or {}).get(ckey)
+            r = QHBoxLayout()
+            r.addWidget(QLabel(f"{ckey}: مقترح {val}"))
+            btn = QPushButton("اعتمد")
+            btn.clicked.connect(
+                lambda _c=False, s=spin, v=val: self._accept_score(s, v))
+            r.addWidget(btn)
+            r.addStretch(1)
+            holder = QWidget()
+            holder.setLayout(r)
+            self._ai_shown_body.addWidget(holder)
+        fb = str(sugg.get("feedback") or "")
+        if fb:
+            r = QHBoxLayout()
+            lab = QLabel(f"ملاحظة مقترحة: {fb[:160]}")
+            lab.setWordWrap(True)
+            r.addWidget(lab, 1)
+            btn = QPushButton("اعتمد")
+            btn.clicked.connect(lambda _c=False, t=fb: self._accept_feedback(t))
+            r.addWidget(btn)
+            holder = QWidget()
+            holder.setLayout(r)
+            self._ai_shown_body.addWidget(holder)
+        self._ai_show("shown")
+
+    # --- AI: explicit accept (nothing auto-applied) -------
+    def _accept_score(self, spin: QDoubleSpinBox, value) -> None:
+        if value is None:
+            return
+        spin.setEnabled(True)
+        spin.setValue(float(value))          # -> _on_score_changed -> _persist
+
+    def _accept_feedback(self, text: str) -> None:
+        self._feedback.setPlainText(text)    # -> _on_feedback_changed -> _persist
+
+    def _accept_all(self) -> None:
+        sugg = self._suggestions.get(self._current_key or "") or {}
+        for ckey, spin in self._score_inputs.items():
+            v = (sugg.get("scores") or {}).get(ckey)
+            if v is not None:
+                self._accept_score(spin, v)
+        if sugg.get("feedback"):
+            self._accept_feedback(str(sugg["feedback"]))
 
     def _build_code_pane(self) -> QWidget:
         w = QWidget()
@@ -374,8 +589,11 @@ class Screen(ScreenBase):
             btn.setChecked(label in flags)
         self._similar_id.setText(_similar_from(flags))
         self._free_flag.setText(_free_from(flags))
+        self._reviewed_cb.setChecked(entry.get("status") == "مكتمل")
         self._loading = False
         self._recompute_total()
+        self._render_suggestion() if self._suggestions.get(key) else self._ai_show(
+            "not_connected")
 
     def _clear_editor(self) -> None:
         self._loading = True
@@ -387,6 +605,7 @@ class Screen(ScreenBase):
             btn.setChecked(False)
         self._similar_id.clear()
         self._free_flag.clear()
+        self._reviewed_cb.setChecked(False)
         self._student_title.setText("")
         self._tree.clear()
         self._code.clear()
@@ -464,6 +683,10 @@ class Screen(ScreenBase):
             flags.append(self._free_flag.text().strip())
         return flags
 
+    def _on_reviewed_toggled(self, *_a) -> None:
+        if not self._loading:
+            self._persist()
+
     def _persist(self, *, null_scores: bool = False) -> None:
         if self._state is None or self._current_key is None:
             return
@@ -471,11 +694,13 @@ class Screen(ScreenBase):
         scores = None if null_scores else {
             ckey: round(spin.value(), 2) for ckey, spin in self._score_inputs.items()
         }
+        # "مكتمل" only when the grader ticks the per-student review box.
+        status = "مكتمل" if self._reviewed_cb.isChecked() else "مسودة"
         entry = {
             "scores": scores,
             "feedback": self._feedback.toPlainText(),
             "flags": self._collect_flags(),
-            "status": "مسودة",
+            "status": status,
         }
         self._state.set_entry(key, entry)
         self._refresh_item(key, entry)

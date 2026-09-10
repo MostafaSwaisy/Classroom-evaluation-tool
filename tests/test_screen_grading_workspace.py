@@ -169,11 +169,16 @@ def test_similarity_flag_is_recorded_with_the_id(screen):
     assert "تشابه مع 120210999" in entry["flags"]
 
 
-def test_ai_panel_is_present_but_disabled(screen):
+def test_ai_panel_is_present_and_starts_not_connected(screen):
     from PySide6.QtWidgets import QGroupBox
-    ai = next(g for g in screen.findChildren(QGroupBox) if g.title().startswith("مساعدة AI"))
-    assert ai.isEnabled() is False
-    assert "اربط Claude" in screen._ai_link.text()
+    ai = next(g for g in screen.findChildren(QGroupBox)
+              if g.title().startswith("مساعدة Claude"))
+    assert ai is not None
+    assert screen._ai_one_btn.text() == "اقترح لهذا الطالب"
+    assert screen._ai_batch_btn.text() == "اقترح للدفعة"
+    # 5 §5.11 states, panel opens on "not connected" (no probe on construct)
+    assert screen._ai_stack.count() == 5
+    assert screen._ai_stack.currentIndex() == 0  # not_connected
 
 
 def test_close_and_reopen_restores_every_entry(qtbot, work_dir, rubrics_dir):
