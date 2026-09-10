@@ -6,10 +6,9 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 - **main:** Phase 0 (`49d9e84`) · Phase 1 (`3fcbd05`) · **Phase 2 merged (`38a3229`, Fable
   checkpoint #2 PROCEED — #1 HALTed on `_promote`, fixed `a7ee113`)**.
-- **Working branch:** `feat/gui-phase3` — **intake `c958f3e` + P3-U1…U7 code-complete
-  (`7663cba`)**; Opus R1/R7 reviews + Fable checkpoint still pending, real-app manual-test
-  punch list open (see "Phase 3 — still OPEN before merge"). `feat/gui-phase1`,
-  `feat/gui-phase2` kept for now.
+- **Working branch:** `feat/gui-phase3` — carries **Phase 3 + Phase 4 code** (P3-U1…U7,
+  P4-U1…U6). Opus R1/R7 + R8/R9 reviews, Fable Phase-3/4 checkpoints, and the real-app
+  manual-test triage are all still pending. `feat/gui-phase1`, `feat/gui-phase2` kept.
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
@@ -168,6 +167,44 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 - **Pre-existing lint debt (NOT Phase 3):** `ruff check classroom_tool/` flags B023 in
   `api.py:40` + B904 ×3 in `auth.py` (present on `main`). Out of scope for the per-unit
   "clean on NEW code" gate; fold into a cleanup pass.
+
+- **Phase 4 code complete (P4-U1…U6) on `feat/gui-phase3`.** Provider B only, per §7.
+  - **P4-U1 (`preflight note` + sign-off)** — `docs/…/2026-09-10-provider-b-preflight.md`.
+    Real probe of `claude -p "ok" --output-format json --model claude-opus-5` (CLI 2.1.263):
+    exit 0, one-line JSON, `result` string is the answer, `is_error:false`/`subtype:success`
+    the success gate, `modelUsage."claude-opus-5"` confirms `--model`. Headless `-p` is
+    documented + `claude setup-token` sanctioned for scripts; Usage Policy has nothing
+    against an individual driving their own login. **Mostafa signed off in-session 2026-09-10.**
+  - **P4-U2 (R8, `claude_provider.py`)** — `get_client(cfg, *, cwd, which) -> ClaudeClient`
+    (Protocol `complete(system, messages, tools) -> str`). `_CliClient` runs
+    `claude -p <prompt> --model claude-opus-5 --output-format json`, parses `result`,
+    `ProviderNotConfigured`/`ProviderTimeout` on failure. `provider_status(cfg, *, which,
+    run)` → ready/not_installed/not_logged_in/disabled/no_api_key. Provider A (`api_key`)
+    un-promoted: keyring + `anthropic` both lazily imported. `config.DEFAULTS` +=
+    `ai_provider: claude_cli`. Guardrails: no oauth/token.json; keyring never at module top.
+  - **P4-U3 (R9, `grading_assist.py`)** — `suggest(files, rubric, client) -> Suggestion`
+    (one prompt: instructions+rubric prefix, files last; parse first `{…}`, validate every
+    rubric key, retry once, else `Suggestion(error=…)` — never raises).
+    `suggest_batch(students, …, should_cancel, on_result)` checks cancel **between** students.
+  - **P4-U4 (`gui/grading_ai.py`)** — `ai_suggest_job(students, rubric, …)` → `fn(ctx)`:
+    builds the client **on the worker thread**, `suggest_batch` with `ctx.cancelled`/
+    `ctx.progress`, returns `{key: asdict(Suggestion)}`. `_CliClient` timeout kills only the
+    child (real sleeping-stub test).
+  - **P4-U5 (R8, `setup_wizard.py` + Settings badge)** — real 3-step wizard; step 2 renders
+    from `provider_status()` (not_installed→install link, not_logged_in→`claude /login`
+    button + re-probe, ready→ready); **`_next_btn` never gated by Claude state**. Settings
+    gains a Claude `StatusDot` card, probed only on an explicit "افحص" click.
+  - **P4-U6 (R9, `grading_workspace.py` AI panel live)** — "اقترح لهذا الطالب / للدفعة" →
+    `ai_suggest_job` on the worker; 5-page `_ai_stack` (not_connected / not_logged_in /
+    running / shown / error), state from `provider_status` probed lazily on click; "shown"
+    renders per-criterion "مقترح N" + [اعتمد] / [اعتمد الكل] / [تجاهل] — **nothing applied
+    without an explicit accept**; "لمّا تتردد: الأعلى + flag" hint. New per-student
+    "راجعت هذا الطالب" checkbox gates status → «مكتمل». Manual grading unaffected when
+    `claude` absent.
+- **Phase 4 — still OPEN:** Opus-mandatory R8/R9 reviews not run; no live end-to-end run
+  against a real `claude` (only the P4-U1 probe); §5.11 "demonstrate all 5 AI states" is
+  covered by tests, not a screenshot set (feeds P5-U1). `anthropic` package not installed
+  (Provider A path untested end-to-end — acceptable, un-promoted).
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
