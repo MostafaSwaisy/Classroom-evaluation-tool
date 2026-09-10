@@ -11,7 +11,10 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
+
+from .errors import OperationCancelled
 
 _JSON_OBJECT = re.compile(r"\{.*\}", re.DOTALL)
 
@@ -97,6 +100,8 @@ def suggest(student_files: dict[str, str], rubric: dict, client,  # noqa: ANN001
     for attempt in range(retries + 1):
         try:
             reply = client.complete(prefix, messages, None)
+        except OperationCancelled:
+            raise
         except Exception as exc:  # noqa: BLE001 - surface as a sentinel, never leak
             return Suggestion(error=f"تعذّر نداء Claude: {exc}")
         last = reply or ""
@@ -113,3 +118,21 @@ def suggest(student_files: dict[str, str], rubric: dict, client,  # noqa: ANN001
             ]
 
     return Suggestion(error=f"ردّ Claude غير صالح بعد {retries + 1} محاولات: {last[:200]}")
+
+
+def suggest_batch(students: dict[str, dict[str, str]], rubric: dict, client,  # noqa: ANN001
+                  *, instructions: str = "",
+                  should_cancel: Callable[[], bool] | None = None,
+                  on_result: Callable[[str, Suggestion], None] | None = None,
+                  ) -> dict[str, Suggestion]:
+    """اقترح لكل طالب في `students` (مفتاح → ملفات). يتحقق من الإلغاء **بين**
+    الطلاب فقط (نداء واحد لا يُقاطَع)، ويستدعي `on_result` بعد كل طالب."""
+    out: dict[str, Suggestion] = {}
+    for key, files in students.items():
+        if should_cancel is not None and should_cancel():
+            raise OperationCancelled
+        got = suggest(files, rubric, client, instructions=instructions)
+        out[key] = got
+        if on_result is not None:
+            on_result(key, got)
+    return out

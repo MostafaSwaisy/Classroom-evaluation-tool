@@ -8,6 +8,8 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -15,6 +17,8 @@ import pytest
 from classroom_tool.claude_provider import (
     DEFAULT_MODEL,
     ProviderNotConfigured,
+    ProviderTimeout,
+    _CliClient,
     get_client,
     provider_status,
 )
@@ -126,6 +130,43 @@ def test_complete_runs_in_the_given_cwd(monkeypatch):
                         cwd="/tmp/hermetic")
     client.complete("s", [{"role": "user", "content": "x"}], None)
     assert seen.get("cwd") == "/tmp/hermetic"
+
+
+# --- real subprocess: timeout kills only the child ----------
+_STUB = r'''
+import os, sys, time, json
+args = sys.argv[1:]
+prompt = args[args.index("-p") + 1] if "-p" in args else ""
+if prompt == "SLEEP":
+    time.sleep(30)
+    open(os.environ["STUB_MARKER"], "w").write("finished")  # only if NOT killed
+    sys.exit(0)
+print(json.dumps({"type": "result", "subtype": "success",
+                  "is_error": False, "result": "من الستَب: " + prompt}))
+'''
+
+
+def test_stub_claude_roundtrips_the_result_field(tmp_path):
+    stub = tmp_path / "stub_claude.py"
+    stub.write_text(_STUB, encoding="utf-8")
+    client = _CliClient([sys.executable, str(stub)], DEFAULT_MODEL)
+    out = client.complete("نظام", [{"role": "user", "content": "صحّح Q1"}])
+    assert out == "من الستَب: نظام\n\nصحّح Q1"
+
+
+def test_timeout_raises_provider_timeout_and_kills_the_child(tmp_path, monkeypatch):
+    stub = tmp_path / "stub_claude.py"
+    stub.write_text(_STUB, encoding="utf-8")
+    marker = tmp_path / "finished.txt"
+    monkeypatch.setenv("STUB_MARKER", str(marker))
+    client = _CliClient([sys.executable, str(stub)], DEFAULT_MODEL, timeout=0.6)
+
+    t0 = time.monotonic()
+    with pytest.raises(ProviderTimeout):
+        client.complete("", [{"role": "user", "content": "SLEEP"}])
+    assert time.monotonic() - t0 < 10          # returned promptly, didn't wait 30s
+    time.sleep(0.6)
+    assert not marker.exists()                  # child was killed mid-sleep
 
 
 # --- guardrails ---------------------------------------------
