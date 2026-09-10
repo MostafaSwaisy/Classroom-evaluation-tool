@@ -6,8 +6,10 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 - **main:** Phase 0 (`49d9e84`) · Phase 1 (`3fcbd05`) · **Phase 2 merged (`38a3229`, Fable
   checkpoint #2 PROCEED — #1 HALTed on `_promote`, fixed `a7ee113`)**.
-- **Working branch:** `feat/gui-phase3` (cut from `main` at `38a3229`; **intake `c958f3e`**).
-  `feat/gui-phase1`, `feat/gui-phase2` kept for now.
+- **Working branch:** `feat/gui-phase3` — **intake `c958f3e` + P3-U1…U7 code-complete
+  (`7663cba`)**; Opus R1/R7 reviews + Fable checkpoint still pending, real-app manual-test
+  punch list open (see "Phase 3 — still OPEN before merge"). `feat/gui-phase1`,
+  `feat/gui-phase2` kept for now.
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
@@ -118,11 +120,54 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   `shutil.rmtree(staging, ignore_errors=True)` before re-raising (was inert) — safe, `_promote`
   runs only after a clean loop so `out_dir` is untouched. TDD: new
   `test_cancel_removes_the_partial_staging_dir` + tightened `test_cancel_mid_loop_...`.
-  **Next: Phase 3 code** — grading without AI (R1, R7, R11); first unit **P3-U1**
-  (`tools/write_grades.py` → `write_grades(work_dir, data) -> Path`, `main()` a thin
-  `sys.argv` wrapper; TDD test-first `test_write_grades.py`).
-- **Test count:** 222 collected → 221 passed / 1 skipped (live-parity gate) on
-  `feat/gui-phase3` @ `c958f3e` (220/1 on `main` @ `38a3229`; 149 @ `3fcbd05`). Full suite ~2.5–3 min.
+- **Phase 3 code complete (P3-U1…U7) on `feat/gui-phase3` — NOT yet checkpointed / merged.**
+  - **P3-U1 (R1, `1feba30`)** — `tools/write_grades.write_grades(work_dir, data) -> Path`
+    (pure, silent) extracted from `main()`; `main()` a thin `sys.argv` wrapper +
+    `sys.stdout.reconfigure("utf-8")` like `cli.py`. New `tools/__init__.py`. `test_write_grades.py` (5).
+  - **P3-U2 (R7, `dde335a`)** — `classroom_tool/rubric.py`: `load_rubric` / `save_rubric`
+    (ruamel round-trip, atomic + `.bak` via `fsutil.replace_with_retry`) / `validate_rubric`
+    (Arabic msgs: empty criteria, blank/dup key, missing label, non-numeric points,
+    Σpoints ≠ max_points). `test_rubric.py` (9).
+  - **P3-U3 (R11, `e4fb753`)** — `gui/state.GradingState`: debounced `threading.Timer`
+    autosave to `_grading_state.json` (rapid edits → 1 atomic write), `flush()`/`close()`,
+    corrupt JSON → `.json.corrupt` + fresh. Never writes `.md` / `_roster.xlsx`. `test_state.py` (5).
+  - **P3-U4 (R7, `4d42946`)** — `gui/screens/rubrics.py`: file list + New, assignment
+    dropdown (disk scan), criteria table add/remove/▲▼, live green/≠ sum indicator,
+    collapsible CLAUDE.md-Laravel reference panel, Save→validate→`save_rubric`. 4 states.
+    `test_screen_rubrics.py` (13).
+  - **P3-U5 (R11, `1bd270e`)** — `gui/screens/grading_workspace.py`: 3-pane RTL splitter
+    (students / rubric editor / code); batch-of-10 headers + progress; rubric resolved from
+    `rubrics/*.yaml` by `assignment == <course>/<slug>` (→ `gui/grading_io.resolve_rubric`);
+    read-only code viewer from real `extracted/` + light `_CodeHighlighter`; "الملف ما
+    بينفتح" → scores=None + auto-flag; autosave via `GradingState`, reopen restores;
+    AI `QGroupBox` present + `setEnabled(False)`. 4 states. `test_screen_grading_workspace.py` (14).
+  - **P3-U6 (R1, `97cc593`)** — `gui/screens/grades_draft.py`: new `gui/grading_io.py`
+    re-exports `read_roster`/`resolve_rubric`/`write_grades` so the file carries no
+    `classroom`/upload vocab (grep guardrail). Editable table (computed المجموع), null vs
+    flagged row paints, in-app stats (`statistics`), persistent «مسودة — لم تُرفع» banner
+    (no close handler), Export → worker job `grades_draft.export` → `write_grades` into the
+    assignment folder + "افتح المجلد". 4 states. `test_screen_grades_draft.py` (13).
+  - **P3-U7 (`7663cba`)** — `tests/test_e2e_xlsx.py`: GUI export == real subprocess
+    `tools/write_grades.py` run from the fixture `grades.json`, **cell-for-cell (values +
+    formulas, both sheets)**, metadata rows 1–3 excluded (now()-timestamp). Parity fix it
+    caught: `grades_draft._build_grades_data` runs numbers through `_plain()` (2.0→2).
+- **Test count:** 282 collected → 281 passed / 1 skipped (live-parity gate) on
+  `feat/gui-phase3` @ `7663cba` (221/1 on `main` @ `38a3229`). Full suite ~3–5 min.
+  All Phase-3-touched files ruff-clean.
+- **Phase 3 — still OPEN before merge:**
+  - **Opus-mandatory reviews NOT run:** R1 (P3-U1, P3-U6) + R7 (P3-U2, P3-U4). Required
+    before the Fable Phase-3 checkpoint.
+  - **Fable Phase-3 checkpoint** not run (Haiku sweep, guardrail sweep, goldens).
+  - **Manual-test punch list (2026-09-10, mostafa):** in the *real* app "many screens not
+    working" + a **Google auth failure** ("there was a problem"). Auth is almost certainly
+    the expired token (Testing-mode 7-day; `invalid_grant` → `python cli.py auth`), which
+    also explains the fetch-backed screens (dashboard / assignments / pull / roster /
+    tracking) failing. Offline screens (rubrics editor, settings) expected to work. **To be
+    triaged in a Fable checkpoint session with a GUI-automation pass — feeds P5-U1 state
+    matrix + P5-U2 auth-toast/reconnect.** No fix attempted this session.
+- **Pre-existing lint debt (NOT Phase 3):** `ruff check classroom_tool/` flags B023 in
+  `api.py:40` + B904 ×3 in `auth.py` (present on `main`). Out of scope for the per-unit
+  "clean on NEW code" gate; fold into a cleanup pass.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
