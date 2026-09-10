@@ -36,20 +36,15 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 
-def main() -> None:
-    if len(sys.argv) < 3:
-        print(__doc__)
-        sys.exit(1)
+def write_grades(work_dir: Path, data: dict) -> Path:
+    """يبني grades_draft.xlsx من قاموس درجات ويعيد مسار الملف المكتوب.
 
-    work_dir = Path(sys.argv[1])
-    data = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-
+    دالة نقيّة: لا تطبع شيئاً (الـ CLI يتكفّل بالإخراج، والـ GUI يشغّلها في worker).
+    """
+    work_dir = Path(work_dir)
     criteria = data["criteria"]
     total_possible = sum(c["points"] for c in criteria)
     max_points = data.get("max_points", total_possible)
-
-    if abs(total_possible - max_points) > 0.01:
-        print(f"⚠️  مجموع المعايير {total_possible} ≠ العلامة الكاملة {max_points}")
 
     # اسحب أسماء الطلاب من _roster.xlsx إن وُجد
     names = _load_names(work_dir / "_roster.xlsx")
@@ -156,6 +151,28 @@ def main() -> None:
 
     out = work_dir / "grades_draft.xlsx"
     wb.save(out)
+    return out
+
+
+def main() -> None:
+    # مثل cli.py: الإخراج عربي دائماً، حتى على كونسول ويندوز القديم (cp1252).
+    sys.stdout.reconfigure(encoding="utf-8")
+
+    if len(sys.argv) < 3:
+        print(__doc__)
+        sys.exit(1)
+
+    work_dir = Path(sys.argv[1])
+    data = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+
+    criteria = data["criteria"]
+    total_possible = sum(c["points"] for c in criteria)
+    max_points = data.get("max_points", total_possible)
+
+    if abs(total_possible - max_points) > 0.01:
+        print(f"⚠️  مجموع المعايير {total_possible} ≠ العلامة الكاملة {max_points}")
+
+    out = write_grades(work_dir, data)
     print(f"✓ {out}")
     print(f"  {len(data['grades'])} طالب  |  {len(criteria)} معيار  |  "
           f"العلامة الكاملة {max_points}")
