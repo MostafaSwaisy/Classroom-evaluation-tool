@@ -275,18 +275,19 @@ class Screen(ScreenBase):
         grades = []
         for key in self._keys:
             entry = self._state.get_entry(key) or {}
+            scores = entry.get("scores") or {}
             grades.append({
                 "student_id": "" if key.startswith("name:") else key,
                 "name": self._names.get(key) or key.removeprefix("name:"),
-                "scores": entry.get("scores") or {},
+                "scores": {k: _plain(v) for k, v in scores.items()},
                 "feedback": entry.get("feedback") or "",
                 "flags": entry.get("flags") or [],
             })
         return {
             "assignment": self._work_dir.name if self._work_dir else "",
-            "max_points": _num(self._rubric.get("max_points"), _DEFAULT_MAX),
+            "max_points": _plain(_num(self._rubric.get("max_points"), _DEFAULT_MAX)),
             "criteria": [
-                {"key": c["key"], "label": c["label"], "points": c["points"]}
+                {"key": c["key"], "label": c["label"], "points": _plain(c["points"])}
                 for c in self._rubric["criteria"]
             ],
             "grades": grades,
@@ -317,6 +318,14 @@ class Screen(ScreenBase):
     def _open_folder(self) -> None:
         if self._work_dir is not None:
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(self._work_dir)))
+
+
+def _plain(value: object) -> object:
+    """Collapse an integral float to int so a GUI export matches a CLI run from
+    a JSON grades file (where `2` stays `2`, not `2.0`) — spec §8 / P3-U7."""
+    if isinstance(value, float) and value == int(value):
+        return int(value)
+    return value
 
 
 def _num(value: object, default: float) -> float:
