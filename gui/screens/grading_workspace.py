@@ -36,7 +36,7 @@ from PySide6.QtWidgets import (
 from classroom_tool import config
 from classroom_tool.naming import normalize_arabic
 from classroom_tool.roster_read import read_roster
-from classroom_tool.rubric import load_rubric
+from gui.grading_io import resolve_rubric
 from gui.screens.base import ScreenBase
 from gui.state import GradingState
 
@@ -152,29 +152,8 @@ class Screen(ScreenBase):
 
     # --- resolve rubric + extracted dirs ----------------------
     def _resolve_rubric(self, wd: Path) -> dict:
-        want = f"{wd.parent.name}/{wd.name}"
-        d = self._rubrics_dir()
-        if d.is_dir():
-            for f in sorted(d.glob("*.yaml")):
-                try:
-                    doc = load_rubric(f)
-                except Exception:  # noqa: BLE001 - skip an unreadable rubric
-                    continue
-                assoc = str(doc.get("assignment") or "").replace("\\", "/")
-                crit = doc.get("criteria") or []
-                if assoc == want and crit:
-                    return {
-                        "max_points": _num(doc.get("max_points"), _sum_points(crit)),
-                        "criteria": [
-                            {"key": str(c.get("key") or f"c{i}"),
-                             "label": str(c.get("label") or c.get("key") or f"معيار {i}"),
-                             "points": _num(c.get("points"), 0)}
-                            for i, c in enumerate(crit, start=1)
-                            if isinstance(c, dict)
-                        ],
-                    }
-        return {"max_points": _DEFAULT_MAX,
-                "criteria": [{"key": "grade", "label": "الدرجة", "points": _DEFAULT_MAX}]}
+        return resolve_rubric(self._rubrics_dir(), f"{wd.parent.name}/{wd.name}",
+                              default_max=_DEFAULT_MAX)
 
     def _scan_extracted(self, wd: Path) -> dict[str, Path]:
         base = wd / "extracted"
@@ -534,10 +513,6 @@ def _num(value: object, default: float) -> float:
         return float(str(value))
     except (TypeError, ValueError):
         return default
-
-
-def _sum_points(criteria) -> float:  # noqa: ANN001
-    return sum(_num(c.get("points"), 0) for c in criteria if isinstance(c, dict))
 
 
 def _similar_from(flags: list[str]) -> str:
