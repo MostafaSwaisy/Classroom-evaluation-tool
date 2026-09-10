@@ -23,8 +23,14 @@ from PySide6.QtWidgets import (
 from classroom_tool import config
 from classroom_tool.auth import get_services
 from classroom_tool.status import compute_status, write_status_xlsx
+from gui.charts import Histogram, StackedBarChart
 from gui.screens.base import ScreenBase
 from gui.widgets import Card, DataTable
+
+
+def _cell(row: dict, wi: int) -> str:
+    cells = row.get("cells") or []
+    return cells[wi] if wi < len(cells) else "missing"
 
 _JOB_LOAD = "tracking.compute"
 _JOB_EXPORT = "tracking.export"
@@ -126,11 +132,38 @@ class Screen(ScreenBase):
         body.addWidget(self._risk_card, 1)
 
         charts = Card("الرسوم البيانية")
-        charts.add_widget(QLabel("توزيع نسب التسليم + مقارنة الواجبات — تُضاف في P5-U3."))
+        self._hist = Histogram()
+        self._hist.set_title("توزيع نسب التسليم")
+        charts.add_widget(self._hist)
+        self._stacked = StackedBarChart()
+        self._stacked.set_title("لكل واجب: سلّم / متأخر / لم يسلّم")
+        charts.add_widget(self._stacked)
         body.addWidget(charts, 1)
         lay.addLayout(body)
 
         return page
+
+    # --- charts (P5-U3) --------------------------------------
+    _RATIO_BINS = ("٠–٢٠٪", "٢٠–٤٠٪", "٤٠–٦٠٪", "٦٠–٨٠٪", "٨٠–١٠٠٪")
+
+    def _render_charts(self) -> None:
+        rows = (self._computed or {}).get("rows") or []
+        works = (self._computed or {}).get("works") or []
+
+        counts = [0, 0, 0, 0, 0]
+        for r in rows:
+            idx = min(int(r.get("ratio", 0) * 5), 4)
+            counts[idx] += 1
+        self._hist.set_bins(list(self._RATIO_BINS), counts)
+
+        cats, sub, late, miss = [], [], [], []
+        for wi, w in enumerate(works):
+            cats.append(str(w.get("title", ""))[:12])
+            sub.append(sum(1 for r in rows if _cell(r, wi) == "ok"))
+            late.append(sum(1 for r in rows if _cell(r, wi) == "late"))
+            miss.append(sum(1 for r in rows if _cell(r, wi) == "missing"))
+        self._stacked.set_data(
+            cats, {"submitted": sub, "late": late, "missing": miss})
 
     def _build_controls(self) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -202,6 +235,7 @@ class Screen(ScreenBase):
         self._summary.setText(
             f"{s['total_students']} طالب  ×  {s['total_works']} واجب")
         self._fill_risk_panel(rows, t)
+        self._render_charts()
         self._export_btn.setEnabled(True)
         self.state_view.set_state("ok")
 
