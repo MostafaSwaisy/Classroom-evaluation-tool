@@ -26,10 +26,18 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from classroom_tool import config
+from classroom_tool import claude_provider, config
 from classroom_tool.naming import extract_student_id
 from gui.screens.base import ScreenBase
-from gui.widgets import Card, Toast
+from gui.widgets import Card, StatusDot, Toast
+
+_CLAUDE_BADGE = {
+    "ready": ("Claude جاهز", "ok"),
+    "not_logged_in": ("Claude غير مُسجَّل دخول", "warn"),
+    "not_installed": ("Claude غير مثبَّت", "idle"),
+    "no_api_key": ("لا مفتاح Anthropic", "warn"),
+    "disabled": ("مساعدة AI معطّلة", "idle"),
+}
 
 _PRESETS = (
     (r"^(\d+)@", "120210123@…"),
@@ -105,6 +113,7 @@ class Screen(ScreenBase):
         outer.addWidget(self._build_paths_card())
         outer.addWidget(self._build_pattern_card())
         outer.addWidget(self._build_misc_card())
+        outer.addWidget(self._build_ai_card())
 
         btn_row = QHBoxLayout()
         self._save_btn = QPushButton("حفظ…")
@@ -211,6 +220,24 @@ class Screen(ScreenBase):
         holder.setLayout(form)
         card.add_widget(holder)
         return card
+
+    def _build_ai_card(self) -> Card:
+        card = Card("مساعدة Claude (اختيارية)")
+        self._claude_badge = StatusDot("—", "idle")
+        card.add_header_action(self._claude_badge)
+        refresh = QPushButton("افحص")
+        refresh.clicked.connect(self._refresh_claude_badge)
+        card.add_header_action(refresh)
+        return card
+
+    def _refresh_claude_badge(self) -> None:
+        try:
+            state = claude_provider.provider_status(
+                config.load_config(self._cfg_path())).state
+        except Exception:  # noqa: BLE001 - a probe failure is just "unknown"
+            state = "not_installed"
+        text, tone = _CLAUDE_BADGE.get(state, ("Claude — غير معروف", "idle"))
+        self._claude_badge.set_status(tone, text)
 
     def _build_diff_panel(self) -> QWidget:
         panel = Card("فرق التغييرات — يُراجَع قبل الكتابة")

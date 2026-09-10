@@ -186,6 +186,28 @@ def test_write_is_inert_after_the_form_changes_post_preview(screen, cfg_file):
     assert cfg_file.read_text(encoding="utf-8") == before
 
 
+# --- P4-U5: Claude badge ---------------------------------
+def test_claude_badge_renders_from_a_mocked_provider_status(screen, monkeypatch):
+    from dataclasses import make_dataclass
+
+    from gui.screens import settings as settings_mod
+    St = make_dataclass("St", ["provider", "state", "detail"])
+    monkeypatch.setattr(settings_mod.claude_provider, "provider_status",
+                        lambda *_a, **_k: St("claude_cli", "ready", ""))
+    screen._refresh_claude_badge()
+    assert screen._claude_badge.state == "ok"
+
+    monkeypatch.setattr(settings_mod.claude_provider, "provider_status",
+                        lambda *_a, **_k: St("claude_cli", "not_installed", ""))
+    screen._refresh_claude_badge()
+    assert screen._claude_badge.state == "idle"
+
+
+def test_claude_badge_does_not_probe_on_load(screen):
+    # load() must not shell out to a real `claude` — badge stays neutral until "افحص"
+    assert screen._claude_badge.state == "idle"
+
+
 # --- guardrail --------------------------------------------
 def test_no_upload_tokens_in_source():
     src = (Path(__file__).resolve().parent.parent
