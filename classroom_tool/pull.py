@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 import tempfile
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -12,8 +13,8 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from . import api
-from .config import replace_with_retry
 from .errors import OperationCancelled
+from .fsutil import replace_with_retry
 from .naming import build_filename, extract_student_id, normalize_arabic, safe_filename
 
 #: A progress sink: ``progress(message, done, total)``. ``done``/``total`` are set
@@ -228,8 +229,9 @@ def pull(classroom, drive, cfg: dict, course_key: str, course_id: str,
                 "submitted": state in SUBMITTED_STATES,
             })
     except OperationCancelled:
-        # staging stays where it is — a sibling `.partial` dir, outside the
-        # review path; `out_dir` was never touched. Nothing to roll back.
+        # `out_dir` was never touched (promotion runs only after a clean loop),
+        # so there is nothing to roll back — just drop our own scratch dir.
+        shutil.rmtree(staging, ignore_errors=True)
         raise
 
     rows.sort(key=lambda r: (r["student_id"] == "", r["student_id"]))

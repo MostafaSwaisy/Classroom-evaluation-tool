@@ -9,11 +9,12 @@ from __future__ import annotations
 import io
 import os
 import shutil
-import time
 from pathlib import Path
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
+
+from .fsutil import replace_with_retry  # re-exported: `config.replace_with_retry`
 
 DEFAULTS = {
     "output_dir": "./submissions",
@@ -111,18 +112,6 @@ def dump_config(doc: CommentedMap | dict) -> str:
     buf = io.StringIO()
     _yaml().dump(doc, buf)
     return buf.getvalue()
-
-
-def replace_with_retry(src: Path, dst: Path, *, attempts: int = 6) -> None:
-    """os.replace, retried — a Windows AV / indexer can briefly lock a new file."""
-    for i in range(attempts):
-        try:
-            os.replace(src, dst)
-            return
-        except PermissionError:
-            if i == attempts - 1:
-                raise
-            time.sleep(0.05 * (i + 1))
 
 
 def resolve_course_id(cfg: dict, key: str) -> str:
