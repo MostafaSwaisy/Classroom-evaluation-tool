@@ -131,10 +131,12 @@ f. **Timeout / kill** — per-call timeout in the worker; on timeout
 > me and (to my knowledge) within Anthropic's current terms. Proceed with
 > Phase 4 (Provider B).
 
-- Name:
-- Date:
-- Signature / "approved" in commit message:
+- Name: **Mostafa Swaisy** (mostafa, the grader)
+- Date: **2026-09-10**
+- Signature / "approved" in commit message: **approved** — given in-session on
+  2026-09-10 ("Approved — build Phase 4"), recorded in this commit.
 
-_Until this section is filled, Phase 4 stays blocked. `feat/gui-phase3` is
-code-complete and shippable without any of Phase 4 (spec §8 criterion 3 met at
-P3-U7 without AI)._
+**→ Phase 4 (Provider B) is UNBLOCKED as of 2026-09-10. P4-U2…U6 may proceed.**
+
+_`feat/gui-phase3` remains code-complete and shippable without any of Phase 4
+(spec §8 criterion 3 met at P3-U7 without AI)._
