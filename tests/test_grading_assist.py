@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import json
 
-from classroom_tool.grading_assist import Suggestion, suggest
+import pytest
+
+from classroom_tool.errors import OperationCancelled
+from classroom_tool.grading_assist import Suggestion, suggest, suggest_batch
 
 _RUBRIC = {
     "max_points": 10,
@@ -103,3 +106,30 @@ def test_one_student_per_call():
     # the single call carries exactly this student's files, nothing batched
     blob = client.calls[0]["messages"][-1]["content"]
     assert blob.count("--- ") == 2  # two file headers, one student
+
+
+# --- suggest_batch (P4-U4) --------------------------------
+def test_batch_yields_one_suggestion_per_student_in_order():
+    client = _FakeClient(_good({"correctness": 6, "style": 4}),
+                         _good({"correctness": 3, "style": 2}))
+    seen = []
+    out = suggest_batch(
+        {"s1": {"a.php": "x"}, "s2": {"b.php": "y"}}, _RUBRIC, client,
+        on_result=lambda k, s: seen.append(k))
+    assert list(out) == ["s1", "s2"]
+    assert seen == ["s1", "s2"]
+    assert out["s1"].scores["correctness"] == 6
+
+
+def test_batch_checks_cancel_between_students_and_raises():
+    client = _FakeClient(_good(), _good(), _good())
+    calls = {"n": 0}
+
+    def cancel_after_first():
+        calls["n"] += 1
+        return calls["n"] >= 2      # first check False, second True
+
+    with pytest.raises(OperationCancelled):
+        suggest_batch({"s1": {"a": "1"}, "s2": {"b": "2"}, "s3": {"c": "3"}},
+                      _RUBRIC, client, should_cancel=cancel_after_first)
+    assert len(client.calls) == 1  # only s1 was graded before the cancel

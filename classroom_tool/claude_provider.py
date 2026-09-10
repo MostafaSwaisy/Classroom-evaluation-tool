@@ -64,12 +64,22 @@ def _flatten_prompt(system: str, messages: list[dict]) -> str:
     return "\n\n".join(p for p in parts if p)
 
 
+class ProviderTimeout(ProviderNotConfigured):
+    """نداء `claude -p` تجاوز المهلة وقُتِلت العملية الفرعية."""
+
+
 @dataclass(frozen=True)
 class _CliClient:
-    exe: str
+    #: مسار `claude`، أو قائمة بادئة (للاختبار: ``[python, stub.py]``).
+    exe: str | list[str]
     model: str = DEFAULT_MODEL
     cwd: str | None = None
     timeout: float = _CALL_TIMEOUT
+
+    def _argv(self, prompt: str) -> list[str]:
+        prefix = list(self.exe) if isinstance(self.exe, (list, tuple)) else [self.exe]
+        return [*prefix, "-p", prompt, "--model", self.model,
+                "--output-format", "json"]
 
     def complete(self, system: str, messages: list[dict],
                  tools: list[dict] | None = None) -> str:
@@ -77,13 +87,13 @@ class _CliClient:
         prompt = _flatten_prompt(system, messages)
         try:
             proc = subprocess.run(
-                [self.exe, "-p", prompt, "--model", self.model,
-                 "--output-format", "json"],
+                self._argv(prompt),
                 capture_output=True, text=True, encoding="utf-8",
                 errors="replace", timeout=self.timeout, cwd=self.cwd,
             )
         except subprocess.TimeoutExpired as exc:
-            raise ProviderNotConfigured(
+            # subprocess.run already TerminateProcess/kill'd *only* this child.
+            raise ProviderTimeout(
                 f"claude -p تجاوز المهلة ({self.timeout}s)") from exc
         if proc.returncode != 0:
             raise ProviderNotConfigured(
