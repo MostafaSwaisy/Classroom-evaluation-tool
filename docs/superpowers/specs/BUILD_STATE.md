@@ -6,8 +6,8 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 - **main:** Phase 0 (`49d9e84`) · Phase 1 (`3fcbd05`) · **Phase 2 merged (`38a3229`, Fable
   checkpoint #2 PROCEED — #1 HALTed on `_promote`, fixed `a7ee113`)**.
-- **Working branch:** `feat/gui-phase3` (cut from `main` at `38a3229`). `feat/gui-phase1`,
-  `feat/gui-phase2` kept for now.
+- **Working branch:** `feat/gui-phase3` (cut from `main` at `38a3229`; **intake `c958f3e`**).
+  `feat/gui-phase1`, `feat/gui-phase2` kept for now.
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
@@ -104,16 +104,25 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 - **Phase 2 code complete (P2-U1…U6) + Fable-HALT fix `a7ee113` + re-touch nits `03fbf4e`.**
   Opus-mandatory: **P2-U1 `approved-with-nits`** (re-touch on `a7ee113` confirmed the retry
   doesn't weaken the cancel guarantee — `_promote` runs 0× on both cancel paths; nits A/C
-  folded in `03fbf4e`, nit B `replace_with_retry`→`fsutil.py` is a carry), **P2-U6
+  folded in `03fbf4e`, nit B `replace_with_retry`→`fsutil.py` done in intake `c958f3e`), **P2-U6
   `approved-with-nits`**. Both mandatory verdicts recorded.
 - **Phase 2 Fable checkpoint #2 → PROCEED (`38a3229` merged to `main`).** Haiku green on
   `e783c69`; both Opus-mandatory `approved-with-nits`; R-C sweep clean; R3/R4/R10-ext landed
   + tested; `_promote` red gate closed and reproduced green. `feat/gui-phase3` cut from
-  `main` @ `38a3229`. **Next: Phase 3** — grading without AI (R1, R7, R11); first unit **P3-U1**.
-  Fable recommended a Phase-3 intake housekeeping commit: fold nit B
-  (`replace_with_retry` → `classroom_tool/fsutil.py`) + `.partial` cleanup-on-cancel.
-- **Test count:** 221 collected → 220 passed / 1 skipped (live-parity gate) on `main` @
-  `38a3229` (149 on `main` @ `3fcbd05`). Full suite ~2.5–3 min.
+  `main` @ `38a3229`.
+- **Phase 3 intake done (`c958f3e`).** Fable-recommended housekeeping, both Phase-2 carries:
+  (a) `replace_with_retry` extracted from `config.py` → new Qt-free `classroom_tool/fsutil.py`
+  (`config` re-exports it, drops unused `import time`; `pull` imports from `.fsutil`;
+  `test_pull` retargets the retry monkeypatch to `fsutil.os.replace`). (b) `.partial`
+  cleanup-on-cancel: `pull()`'s `except OperationCancelled` now
+  `shutil.rmtree(staging, ignore_errors=True)` before re-raising (was inert) — safe, `_promote`
+  runs only after a clean loop so `out_dir` is untouched. TDD: new
+  `test_cancel_removes_the_partial_staging_dir` + tightened `test_cancel_mid_loop_...`.
+  **Next: Phase 3 code** — grading without AI (R1, R7, R11); first unit **P3-U1**
+  (`tools/write_grades.py` → `write_grades(work_dir, data) -> Path`, `main()` a thin
+  `sys.argv` wrapper; TDD test-first `test_write_grades.py`).
+- **Test count:** 222 collected → 221 passed / 1 skipped (live-parity gate) on
+  `feat/gui-phase3` @ `c958f3e` (220/1 on `main` @ `38a3229`; 149 @ `3fcbd05`). Full suite ~2.5–3 min.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
