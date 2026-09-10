@@ -6,9 +6,17 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 
 - **main:** Phase 0 (`49d9e84`) · Phase 1 (`3fcbd05`) · **Phase 2 merged (`38a3229`, Fable
   checkpoint #2 PROCEED — #1 HALTed on `_promote`, fixed `a7ee113`)**.
-- **Working branch:** `feat/gui-phase3` — carries **Phase 3 + Phase 4 code** (P3-U1…U7,
-  P4-U1…U6). Opus R1/R7 + R8/R9 reviews, Fable Phase-3/4 checkpoints, and the real-app
-  manual-test triage are all still pending. `feat/gui-phase1`, `feat/gui-phase2` kept.
+- **Working branch:** `feat/gui-phase3` — carries **Phase 3 + Phase 4 + Phase 5 code**
+  (P3-U1…U7, P4-U1…U6, P5-U1/U2/U3/U5; P5-U4 is a manual light/dark eyeball pass, not code —
+  checklist `docs/…/2026-09-10-state-matrix-checklist.md`). All Opus-mandatory reviews
+  (R1/R7/R8/R9), the Fable Phase-3/4/5 checkpoints, and the real-app manual-test triage are
+  **still pending** — to be run on a fixing branch. `feat/gui-phase1`, `feat/gui-phase2` kept.
+- **Session 2026-09-10 (autonomous run):** intake `c958f3e` → `03b458b`. 20 unit commits,
+  all TDD/test-after-with-a-bar, each ruff-clean on new code + `--smoke` 0. Nothing merged
+  to `main`; nothing reviewed by Opus/Fable yet. `run_gui.py --smoke` clean;
+  `run_gui.py` launched fine for manual testing (mostafa reported "many screens not working"
+  + Google auth failure — almost certainly the expired token, `python cli.py auth`; logged
+  under "Phase 3 — still OPEN").
 - **Units done:** P0-U1…U5 (Opus P0-U4 approved) · P1-U1 (R10) · P1-U2 (R6) ·
   P1-U3 (R2; Opus 2 rounds → **approved-with-nits**, nits 1/2/3 folded) · P1-U4 (R5) ·
   P1-U5 (connections screen) · P1-U6 (courses & aliases screen) ·
@@ -205,6 +213,39 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   against a real `claude` (only the P4-U1 probe); §5.11 "demonstrate all 5 AI states" is
   covered by tests, not a screenshot set (feeds P5-U1). `anthropic` package not installed
   (Provider A path untested end-to-end — acceptable, un-promoted).
+- **Phase 5 code complete (P5-U1/U2/U3/U5) on `feat/gui-phase3`.**
+  - **P5-U5 (`43b9d62`)** — `tests/test_guardrails.py`: 6 checks over `gui/**` on every
+    pytest run — no push/upload/confirm/sync vocab, no `classroom .create/.patch/.update(`,
+    every `_roster.xlsx` ref is a read, no `rmtree/os.remove/shutil.move/os.rmdir`,
+    `.unlink()` only for tmp sidecars, no direct `import anthropic`. Green.
+  - **P5-U2 (`debbaa6`)** — `main_window` listens on `worker.failed`; `invalid_grant` /
+    `RefreshError` / `401` / "Token has been expired" → bottom-left error `Toast` +
+    "إعادة الربط" → `auth.reconnect` worker job (runs `auth.authorize`) → on `finished`
+    toast clears + current screen reloads; on `failed` toast stays with a retry message.
+    `_toast_layer` repositioned in `resizeEvent`. Also un-staled `test_p0u1_scaffold`'s
+    anthropic guard (now: SDK allowed only in `claude_provider.py`, lazy).
+  - **P5-U3 (`56015ae`)** — `gui/charts.py`: `BarChartBase(QWidget)` painting in
+    `paintEvent` (resize repaints crisp), RTL axis, theme-aware; `Histogram` +
+    `StackedBarChart` (submitted/late/missing + legend). No external charting lib (grep
+    clean). `tracking_report` placeholder → live ratio histogram + per-work stacked bar
+    from `compute_status` `rows[].cells`/`ratio`.
+  - **P5-U1 (`03b458b`)** — `dev/state_matrix.py` renders every data screen × 4 states
+    (+ grading_workspace's 5 AI sub-states) to a PNG grid + `index.html`;
+    `tests/test_state_matrix.py` asserts every cell. Legibility + **P5-U4** light/dark
+    layout pass are a manual eyeball pass — checklist doc
+    `2026-09-10-state-matrix-checklist.md`.
+- **Test count:** run `pytest -q` — ~340 collected (was 221 on `main`). Full suite ~4–6 min
+  under load. All Phase-3/4/5-touched files ruff-clean.
+- **What's left before any merge to `main`:**
+  1. Opus-mandatory reviews: R1 (P3-U1, P3-U6), R7 (P3-U2, P3-U4), R8 (P4-U2, P4-U5),
+     R9 (P4-U3, P4-U6).
+  2. Fable checkpoints for Phase 3, 4, 5 (Haiku sweep, guardrail sweep, goldens byte-check).
+  3. Real-app manual-test triage (mostafa's punch list) + P5-U4 light/dark pass — the
+     "fixing branch" mostafa will cut.
+  4. Carry cleanups: pre-existing `api.py`/`auth.py` ruff debt (B023/B904);
+     `doctor.reset_token()` structured result; `_edited_doc` `google_export` MIME fill
+     (P2-U6 carry); `replace_with_retry`→`fsutil` done, but P2-U1 nit B "→ fsutil.py"
+     note can be closed.
 - **Known flaky:** none open — the `test_worker` progress-delivery race is fixed in `37f43a4`.
   Watch for `killTimer: Timers cannot be stopped from another thread` on QThread teardown
   under heavy parallel pytest (harness artifact of concurrent runs, not a code defect;
