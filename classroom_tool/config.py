@@ -27,6 +27,9 @@ DEFAULTS = {
     },
     "max_file_mb": 50,
     "latin_filenames": False,
+    # Phase 4 (R8): the only AI key. "claude_cli" (Provider B, default) |
+    # "api_key" (Provider A, advanced) | "none".
+    "ai_provider": "claude_cli",
 }
 
 
