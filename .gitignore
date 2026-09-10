@@ -16,3 +16,4 @@ submissions/
 grades.json
 *_draft.xlsx
 _status_*.xlsx
+dev/state_matrix_out/
