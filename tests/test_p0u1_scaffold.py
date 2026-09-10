@@ -15,18 +15,26 @@ def test_gui_deps_import():
     import ruamel.yaml  # noqa: F401
 
 
-def test_no_anthropic_before_phase4():
-    """Phases 0-3 must not pull in the anthropic SDK (execution plan, Haiku check 10)."""
+def test_anthropic_sdk_is_confined_to_the_provider_seam():
+    """Phase 4: the `anthropic` SDK may appear ONLY in claude_provider.py (the
+    un-promoted Provider-A path), lazily imported. No `gui/` module and no other
+    `classroom_tool/` module may reference it (execution plan, Haiku check 10)."""
     import importlib.util
 
     assert importlib.util.find_spec("gui") is not None
+    allowed = {REPO / "classroom_tool" / "claude_provider.py"}
     for pkg in ("gui", "classroom_tool"):
-        root = REPO / pkg
-        hits = [
-            p for p in root.rglob("*.py")
-            if "anthropic" in p.read_text(encoding="utf-8")
-        ]
-        assert not hits, f"'anthropic' referenced too early in: {hits}"
+        for p in (REPO / pkg).rglob("*.py"):
+            if p in allowed:
+                continue
+            assert "anthropic" not in p.read_text(encoding="utf-8"), (
+                f"'anthropic' referenced outside the provider seam: {p}")
+
+    # and even there it must be a function-local (lazy) import
+    src = (REPO / "classroom_tool" / "claude_provider.py").read_text(encoding="utf-8")
+    for line in src.splitlines():
+        if line.lstrip().startswith(("import anthropic", "from anthropic")):
+            assert line.startswith((" ", "\t")), "anthropic import must be lazy"
 
 
 def test_run_gui_smoke_exits_zero():

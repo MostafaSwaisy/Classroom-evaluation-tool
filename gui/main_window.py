@@ -6,7 +6,9 @@ navigating calls the target screen's `load()` slot.
 """
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+import re
+
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QApplication,
     QFrame,
@@ -22,11 +24,24 @@ from PySide6.QtWidgets import (
 
 from gui import theme
 from gui.screens import CONNECTIONS_KEY, KEYS, NAV, screen_class
-from gui.widgets import Chip, StatusDot
+from gui.widgets import Chip, StatusDot, Toast
 from gui.worker import BackendThread
 
 SIDEBAR_W = 220
 TOPBAR_H = 44
+
+_JOB_RECONNECT = "auth.reconnect"
+#: an expired Google token surfaces as one of these from a worker `failed`.
+_AUTH_FAILURE = re.compile(r"invalid_grant|RefreshError|\b401\b|Token has been expired",
+                           re.IGNORECASE)
+
+
+def _reconnect_job():
+    def run(_ctx) -> dict:  # noqa: ANN001 - JobContext
+        from classroom_tool.auth import authorize
+        authorize()                       # browser flow; rewrites token.json
+        return {"reconnected": True}
+    return run
 
 
 class AppServices:
@@ -78,6 +93,19 @@ class MainWindow(QMainWindow):
             course_signal = getattr(screen, "course_changed", None)
             if course_signal is not None:
                 course_signal.connect(self._on_course_changed)
+
+        # spec §8 criterion 5 — expired-token toast + working Reconnect
+        self._reconnect_toast: Toast | None = None
+        self._reconnecting = False
+        self.services.backend.worker.failed.connect(self._on_backend_failed)
+        self.services.backend.worker.finished.connect(self._on_backend_finished)
+        self._toast_layer = QWidget(central)
+        self._toast_layer.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents,
+                                       False)
+        self._toast_col = QVBoxLayout(self._toast_layer)
+        self._toast_col.setContentsMargins(12, 12, 12, 12)
+        self._toast_col.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignLeft)
+        self._toast_layer.hide()
 
         self.navigate("dashboard")
 
@@ -148,6 +176,62 @@ class MainWindow(QMainWindow):
         if ctx is not None and callable(apply_context):
             apply_context(ctx)
         screen.load()
+
+    # --- expired-token toast + reconnect (spec §8) ------------------------
+    @Slot(str, str, str, str)
+    def _on_backend_failed(self, job_id: str, exc_type: str, message: str,
+                           _tb: str) -> None:
+        if job_id == _JOB_RECONNECT:
+            self._reconnecting = False
+            if self._reconnect_toast is not None:
+                self._reconnect_toast._label.setText(
+                    "تعذّرت إعادة الربط — جرّب مرة ثانية.")
+            return
+        if self._reconnect_toast is None and _AUTH_FAILURE.search(
+                f"{exc_type} {message}"):
+            self._show_reconnect_toast()
+
+    @Slot(str, object)
+    def _on_backend_finished(self, job_id: str, _result: object) -> None:
+        if job_id != _JOB_RECONNECT:
+            return
+        self._reconnecting = False
+        self._dismiss_reconnect_toast()
+        if self.current_key:
+            self.navigate(self.current_key)          # re-fetch with the fresh token
+
+    def _show_reconnect_toast(self) -> None:
+        self._reconnect_toast = Toast(
+            "انتهت جلسة Google — أعد الربط للمتابعة.", "error",
+            action_text="إعادة الربط", action=self._reconnect)
+        self._reconnect_toast.dismissed.connect(self._dismiss_reconnect_toast)
+        self._toast_col.addWidget(self._reconnect_toast)
+        self._toast_layer.show()
+        self._toast_layer.raise_()
+        self._position_toast_layer()
+
+    def _dismiss_reconnect_toast(self) -> None:
+        if self._reconnect_toast is not None:
+            self._reconnect_toast.setParent(None)
+            self._reconnect_toast = None
+        self._toast_layer.hide()
+
+    def _reconnect(self) -> None:
+        if self._reconnecting:
+            return
+        self._reconnecting = True
+        if self._reconnect_toast is not None:
+            self._reconnect_toast._label.setText("جارٍ إعادة الربط…")
+        self.services.backend.submit(_JOB_RECONNECT, _reconnect_job())
+
+    def _position_toast_layer(self) -> None:
+        central = self.centralWidget()
+        if central is not None:
+            self._toast_layer.setGeometry(central.rect())
+
+    def resizeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        super().resizeEvent(event)
+        self._position_toast_layer()
 
     def _on_course_changed(self, course_id: str, label: str) -> None:
         self.services.active_course_id = course_id or None
