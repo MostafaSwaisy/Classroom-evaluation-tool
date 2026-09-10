@@ -91,3 +91,47 @@ def test_navigate_forwards_context_to_a_screen_that_accepts_it(win):
 def test_navigate_without_context_is_still_fine(win):
     win.navigate("pull")            # positional, no ctx — must not raise
     assert win.current_key == "pull"
+
+
+# --- P5-U2: expired-token toast + reconnect -----------------------
+def _emit_fail(win, exc_type="RefreshError",
+               msg="('invalid_grant: Token has been expired or revoked.',)"):
+    win.services.backend.worker.failed.emit("roster.load", exc_type, msg, "")
+
+
+def test_auth_failure_raises_a_reconnect_toast(win):
+    from gui.widgets import Toast
+    assert win._reconnect_toast is None
+    _emit_fail(win)
+    assert isinstance(win._reconnect_toast, Toast)
+    assert win._reconnect_toast.level == "error"
+    assert win._toast_layer.isVisibleTo(win.centralWidget()) or not win._toast_layer.isHidden()
+
+
+def test_non_auth_failure_does_not_toast(win):
+    win.services.backend.worker.failed.emit("x", "ValueError", "bad rubric", "")
+    assert win._reconnect_toast is None
+
+
+def test_reconnect_button_submits_an_auth_job_then_reloads(win, monkeypatch):
+    navigated = []
+    monkeypatch.setattr(win, "navigate", lambda k, ctx=None: navigated.append(k))
+    submitted = []
+    monkeypatch.setattr(win.services.backend, "submit",
+                        lambda job_id, fn: submitted.append(job_id))
+
+    _emit_fail(win)
+    win._reconnect()
+    assert submitted == ["auth.reconnect"]
+
+    win.services.backend.worker.finished.emit("auth.reconnect", {"reconnected": True})
+    assert win._reconnect_toast is None          # toast cleared
+    assert navigated and navigated[-1]           # current screen reloaded
+
+
+def test_reconnect_failure_keeps_the_toast_with_a_retry_message(win, monkeypatch):
+    monkeypatch.setattr(win.services.backend, "submit", lambda *a: None)
+    _emit_fail(win)
+    win._reconnect()
+    win.services.backend.worker.failed.emit("auth.reconnect", "RefreshError", "still bad", "")
+    assert win._reconnect_toast is not None
