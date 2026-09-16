@@ -105,7 +105,7 @@ def test_run_submits_job_and_enters_running_phase(screen):
     _run(screen)
     assert screen.services.backend.calls == [_JOB_PULL]
     assert screen._phases.currentIndex() == 1
-    assert screen._cancel_btn.isEnabled()
+    assert screen._progress._cancel_btn.isEnabled()
 
 
 def test_progress_updates_bar_and_log_only_while_running(screen):
@@ -113,8 +113,8 @@ def test_progress_updates_bar_and_log_only_while_running(screen):
     screen.services.backend.worker.progress.emit("\n📘 الواجب: HW03", 0, 0)
     screen.services.backend.worker.progress.emit("   ✓ 120210001 → a.php", 1, 3)
 
-    assert screen._bar.maximum() == 3
-    assert screen._bar.value() == 1
+    assert screen._progress._bar.maximum() == 3
+    assert screen._progress._bar.value() == 1
     text = screen._log.toPlainText()
     assert "📘 الواجب: HW03" in text and "✓ 120210001 → a.php" in text
 
@@ -128,9 +128,9 @@ def test_progress_ignored_before_run(screen):
 # --- cancel ----------------------------------------------------
 def test_cancel_calls_backend_and_returns_to_form_with_note(screen):
     _run(screen)
-    screen._cancel_btn.click()
+    screen._progress._cancel_btn.click()
     assert screen.services.backend.cancelled is True
-    assert not screen._cancel_btn.isEnabled()
+    assert not screen._progress._cancel_btn.isEnabled()
 
     screen.services.backend.worker.cancelled.emit(_JOB_PULL)
     assert screen._phases.currentIndex() == 0
@@ -200,3 +200,28 @@ def test_no_upload_tokens_in_source():
            / "gui" / "screens" / "pull.py").read_text(encoding="utf-8")
     hit = re.search(r"\b(push|upload|confirm|sync)\b|--confirm", src, re.IGNORECASE)
     assert hit is None, f"forbidden token {hit.group(0)!r} in pull.py"
+
+
+# --- unified on the shared panel (fix/progress) ----------------------
+def test_running_phase_uses_the_shared_progress_panel(screen):
+    from gui.widgets import ProgressPanel
+    _ready(screen)
+    screen._run_btn.click()
+    assert isinstance(screen._progress, ProgressPanel)
+    assert screen._progress.is_running
+    assert not screen._progress._cancel_btn.isHidden()
+
+
+def test_counted_ticks_show_a_percentage_and_a_count(screen):
+    _ready(screen)
+    screen._run_btn.click()
+    screen.services.backend.worker.progress.emit("تنزيل a.zip", 3, 12)
+    assert screen._progress._percent.text() == "25%"
+    assert screen._progress._counter.text() == "3 من 12"
+
+
+def test_cancel_goes_through_the_panel(screen):
+    _ready(screen)
+    screen._run_btn.click()
+    screen._progress._cancel_btn.click()
+    assert screen.services.backend.cancelled

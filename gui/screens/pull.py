@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPlainTextEdit,
-    QProgressBar,
     QPushButton,
     QStackedWidget,
     QVBoxLayout,
@@ -24,7 +23,7 @@ from classroom_tool import config
 from classroom_tool.auth import get_services
 from classroom_tool.pull import _due_datetime, pull
 from gui.screens.base import ScreenBase
-from gui.widgets import Card
+from gui.widgets import Card, ProgressPanel
 
 _JOB_PULL = "pull.run"
 
@@ -150,21 +149,15 @@ class Screen(ScreenBase):
         lay = QVBoxLayout(w)
         lay.setSpacing(10)
 
-        self._bar = QProgressBar()
-        self._bar.setRange(0, 0)  # indeterminate until the first counted tick
-        lay.addWidget(self._bar)
+        self._progress = ProgressPanel(cancellable=True)
+        self._progress.cancel_requested.connect(self._cancel)
+        lay.addWidget(self._progress)
 
         self._log = QPlainTextEdit()
         self._log.setReadOnly(True)
         self._log.setPlaceholderText("سطور السحب…")
         lay.addWidget(self._log, 1)
 
-        cancel_row = QHBoxLayout()
-        self._cancel_btn = QPushButton("إلغاء")
-        self._cancel_btn.clicked.connect(self._cancel)
-        cancel_row.addWidget(self._cancel_btn)
-        cancel_row.addStretch(1)
-        lay.addLayout(cancel_row)
         return w
 
     def _build_result(self) -> QWidget:
@@ -221,8 +214,7 @@ class Screen(ScreenBase):
             return
         self._cancelled_note.hide()
         self._log.clear()
-        self._bar.setRange(0, 0)
-        self._cancel_btn.setEnabled(True)
+        self._progress.start("جارٍ سحب التسليمات…")
         self._show_phase("running")
         b.submit(_JOB_PULL, _pull_job(
             str(self._active_course_id()),
@@ -234,15 +226,12 @@ class Screen(ScreenBase):
         b = self._backend()
         if b is not None:
             b.cancel()
-        self._cancel_btn.setEnabled(False)
 
     @Slot(str, int, int)
     def _on_progress(self, message: str, current: int, total: int) -> None:
         if self._phases.currentIndex() != 1:
             return
-        if total > 0:
-            self._bar.setRange(0, total)
-            self._bar.setValue(current)
+        self._progress.update_progress(message.strip(), current, total)
         line = message.lstrip("\n")
         if line:
             self._log.appendPlainText(line)
@@ -251,6 +240,7 @@ class Screen(ScreenBase):
     def _on_finished(self, job_id: str, result: object) -> None:
         if job_id != _JOB_PULL:
             return
+        self._progress.finish()
         self._result = result if isinstance(result, dict) else {}
         out_dir = self._result.get("out_dir")
         if out_dir is not None:
@@ -273,6 +263,7 @@ class Screen(ScreenBase):
     def _on_cancelled(self, job_id: str) -> None:
         if job_id != _JOB_PULL:
             return
+        self._progress.finish()
         self._cancelled_note.show()
         self._show_phase("form")
 
