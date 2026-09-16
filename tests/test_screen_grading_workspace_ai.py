@@ -34,15 +34,20 @@ class _FakeWorker(QObject):
     finished = Signal(str, object)
     failed = Signal(str, str, str, str)
     progress = Signal(str, int, int)
+    cancelled = Signal(str)
 
 
 class _FakeBackend:
     def __init__(self):
         self.worker = _FakeWorker()
         self.jobs = []
+        self.cancelled = False
 
     def submit(self, job_id, fn):  # noqa: ANN001
         self.jobs.append((job_id, fn))
+
+    def cancel(self):
+        self.cancelled = True
 
 
 @dataclass
@@ -172,9 +177,9 @@ def test_batch_progress_updates_the_running_bar(screen):
     screen._run_ai(whole_batch=True)
     assert _ai_state(screen) == "running"
     screen.services.backend.worker.progress.emit("مقترح: 12021001", 1, 2)
-    assert screen._ai_progress.maximum() == 2
-    assert screen._ai_progress.value() == 1
-    assert "1/2" in screen._ai_msgs["running"].text()
+    assert screen._ai_progress._bar.maximum() == 2
+    assert screen._ai_progress._bar.value() == 1
+    assert screen._ai_progress._counter.text() == "1 من 2"
 
 
 def test_state_error_on_worker_failure(screen):
@@ -237,3 +242,52 @@ def test_no_upload_tokens_in_source():
     src = (Path(__file__).resolve().parent.parent
            / "gui" / "screens" / "grading_workspace.py").read_text(encoding="utf-8")
     assert re.search(r"\b(push|upload|confirm|sync)\b|--confirm", src, re.IGNORECASE) is None
+
+
+# --- the AI batch is the longest job in the app; it needs a cancel ------
+def test_running_panel_is_the_shared_progress_panel_and_is_cancellable(screen):
+    screen._run_ai(whole_batch=True)
+    assert _ai_state(screen) == "running"
+    assert screen._ai_progress.is_running
+    assert not screen._ai_progress._cancel_btn.isHidden()
+
+
+def test_ticks_drive_a_percentage_and_a_count(screen):
+    screen._run_ai(whole_batch=True)
+    screen.services.backend.worker.progress.emit("مقترح: 120210123", 1, 4)
+    assert screen._ai_progress._percent.text() == "25%"
+    assert screen._ai_progress._counter.text() == "1 من 4"
+    assert "120210123" in screen._ai_progress._detail.text()
+
+
+def test_ticks_ignored_when_the_ai_panel_is_not_running(screen):
+    screen.services.backend.worker.progress.emit("شيء تاني", 2, 8)
+    assert screen._ai_progress._percent.text() == ""
+
+
+def test_cancelling_the_batch_asks_the_backend_to_stop(screen):
+    screen._run_ai(whole_batch=True)
+    screen._ai_progress._cancel_btn.click()
+    assert screen.services.backend.cancelled
+
+
+def test_cancelled_batch_stops_the_panel_and_says_what_was_kept(screen):
+    screen._run_ai(whole_batch=True)
+    screen.services.backend.worker.cancelled.emit(gw._JOB_AI)
+    assert not screen._ai_progress.is_running
+    assert _ai_state(screen) == "error"
+    assert "أُلغي" in screen._ai_msgs["error"].text()
+
+
+def test_finishing_stops_the_panel(screen):
+    screen._run_ai(whole_batch=False)
+    screen.services.backend.worker.finished.emit(gw._JOB_AI, {})
+    assert not screen._ai_progress.is_running
+
+
+def test_a_restart_resets_a_stale_percentage(screen):
+    screen._run_ai(whole_batch=True)
+    screen.services.backend.worker.progress.emit("مقترح: x", 4, 4)
+    screen.services.backend.worker.finished.emit(gw._JOB_AI, {})
+    screen._run_ai(whole_batch=True)
+    assert screen._ai_progress._percent.text() == ""

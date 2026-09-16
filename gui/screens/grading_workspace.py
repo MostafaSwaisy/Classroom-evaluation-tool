@@ -26,7 +26,6 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QPlainTextEdit,
-    QProgressBar,
     QPushButton,
     QSplitter,
     QStackedWidget,
@@ -43,6 +42,7 @@ from gui.grading_ai import ai_suggest_job
 from gui.grading_io import resolve_rubric
 from gui.screens.base import ScreenBase
 from gui.state import GradingState
+from gui.widgets import ProgressPanel
 
 _JOB_AI = "grading_workspace.ai_batch"
 
@@ -154,6 +154,7 @@ class Screen(ScreenBase):
             b.worker.finished.connect(self._on_ai_finished)
             b.worker.failed.connect(self._on_ai_failed)
             b.worker.progress.connect(self._on_ai_progress)
+            b.worker.cancelled.connect(self._on_ai_cancelled)
         self.state_view.set_content(self._build_page())
 
     # --- context + lifecycle -----------------------------------
@@ -355,8 +356,11 @@ class Screen(ScreenBase):
                 self._ai_msgs[state] = lbl
                 pl.addWidget(lbl)
                 if state == "running":
-                    self._ai_progress = QProgressBar()
-                    self._ai_progress.setRange(0, 0)  # indeterminate until a total arrives
+                    # The shared panel, so the batch gets the same percentage +
+                    # count + cancel as every other long job. suggest_batch has
+                    # taken should_cancel all along; nothing ever exposed it.
+                    self._ai_progress = ProgressPanel(cancellable=True)
+                    self._ai_progress.cancel_requested.connect(self._cancel_ai)
                     pl.addWidget(self._ai_progress)
                 if state in ("not_connected", "not_logged_in"):
                     link = QLabel('<a href="#wizard">افتح معالج ربط Claude</a>')
@@ -396,7 +400,8 @@ class Screen(ScreenBase):
         if not students:
             self._ai_show("error", "لا ملفات مستخرَجة لهذا الطالب.")
             return
-        self._ai_progress.setRange(0, 0)  # indeterminate until the first progress tick
+        self._ai_progress.start(
+            "جارٍ توليد المقترحات — طالب واحد لكل نداء…")
         self._ai_batch_summary.hide()
         self._ai_last_batch = whole_batch
         self._ai_show("running")
@@ -437,6 +442,7 @@ class Screen(ScreenBase):
     def _on_ai_finished(self, job_id: str, result: object) -> None:
         if job_id != _JOB_AI:
             return
+        self._ai_progress.finish()
         self._suggestions = result if isinstance(result, dict) else {}
         if self._ai_last_batch:
             self._show_batch_summary()
@@ -467,21 +473,31 @@ class Screen(ScreenBase):
     def _on_ai_failed(self, job_id: str, exc_type: str, message: str, _tb: str) -> None:
         if job_id != _JOB_AI:
             return
+        self._ai_progress.finish()
         self._ai_show("error", f"({exc_type}) {message}")
+
+    def _cancel_ai(self) -> None:
+        b = self._backend()
+        if b is not None:
+            b.cancel()
+
+    @Slot(str)
+    def _on_ai_cancelled(self, job_id: str) -> None:
+        if job_id != _JOB_AI:
+            return
+        self._ai_progress.finish()
+        # suggest_batch cancels *between* students, so whoever finished already
+        # has a suggestion -- say so instead of implying the whole batch is gone.
+        self._ai_show("error", "أُلغي توليد المقترحات — المقترحات اللي خلصت قبل "
+                               "الإلغاء محفوظة، والباقي بدون مقترح.")
 
     @Slot(str, int, int)
     def _on_ai_progress(self, message: str, current: int, total: int) -> None:
-        # worker.progress carries no job_id -- only apply it while the AI
-        # panel is actually showing its "running" page (mirrors pull.py's
-        # same guard against unrelated jobs' progress ticks).
-        if self._ai_stack.currentIndex() != _AI_STATES.index("running"):
+        # worker.progress carries no job_id -- the panel's own running flag is
+        # our guard against an unrelated job's ticks (mirrors pull.py).
+        if not self._ai_progress.is_running:
             return
-        if total > 0:
-            self._ai_progress.setRange(0, total)
-            self._ai_progress.setValue(current)
-        if message:
-            count = f" ({current}/{total})" if total else ""
-            self._ai_msgs["running"].setText(f"{_AI_STATE_TEXT['running']}\n{message}{count}")
+        self._ai_progress.update_progress(message, current, total)
 
     def _render_suggestion(self) -> None:
         while self._ai_shown_body.count():
