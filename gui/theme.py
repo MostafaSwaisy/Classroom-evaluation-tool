@@ -147,6 +147,18 @@ def _qss(t: dict[str, str]) -> str:
     QLabel[role="title"] {{ color: {t['on-surface-strong']}; font-weight: 600; }}
     QLabel[role="muted"] {{ color: {t['on-surface-variant']}; }}
 
+    QProgressBar {{
+        background-color: {t['surface-container-lowest']};
+        border: 1px solid {t['outline-variant']};
+        border-radius: 4px;
+        height: 8px;
+        text-align: center;
+    }}
+    QProgressBar::chunk {{
+        background-color: {t['primary-container']};
+        border-radius: 3px;
+    }}
+
     QPushButton {{
         background-color: {t['surface-container-high']};
         color: {t['on-surface']};

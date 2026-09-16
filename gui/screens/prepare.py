@@ -3,6 +3,10 @@
 يشغّل `extract_archives` (R4) ثم `build_index` مرة على الـ worker، ويكتب
 `_index.md`. جدول التقرير سطر لكل `ArchiveResult`؛ لوحة معاينة `_index.md`
 للعرض فقط. زر «ابدأ التصحيح» يبقى معطّلاً حتى يُستخرج أرشيف واحد على الأقل.
+
+ثلاث مراحل: نموذج / تشغيل / تقرير. مرحلة التشغيل فيها `ProgressPanel` بعدّاد
+حقيقي (tick لكل أرشيف من `extract_archives`) وزر إلغاء — فك ٤٠ أرشيف كان قبل
+هيك دوّاراً صامتاً بلا أي مؤشر.
 """
 from __future__ import annotations
 
@@ -13,6 +17,7 @@ from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
+    QPlainTextEdit,
     QPushButton,
     QStackedWidget,
     QTextBrowser,
@@ -22,7 +27,7 @@ from PySide6.QtWidgets import (
 
 from classroom_tool.extract import build_index, extract_archives
 from gui.screens.base import ScreenBase
-from gui.widgets import DataTable
+from gui.widgets import DataTable, ProgressPanel
 
 _JOB_PREPARE = "prepare.run"
 
@@ -30,12 +35,19 @@ _GRADING_KEY = "grading_workspace"
 
 _HEADERS = ("الأرشيف", "النتيجة")
 
+_PHASE_FORM, _PHASE_RUNNING, _PHASE_REPORT = 0, 1, 2
+
 
 def _prepare_job(work_dir: Path):
-    def run(_ctx) -> dict:  # noqa: ANN001 - JobContext, unused
+    def run(ctx) -> dict:  # noqa: ANN001 - JobContext
         files_dir = work_dir / "files"
         extracted = work_dir / "extracted"
-        results = extract_archives(files_dir, extracted)
+        results = extract_archives(
+            files_dir, extracted,
+            progress=lambda msg, done, total: ctx.progress(msg, done or 0, total or 0),
+            should_cancel=ctx.cancelled)
+        # الفهرسة خطوة واحدة سريعة نسبياً — سطر بلا عدّاد، البار يبقى على آخر نسبة
+        ctx.progress("بناء الفهرس _index.md…", 0, 0)
         index = build_index(extracted, files_dir)
         (work_dir / "_index.md").write_text(index, encoding="utf-8")
         return {"results": [asdict(r) for r in results], "index": index}
@@ -65,10 +77,14 @@ class Screen(ScreenBase):
         super().__init__(services, parent)
         self._work_dir: Path | None = None
         self._results: list[dict] = []
+        self._progress = ProgressPanel(cancellable=True)
+        self._progress.cancel_requested.connect(self._cancel)
         b = self._backend()
         if b is not None:
             b.worker.finished.connect(self._on_finished)
             b.worker.failed.connect(self._on_failed)
+            b.worker.progress.connect(self._on_progress)
+            b.worker.cancelled.connect(self._on_cancelled)
         self.state_view.set_content(self._build_page())
 
     # --- context + lifecycle ------------------------------------
@@ -84,7 +100,7 @@ class Screen(ScreenBase):
             return
         self._work_dir = wd
         self._target.setText(f"المجلد: {wd}")
-        self._phases.setCurrentIndex(0)
+        self._phases.setCurrentIndex(_PHASE_FORM)
         self.state_view.set_state("ok")
 
     def _resolve_work_dir(self) -> Path | None:
@@ -105,10 +121,22 @@ class Screen(ScreenBase):
         lay.addWidget(self._target)
 
         self._phases = QStackedWidget()
-        self._phases.addWidget(self._build_form())     # 0
-        self._phases.addWidget(self._build_report())   # 1
+        self._phases.addWidget(self._build_form())      # 0
+        self._phases.addWidget(self._build_running())   # 1
+        self._phases.addWidget(self._build_report())    # 2
         lay.addWidget(self._phases, 1)
         return page
+
+    def _build_running(self) -> QWidget:
+        w = QWidget()
+        lay = QVBoxLayout(w)
+        lay.setSpacing(10)
+        lay.addWidget(self._progress)
+        self._log = QPlainTextEdit()
+        self._log.setReadOnly(True)
+        self._log.setPlaceholderText("سطور فك الأرشيفات…")
+        lay.addWidget(self._log, 1)
+        return w
 
     def _build_form(self) -> QWidget:
         w = QWidget()
@@ -116,6 +144,13 @@ class Screen(ScreenBase):
         note = QLabel("يفك أرشيفات files/ إلى extracted/ ويبني _index.md.")
         note.setProperty("role", "muted")
         lay.addWidget(note)
+
+        self._cancelled_note = QLabel(
+            "أُلغي التحضير — الأرشيفات اللي خلصت قبل الإلغاء تبقى مستخرجة في extracted/.")
+        self._cancelled_note.setProperty("role", "muted")
+        self._cancelled_note.setWordWrap(True)
+        self._cancelled_note.hide()
+        lay.addWidget(self._cancelled_note)
         row = QHBoxLayout()
         self._run_btn = QPushButton("شغّل التحضير")
         self._run_btn.setProperty("accent", "true")
@@ -153,8 +188,38 @@ class Screen(ScreenBase):
         b = self._backend()
         if b is None or self._work_dir is None:
             return
-        self.state_view.set_state("loading")
+        self._cancelled_note.hide()
+        self._log.clear()
+        self._run_btn.setEnabled(False)
+        self._progress.start("جارٍ فك الأرشيفات…")
+        self._phases.setCurrentIndex(_PHASE_RUNNING)
+        self.state_view.set_state("ok")
         b.submit(_JOB_PREPARE, _prepare_job(self._work_dir))
+
+    def _cancel(self) -> None:
+        b = self._backend()
+        if b is not None:
+            b.cancel()
+
+    @Slot(str, int, int)
+    def _on_progress(self, message: str, current: int, total: int) -> None:
+        # worker.progress carries no job_id — only take ticks while we're the
+        # running job, so an unrelated job can't drive our bar.
+        if not self._progress.is_running:
+            return
+        self._progress.update_progress(message, current, total)
+        line = message.strip()
+        if line:
+            self._log.appendPlainText(line)
+
+    @Slot(str)
+    def _on_cancelled(self, job_id: str) -> None:
+        if job_id != _JOB_PREPARE:
+            return
+        self._progress.finish()
+        self._run_btn.setEnabled(True)
+        self._cancelled_note.show()
+        self._phases.setCurrentIndex(_PHASE_FORM)
 
     @Slot(str, object)
     def _on_finished(self, job_id: str, result: object) -> None:
@@ -168,13 +233,17 @@ class Screen(ScreenBase):
         self._preview.setMarkdown(data.get("index") or "")
         self._grade_btn.setEnabled(
             any(r["outcome"] == "extracted" for r in self._results))
-        self._phases.setCurrentIndex(1)
+        self._progress.finish()
+        self._run_btn.setEnabled(True)
+        self._phases.setCurrentIndex(_PHASE_REPORT)
         self.state_view.set_state("ok")
 
     @Slot(str, str, str, str)
     def _on_failed(self, job_id: str, exc_type: str, message: str, _tb: str) -> None:
         if job_id != _JOB_PREPARE:
             return
+        self._progress.finish()
+        self._run_btn.setEnabled(True)
         self.state_view.set_error(
             f"تعذّر التحضير ({exc_type}): {message}\n"
             "تأكد إنه في مجلد files/ داخل مجلد الواجب.")
