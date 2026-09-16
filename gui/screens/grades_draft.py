@@ -53,6 +53,7 @@ class Screen(ScreenBase):
     def __init__(self, services: object | None = None,
                  parent: QWidget | None = None) -> None:
         super().__init__(services, parent)
+        self.state_view.set_loading_text("جارٍ قراءة المسودة…")
         self._work_dir: Path | None = None
         self._state: GradingState | None = None
         self._rubric: dict = {}

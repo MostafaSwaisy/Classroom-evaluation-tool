@@ -61,6 +61,7 @@ class Screen(ScreenBase):
     def __init__(self, services: object | None = None,
                  parent: QWidget | None = None) -> None:
         super().__init__(services, parent)
+        self.state_view.set_loading_text("جارٍ قراءة config.yaml…")
         self._export_combos: dict[str, QComboBox] = {}
         self._pending_doc = None       # the exact CommentedMap the preview showed
         self._pending_text = ""

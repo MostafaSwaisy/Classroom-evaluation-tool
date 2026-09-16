@@ -48,10 +48,22 @@ _FIX_LABEL = {
 }
 
 
+#: نص لوحة التقدّم لكل مهمة — الفحوصات إلها عدّاد مراحل، الباقي سطر بلا عدّاد.
+_LOADING_TEXT = {
+    _JOB_CHECKS: "جارٍ فحص الجاهزية…",
+    _JOB_AUTH: "جارٍ تسجيل الدخول في المتصفح — أكمل العملية هناك…",
+    _JOB_RESET: "جارٍ إعادة ضبط التوكن…",
+}
+
+
 def _checks_job(course_id: str | None):
-    def run(_ctx: JobContext) -> dict:
+    def run(ctx: JobContext) -> dict:
         try:
-            return {"aborted": False, "reason": "", "results": doctor.doctor(course_id)}
+            return {"aborted": False, "reason": "",
+                    "results": doctor.doctor(
+                        course_id,
+                        progress=lambda msg, done, total: ctx.progress(
+                            msg, done or 0, total or 0))}
         except doctor.DoctorAborted as exc:
             return {"aborted": True, "reason": str(exc.code or ""), "results": exc.partial}
     return run
@@ -85,14 +97,25 @@ class Screen(ScreenBase):
             return
         backend.worker.finished.connect(self._on_finished)
         backend.worker.failed.connect(self._on_failed)
+        backend.worker.progress.connect(self._on_progress)
 
     def _submit(self, job_id: str, fn) -> None:
         backend = getattr(self.services, "backend", None)
         if backend is None:
             return
         self._busy_job = job_id
+        self.state_view.set_loading_text(
+            _LOADING_TEXT.get(job_id, "جارٍ التنفيذ…"))
         self.state_view.set_state("loading")
         backend.submit(job_id, fn)
+
+    @Slot(str, int, int)
+    def _on_progress(self, message: str, current: int, total: int) -> None:
+        # worker.progress carries no job_id — `_busy_job` is our guard that these
+        # ticks belong to the job this screen submitted.
+        if self._busy_job is None:
+            return
+        self.state_view.progress.update_progress(message, current, total)
 
     # --- lifecycle ---------------------------------------------------
     @Slot()

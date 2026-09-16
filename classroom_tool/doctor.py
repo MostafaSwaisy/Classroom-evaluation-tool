@@ -13,10 +13,14 @@ from enum import Enum
 from . import api
 from .auth import CREDENTIALS_FILE, SCOPES, TOKEN_FILE, get_services
 from .config import project_root
+from .progress import ProgressFn
 
 _SEC_FILES = "الملفات"
 _SEC_SCOPES = "الصلاحيات (scopes)"
 _SEC_LIVE = "الاتصال الفعلي"
+
+#: مراحل `doctor()` — ملفات / صلاحيات / اتصال. ثابت عشان البار يعرف الـ total.
+_STAGE_COUNT = 3
 
 _MARK = {True: "✓", False: "✗", None: "⚠"}
 
@@ -177,10 +181,23 @@ def _check_live(course_id: str | None) -> tuple[list[CheckResult], bool]:
 
 # --- public API ----------------------------------------------------------
 
-def doctor(course_id: str | None = None) -> list[CheckResult]:
-    """كل الفحوصات كقائمة CheckResult (بدون طباعة). آخر عنصر مفتاحه 'overall'."""
+def doctor(course_id: str | None = None, *,
+           progress: ProgressFn | None = None) -> list[CheckResult]:
+    """كل الفحوصات كقائمة CheckResult (بدون طباعة). آخر عنصر مفتاحه 'overall'.
+
+    ``progress`` بياخد tick لكل مرحلة من الثلاث (ملفات / صلاحيات / اتصال) —
+    مرحلة الاتصال هي الأبطأ لأنها نداء شبكة، ومرحلة متخطّاة بتاخد tick كمان
+    فالبار بيوصل 100% مهما صار.
+    """
+    def tick(done: int, label: str) -> None:
+        if progress is not None:
+            progress(label, done, _STAGE_COUNT)
+
+    tick(1, "فحص الملفات المحلية…")
     files, files_ok = _check_files()
+    tick(2, "فحص الصلاحيات (scopes)…")
     scopes, scopes_ok = _check_scopes()
+    tick(3, "فحص الاتصال بـ Google Classroom…")
 
     if files_ok:
         try:

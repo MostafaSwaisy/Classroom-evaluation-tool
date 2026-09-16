@@ -237,3 +237,38 @@ def test_cli_doctor_output_unchanged_live():
     )
     combined = (proc.stdout + proc.stderr) if proc.stderr else proc.stdout
     assert combined.replace("\r\n", "\n") == expected.replace("\r\n", "\n")
+
+
+# --- progress (fix/progress: three slow stages, one honest bar) ----------
+def _stub_stages(monkeypatch, *, files_ok=True):
+    monkeypatch.setattr(doc, "_check_files", lambda: ([], files_ok))
+    monkeypatch.setattr(doc, "_check_scopes", lambda: ([], True))
+    monkeypatch.setattr(doc, "_check_live", lambda cid: ([], True))
+
+
+def _ticks(monkeypatch, **kw):
+    seen: list[tuple[str, int | None, int | None]] = []
+    _stub_stages(monkeypatch, **kw)
+    results = doc.doctor(progress=lambda m, d, t: seen.append((m, d, t)))
+    return results, [t for t in seen if t[2] is not None]
+
+
+def test_doctor_reports_a_tick_per_stage(monkeypatch):
+    _results, counted = _ticks(monkeypatch)
+    assert [(t[1], t[2]) for t in counted] == [(1, 3), (2, 3), (3, 3)]
+    # each tick names its stage so the panel says what is being checked
+    assert all(t[0].strip() for t in counted)
+
+
+def test_doctor_still_reaches_a_hundred_percent_when_files_fail(monkeypatch):
+    """The live stage is skipped, not silently dropped -- the bar must finish."""
+    _results, counted = _ticks(monkeypatch, files_ok=False)
+    assert (counted[-1][1], counted[-1][2]) == (3, 3)
+
+
+def test_doctor_results_are_identical_with_and_without_a_progress_sink(monkeypatch):
+    _stub_stages(monkeypatch)
+    plain = doc.doctor()
+    _stub_stages(monkeypatch)
+    with_bar = doc.doctor(progress=lambda m, d, t: None)
+    assert plain == with_bar
