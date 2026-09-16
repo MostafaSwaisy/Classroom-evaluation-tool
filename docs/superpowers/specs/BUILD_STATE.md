@@ -172,6 +172,23 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     tracking) failing. Offline screens (rubrics editor, settings) expected to work. **To be
     triaged in a Fable checkpoint session with a GUI-automation pass — feeds P5-U1 state
     matrix + P5-U2 auth-toast/reconnect.** No fix attempted this session.
+  - **Triage session 2026-09-16 (`fix/gui-phase3-triage`, cut from `38a3229`... `0b92e4f`):**
+    root cause confirmed — `python cli.py doctor` now shows all scopes granted, `list_courses`
+    OK (token was re-authed by mostafa since 09-10; the doctor run also surfaces a benign
+    `oauthlib` "scope has changed" `UserWarning` on refresh — cosmetic noise, not a failure,
+    not our code). Drove the *real* `MainWindow`/`AppServices`/`BackendThread` headlessly
+    (`QT_QPA_PLATFORM=offscreen`, no stubs) through all 13 screens with a real course
+    (`860473355891`) and the golden fixture assignment dir: **zero `error` states, zero
+    exceptions.** `dashboard` / `courses_aliases` / `assignments` / `prepare` / `roster` /
+    `grading_workspace` / `tracking_report` / `settings` / `connections_health` /
+    `setup_wizard` → `ok` against live Classroom + real files. `pull` / `grades_draft` /
+    `rubrics` → `empty`, correctly (each needs an explicit ctx/selection — assignment chosen
+    from the assignments screen, a graded student, a picked rubric — that a bare
+    `navigate(key)` without that ctx never supplies; confirmed by reading each screen's
+    `load()`). **Conclusion: the expired token fully explains the 09-10 report; no GUI code
+    defect found.** Not yet covered by this pass: real interactive clicks (forms, Export,
+    the AI panel against a real `claude` CLI) and the P5-U4 light/dark eyeball pass — still
+    open, need a human at the keyboard.
 - **Pre-existing lint debt (NOT Phase 3):** `ruff check classroom_tool/` flags B023 in
   `api.py:40` + B904 ×3 in `auth.py` (present on `main`). Out of scope for the per-unit
   "clean on NEW code" gate; fold into a cleanup pass.
