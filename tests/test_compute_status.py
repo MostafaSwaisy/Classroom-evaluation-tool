@@ -7,6 +7,7 @@ import pytest
 from openpyxl import load_workbook
 
 from classroom_tool import status as st
+from classroom_tool.errors import OperationCancelled
 
 REPO = Path(__file__).resolve().parent.parent
 GOLDEN_XLSX = REPO / "tests" / "golden" / "status_stubbed.xlsx"
@@ -88,3 +89,38 @@ def test_status_xlsx_is_cell_for_cell_unchanged(tmp_path):
             if (row, col) == (2, 1):
                 continue  # A2 carries a datetime.now() stamp
             assert got.cell(row, col).value == want.cell(row, col).value, f"cell {row},{col}"
+
+
+# --- progress + cancellation (fix/progress: the tracking screen needs a real bar) ---
+def _compute_with_ticks(**kw):
+    seen: list[tuple[str, int | None, int | None]] = []
+    computed = st.compute_status(
+        None, {"student_id_pattern": r".*"}, "cid",
+        progress=lambda msg, done, total: seen.append((msg, done, total)), **kw)
+    return computed, seen
+
+
+def test_progress_reports_a_counted_tick_per_assignment():
+    _computed, ticks = _compute_with_ticks()
+
+    counted = [t for t in ticks if t[2] is not None]
+    assert [(t[1], t[2]) for t in counted] == [(1, 2), (2, 2)]
+    # the tick names the assignment being fetched, so the panel can show it
+    assert "HW01 Routing" in counted[0][0]
+    assert "HW02 Controllers" in counted[1][0]
+
+
+def test_progress_is_optional():
+    assert st.compute_status(None, {"student_id_pattern": r".*"}, "cid")["works"]
+
+
+def test_should_cancel_between_assignments_raises_operation_cancelled():
+    with pytest.raises(OperationCancelled):
+        _compute_with_ticks(should_cancel=lambda: True)
+
+
+def test_computed_payload_is_unchanged_when_a_progress_sink_is_passed():
+    """The bar must not alter the report — same data with and without a sink."""
+    plain = st.compute_status(None, {"student_id_pattern": r".*"}, "cid")
+    with_bar, _ticks = _compute_with_ticks()
+    assert with_bar == plain

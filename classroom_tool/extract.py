@@ -13,10 +13,17 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from .errors import OperationCancelled
+from .progress import CancelFn, ProgressFn
+
 WhichFn = Callable[[str], str | None]
 RunFn = Callable[..., subprocess.CompletedProcess]
 
 _UNRAR_TIMEOUT = 120.0
+
+#: الامتدادات اللي بتعتبر "أرشيف" — كل واحد منها بياخد سطر نتيجة و tick واحد.
+#: .7z داخل لأنه بيتسجّل "skipped: unsupported" وبيتعدّ، مش بيتجاهل بالسكوت.
+COUNTED_SUFFIXES = (".zip", ".rar", ".7z")
 
 
 @dataclass(frozen=True)
@@ -114,21 +121,40 @@ def _extract_rar(exe: str, archive: Path, target: Path, max_files_per_student: i
 def extract_archives(files_dir: Path, dest_dir: Path,
                      max_files_per_student: int = 200, *,
                      which: WhichFn = shutil.which,
-                     run: RunFn = subprocess.run) -> list[ArchiveResult]:
+                     run: RunFn = subprocess.run,
+                     progress: ProgressFn | None = None,
+                     should_cancel: CancelFn | None = None) -> list[ArchiveResult]:
     """
     يفك كل أرشيف في files/ إلى extracted/{اسم_الملف_بدون_امتداد}/
     وينظّف المجلدات الزايدة. يرجّع سطر ``ArchiveResult`` لكل أرشيف.
+
+    ``progress`` بياخد tick لكل أرشيف — حتى المتخطّى والفاشل — فالبار يوصل 100%.
+    ``should_cancel`` بينفحص **قبل** كل أرشيف؛ لو True بيرفع ``OperationCancelled``
+    والأرشيف الحالي ما بيبدأ (اللي خلص قبله يبقى مستخرجاً).
     """
     dest_dir.mkdir(parents=True, exist_ok=True)
     results: list[ArchiveResult] = []
 
-    for archive in sorted(files_dir.glob("*")):
+    # الأرشيفات بس هي اللي تتعدّ في الـ total — الملفات السايبة في files/ لأ
+    archives = [a for a in sorted(files_dir.glob("*"))
+                if a.suffix.lower() in COUNTED_SUFFIXES]
+    total = len(archives)
+    done = 0
+
+    def tick(name: str) -> None:
+        nonlocal done
+        done += 1
+        if progress is not None:
+            progress(f"فك {name}", done, total)
+
+    for archive in archives:
+        if should_cancel is not None and should_cancel():
+            raise OperationCancelled
         suffix = archive.suffix.lower()
         unrar_exe = which("unrar") if suffix == ".rar" else None
         if suffix == ".7z" or (suffix == ".rar" and not unrar_exe):
             results.append(ArchiveResult(archive.name, "skipped", "unsupported"))
-            continue
-        if suffix not in (".zip", ".rar"):
+            tick(archive.name)
             continue
 
         target = dest_dir / archive.stem
@@ -142,6 +168,7 @@ def extract_archives(files_dir: Path, dest_dir: Path,
             proceed = _extract_rar(unrar_exe, archive, target,
                                    max_files_per_student, run, results)
         if not proceed:
+            tick(archive.name)
             continue
 
         # نظّف الزبالة
@@ -171,6 +198,7 @@ def extract_archives(files_dir: Path, dest_dir: Path,
                       if p.is_file() and p.suffix.lower() in CODE_EXTENSIONS]
         results.append(ArchiveResult(
             archive.name, "extracted", count=len(code_files)))
+        tick(archive.name)
 
     return results
 

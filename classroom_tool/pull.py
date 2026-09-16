@@ -4,7 +4,6 @@ from __future__ import annotations
 import re
 import shutil
 import tempfile
-from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -16,13 +15,11 @@ from . import api
 from .errors import OperationCancelled
 from .fsutil import replace_with_retry
 from .naming import build_filename, extract_student_id, normalize_arabic, safe_filename
+from .progress import CancelFn, ProgressFn
 
-#: A progress sink: ``progress(message, done, total)``. ``done``/``total`` are set
-#: only for the per-file download loop; other lines pass ``None`` for both. The CLI
-#: passes a printer; the GUI worker turns these into signals for a bar + log.
-ProgressFn = Callable[[str, int | None, int | None], None]
-#: ``should_cancel()`` — polled at each per-item boundary; True → raise.
-CancelFn = Callable[[], bool]
+#: The progress/cancel contract now lives in `progress.py` so `extract` and
+#: `status` can speak it too; re-exported here because this module defined it first.
+#: Here the counted ticks are the per-file download loop; other lines pass `None`.
 
 STATE_AR = {
     "NEW": "لم يبدأ",

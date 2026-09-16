@@ -14,6 +14,8 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from . import api
+from .errors import OperationCancelled
+from .progress import CancelFn, ProgressFn
 from .pull import SUBMITTED_STATES, build_student_index
 
 _GOOD = "جيد"
@@ -21,8 +23,15 @@ _AT_RISK = "⚠️ متابعة"
 
 
 def compute_status(classroom, cfg: dict, course_id: str,
-                   risk_threshold: float = 0.6) -> dict:
-    """{works, matrix[uid][workId], rows[...], summary} — pure computation."""
+                   risk_threshold: float = 0.6, *,
+                   progress: ProgressFn | None = None,
+                   should_cancel: CancelFn | None = None) -> dict:
+    """{works, matrix[uid][workId], rows[...], summary} — pure computation.
+
+    المصفوفة بتنادي الـ API مرة لكل واجب، فالعملية بتطول على مساق كبير:
+    ``progress`` بياخد tick لكل واجب (باسمه) و``should_cancel`` بينفحص قبل كل واحد.
+    وجود سink ما بيغيّر المخرجات ولا سطر.
+    """
     works = [w for w in api.list_coursework(classroom, course_id)
              if w.get("workType") == "ASSIGNMENT"]
     if not works:
@@ -31,7 +40,11 @@ def compute_status(classroom, cfg: dict, course_id: str,
     students = build_student_index(classroom, course_id, cfg["student_id_pattern"])
 
     matrix: dict[str, dict[str, dict]] = {uid: {} for uid in students}
-    for work in works:
+    for done, work in enumerate(works, start=1):
+        if should_cancel is not None and should_cancel():
+            raise OperationCancelled
+        if progress is not None:
+            progress(f"جلب تسليمات: {work.get('title', work['id'])}", done, len(works))
         for sub in api.list_submissions(classroom, course_id, work["id"]):
             uid = sub["userId"]
             if uid not in matrix:
