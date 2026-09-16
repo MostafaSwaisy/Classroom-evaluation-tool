@@ -125,6 +125,18 @@ def test_state_running_then_suggestions_shown(screen):
     assert _ai_state(screen) == "shown"
 
 
+def test_batch_progress_updates_the_running_bar(screen):
+    """mostafa's report: no visible sign a batch suggest run is actually
+    progressing. ai_suggest_job already emits ctx.progress(key, done, total)
+    per student (gui/grading_ai.py) -- the panel just never rendered it."""
+    screen._run_ai(whole_batch=True)
+    assert _ai_state(screen) == "running"
+    screen.services.backend.worker.progress.emit("مقترح: 12021001", 1, 2)
+    assert screen._ai_progress.maximum() == 2
+    assert screen._ai_progress.value() == 1
+    assert "1/2" in screen._ai_msgs["running"].text()
+
+
 def test_state_error_on_worker_failure(screen):
     screen._run_ai(whole_batch=False)
     screen.services.backend.worker.failed.emit(_JOB_AI, "RuntimeError", "boom", "")
