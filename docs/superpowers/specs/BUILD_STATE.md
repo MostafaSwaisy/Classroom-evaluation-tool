@@ -227,7 +227,15 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     actually guarding against, or (b) a written amendment to §B" — agreed it's not
     a correctness bug and shouldn't bounce any unit on its own, but said leaving it
     un-adjudicated will just repeat the ambiguity for the next reviewer.
-    **→ still needs mostafa's call: (a) or (b) above, nobody's picked one yet.**
+    **→ resolved 2026-09-16, option (b):** wrote a formal amendment to plan §B
+    ("Ruling 2026-09-16 — second sanctioned broad catch: the screen/module boundary
+    catch") carving out a conditional second broad-catch pattern alongside
+    `worker.py`'s, with 5 explicit conditions (location/type/disposition/
+    documentation/narrowing-still-wins). Checked all 15 existing sites against the
+    conditions — all comply (verified `rubrics.py:93`'s fallback specifically: a bad
+    config degrades the assignment dropdown to its empty default, doesn't hide a
+    primary-content failure or silently keep stale data). R1's nit is now closed,
+    not carried.
     Two cosmetic nits not fixed (both non-blocking, both confirmed real):
     `grades_draft._on_export()` doesn't guard a second click mid-export (harmless —
     same target path every time); `grading_workspace.py:595` falls back to the
