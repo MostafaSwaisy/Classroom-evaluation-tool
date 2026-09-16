@@ -54,10 +54,23 @@ _AI_INSTRUCTIONS = (
 _AI_STATES = ("not_connected", "not_logged_in", "running", "shown", "error")
 
 _AI_STATE_TEXT = {
-    "not_connected": "Claude غير مربوط — مساعدة الدرجات معطّلة (التصحيح اليدوي شغّال).",
+    #: idle default *and* "checked, not usable" -- the state doesn't distinguish
+    #: "haven't asked yet" from "asked, Claude isn't usable" (spec §5.11 fixes the
+    #: panel at 5 states with no separate idle state), so this text must stay true
+    #: in both cases; `_run_ai` passes a `detail` when it has a real answer.
+    "not_connected": "اضغط «اقترح» لطلب مساعدة Claude — يُفحص الاتصال عند الطلب "
+                     "(التصحيح اليدوي شغّال دائماً).",
     "not_logged_in": "`claude` مثبَّت لكن غير مُسجَّل دخول.",
     "running": "جارٍ سؤال Claude… (أبطأ من نداء API مباشر)",
     "error": "تعذّر جلب المقترح.",
+}
+
+#: the real reason, once `_run_ai` has actually checked -- appended under the
+#: neutral idle text above so the two are distinguishable, not conflated.
+_AI_UNAVAILABLE_DETAIL = {
+    "not_installed": "لم أجد `claude` على الجهاز — افتح معالج الربط للتثبيت.",
+    "disabled": "مساعدة AI معطّلة من الإعدادات (ai_provider: none).",
+    "no_api_key": "لا مفتاح Anthropic في keyring (الوضع المتقدّم).",
 }
 
 
@@ -355,7 +368,7 @@ class Screen(ScreenBase):
             return
         status = _safe_status(self._cfg())
         if status in ("not_installed", "disabled", "no_api_key"):
-            self._ai_show("not_connected")
+            self._ai_show("not_connected", _AI_UNAVAILABLE_DETAIL.get(status, ""))
             return
         if status == "not_logged_in":
             self._ai_show("not_logged_in")
