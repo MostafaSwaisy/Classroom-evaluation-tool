@@ -185,7 +185,18 @@ def provider_status(cfg: dict | None = None, *,
                     capture_output=True, text=True, timeout=_PROBE_TIMEOUT)
     except Exception as exc:  # noqa: BLE001 - probe failure == not usable
         return ProviderStatus("claude_cli", "not_logged_in", str(exc)[:200])
-    if probe.returncode == 0:
+    if probe.returncode == 0 and _probe_json_ok(probe.stdout):
         return ProviderStatus("claude_cli", "ready", exe)
     return ProviderStatus("claude_cli", "not_logged_in",
                           (probe.stderr or "").strip()[:200] or "فشل الفحص.")
+
+
+def _probe_json_ok(stdout: str) -> bool:
+    """exit 0 alone isn't the success gate -- ``complete()`` also checks
+    ``is_error``/``subtype``; the probe must agree, or the badge/wizard can
+    read "ready" for a call that would then fail for real."""
+    try:
+        data = json.loads(stdout)
+    except json.JSONDecodeError:
+        return False
+    return not data.get("is_error") and data.get("subtype") == "success"
