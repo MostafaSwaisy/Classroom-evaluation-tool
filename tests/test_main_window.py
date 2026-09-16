@@ -135,3 +135,44 @@ def test_reconnect_failure_keeps_the_toast_with_a_retry_message(win, monkeypatch
     win._reconnect()
     win.services.backend.worker.failed.emit("auth.reconnect", "RefreshError", "still bad", "")
     assert win._reconnect_toast is not None
+
+
+# --- the window must fit the screen it opens on ----------------------
+def test_initial_size_is_clamped_to_the_available_screen(qtbot, monkeypatch):
+    """On a 125%-scaled 1536x816 work area, a flat resize(1280, 800) opens a
+    window wider than the screen. RTL puts the primary controls on the leading
+    (right) edge, so the overflow clips exactly what the user needs."""
+    from PySide6.QtCore import QRect
+
+    from gui import main_window as mw
+
+    monkeypatch.setattr(mw, "_available_size", lambda: QRect(0, 0, 1200, 700))
+    w = mw.MainWindow()
+    qtbot.addWidget(w)
+    assert w.width() <= 1200
+    assert w.height() <= 700
+
+
+def test_a_roomy_screen_still_gets_the_preferred_size(qtbot, monkeypatch):
+    from PySide6.QtCore import QRect
+
+    from gui import main_window as mw
+
+    monkeypatch.setattr(mw, "_available_size", lambda: QRect(0, 0, 2560, 1440))
+    w = mw.MainWindow()
+    qtbot.addWidget(w)
+    assert (w.width(), w.height()) == mw._PREFERRED_SIZE
+
+
+def test_minimum_size_never_exceeds_the_screen(qtbot, monkeypatch):
+    """A minimum larger than the screen makes the window unshrinkable and
+    permanently clipped -- worse than a small window."""
+    from PySide6.QtCore import QRect
+
+    from gui import main_window as mw
+
+    monkeypatch.setattr(mw, "_available_size", lambda: QRect(0, 0, 900, 600))
+    w = mw.MainWindow()
+    qtbot.addWidget(w)
+    assert w.minimumWidth() <= 900
+    assert w.minimumHeight() <= 600
