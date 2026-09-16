@@ -52,6 +52,18 @@ def test_status_not_installed_when_claude_absent():
     assert st.state == "not_installed"
 
 
+def test_status_not_logged_in_when_probe_exits_zero_but_json_reports_error():
+    """exit 0 alone isn't the success gate -- complete() also checks
+    is_error/subtype, and provider_status() must agree or the badge/wizard
+    can show "ready" for a probe that would actually fail a real call."""
+    bad = json.dumps({"type": "result", "subtype": "error_during_execution",
+                      "is_error": True, "result": "overloaded"})
+    st = provider_status({"ai_provider": "claude_cli"},
+                         which=lambda _n: "/usr/bin/claude",
+                         run=lambda *a, **k: _completed(0, bad))
+    assert st.state == "not_logged_in"
+
+
 def test_status_not_logged_in_when_probe_exits_nonzero():
     st = provider_status({"ai_provider": "claude_cli"},
                          which=lambda _n: "/usr/bin/claude",
