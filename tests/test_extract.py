@@ -56,11 +56,60 @@ def test_corrupt_zip_is_failed_and_leaves_no_target_dir(files_dir, tmp_path):
     assert not (tmp_path / "extracted" / "bad").exists()
 
 
-def test_rar_is_skipped_as_unsupported(files_dir, tmp_path):
+def test_rar_is_skipped_as_unsupported_when_unrar_is_not_installed(files_dir, tmp_path):
     (files_dir / "x.rar").write_bytes(b"Rar!\x1a\x07\x00")
 
-    (res,) = _run(files_dir, tmp_path)
+    (res,) = _run(files_dir, tmp_path, which=lambda _n: None)
     assert res == ArchiveResult(name="x.rar", outcome="skipped", detail="unsupported")
+
+
+def _fake_unrar_writing(files: dict[str, bytes]):
+    """A stand-in `run` that behaves like `unrar x <archive> <target>/`: writes
+    `files` under the target dir the real command line names, then reports success."""
+    def run(cmd, **_kw):  # noqa: ANN001
+        target = Path(cmd[-1])
+        target.mkdir(parents=True, exist_ok=True)
+        for name, data in files.items():
+            out = target / name
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(data)
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+    return run
+
+
+def test_rar_is_extracted_when_unrar_is_available(files_dir, tmp_path):
+    (files_dir / "x.rar").write_bytes(b"Rar!\x1a\x07\x00")
+
+    (res,) = _run(files_dir, tmp_path, which=lambda _n: "unrar",
+                  run=_fake_unrar_writing({"a.php": b"<?php"}))
+    assert res == ArchiveResult(name="x.rar", outcome="extracted", detail="", count=1)
+    assert (tmp_path / "extracted" / "x" / "a.php").is_file()
+
+
+def test_rar_extraction_failure_is_reported_and_leaves_no_target_dir(files_dir, tmp_path):
+    (files_dir / "bad.rar").write_bytes(b"Rar!\x1a\x07\x00")
+
+    def run(cmd, **_kw):  # noqa: ANN001
+        return subprocess.CompletedProcess(cmd, 1, "", "CRC failed")
+
+    (res,) = _run(files_dir, tmp_path, which=lambda _n: "unrar", run=run)
+    assert res.name == "bad.rar"
+    assert res.outcome == "failed"
+    assert "CRC failed" in res.detail
+    assert not (tmp_path / "extracted" / "bad").exists()
+
+
+def test_oversized_rar_is_skipped_after_extraction_and_leaves_no_target_dir(files_dir, tmp_path):
+    (files_dir / "big.rar").write_bytes(b"Rar!\x1a\x07\x00")
+
+    (res,) = _run(files_dir, tmp_path, max_files_per_student=3,
+                  which=lambda _n: "unrar",
+                  run=_fake_unrar_writing({f"f{i}.php": b"<?php" for i in range(4)}))
+    assert res.name == "big.rar"
+    assert res.outcome == "skipped"
+    assert res.detail == "too_many"
+    assert res.count == 4
+    assert not (tmp_path / "extracted" / "big").exists()
 
 
 def test_7z_is_skipped_as_unsupported(files_dir, tmp_path):
@@ -89,7 +138,7 @@ def test_one_result_per_archive_sorted_by_name_non_archives_ignored(files_dir, t
     (files_dir / "c.rar").write_bytes(b"Rar!")
     (files_dir / "notes.txt").write_text("loose file, not an archive")
 
-    results = _run(files_dir, tmp_path)
+    results = _run(files_dir, tmp_path, which=lambda _n: None)
     assert [r.name for r in results] == ["a_bad.zip", "b_ok.zip", "c.rar"]
     assert [r.outcome for r in results] == ["failed", "extracted", "skipped"]
 

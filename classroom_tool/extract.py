@@ -1,10 +1,22 @@
-"""فك ضغط ملفات الطلاب وتسطيح المجلدات — الطلاب بيرفعوا zip بهياكل عشوائية."""
+"""فك ضغط ملفات الطلاب وتسطيح المجلدات — الطلاب بيرفعوا zip بهياكل عشوائية.
+
+.rar عبر `unrar` الخارجي (لا مكتبة نقية بلغة Python تفكّ RAR — الخوارزمية
+محتكرة). إذا `unrar` مش مثبَّت، .rar يُصنَّف "skipped: unsupported" متل .7z.
+"""
 from __future__ import annotations
 
+import os
 import shutil
+import subprocess
 import zipfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+
+WhichFn = Callable[[str], str | None]
+RunFn = Callable[..., subprocess.CompletedProcess]
+
+_UNRAR_TIMEOUT = 120.0
 
 
 @dataclass(frozen=True)
@@ -44,8 +56,65 @@ def _is_junk(path: Path, root: Path) -> bool:
     return path.name in JUNK_FILES
 
 
+def _extract_zip(archive: Path, target: Path, max_files_per_student: int,
+                 results: list[ArchiveResult]) -> bool:
+    """True -> proceed to the shared post-processing tail. False -> a result
+    row (skipped/failed) was already appended and the archive is done."""
+    try:
+        with zipfile.ZipFile(archive) as zf:
+            members = [m for m in zf.namelist() if not m.endswith("/")]
+            if len(members) > max_files_per_student:
+                results.append(ArchiveResult(
+                    archive.name, "skipped", "too_many", count=len(members)))
+                shutil.rmtree(target)
+                return False
+            for member in members:
+                # حماية من zip-slip
+                out = (target / member).resolve()
+                if not str(out).startswith(str(target.resolve())):
+                    continue
+                out.parent.mkdir(parents=True, exist_ok=True)
+                with zf.open(member) as src, open(out, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
+    except (zipfile.BadZipFile, OSError) as exc:
+        results.append(ArchiveResult(archive.name, "failed", str(exc)))
+        shutil.rmtree(target, ignore_errors=True)
+        return False
+    return True
+
+
+def _extract_rar(exe: str, archive: Path, target: Path, max_files_per_student: int,
+                 run: RunFn, results: list[ArchiveResult]) -> bool:
+    """Same contract as `_extract_zip`. Shells out to `unrar` -- no pure-Python
+    RAR decoder exists (the compression algorithm is proprietary)."""
+    try:
+        proc = run([exe, "x", "-y", "-o+", str(archive), f"{target}{os.sep}"],
+                   capture_output=True, text=True, encoding="utf-8",
+                   errors="replace", timeout=_UNRAR_TIMEOUT)
+    except (subprocess.SubprocessError, OSError) as exc:
+        results.append(ArchiveResult(archive.name, "failed", str(exc)[:300]))
+        shutil.rmtree(target, ignore_errors=True)
+        return False
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "").strip()[:300] or "فشل unrar."
+        results.append(ArchiveResult(archive.name, "failed", detail))
+        shutil.rmtree(target, ignore_errors=True)
+        return False
+    # unrar has no pre-listing step as cheap as zipfile's namelist(); count
+    # what actually landed on disk instead of pre-checking before extraction.
+    extracted = [p for p in target.rglob("*") if p.is_file()]
+    if len(extracted) > max_files_per_student:
+        results.append(ArchiveResult(
+            archive.name, "skipped", "too_many", count=len(extracted)))
+        shutil.rmtree(target)
+        return False
+    return True
+
+
 def extract_archives(files_dir: Path, dest_dir: Path,
-                     max_files_per_student: int = 200) -> list[ArchiveResult]:
+                     max_files_per_student: int = 200, *,
+                     which: WhichFn = shutil.which,
+                     run: RunFn = subprocess.run) -> list[ArchiveResult]:
     """
     يفك كل أرشيف في files/ إلى extracted/{اسم_الملف_بدون_امتداد}/
     وينظّف المجلدات الزايدة. يرجّع سطر ``ArchiveResult`` لكل أرشيف.
@@ -54,9 +123,12 @@ def extract_archives(files_dir: Path, dest_dir: Path,
     results: list[ArchiveResult] = []
 
     for archive in sorted(files_dir.glob("*")):
-        if archive.suffix.lower() not in {".zip"}:
-            if archive.suffix.lower() in {".rar", ".7z"}:
-                results.append(ArchiveResult(archive.name, "skipped", "unsupported"))
+        suffix = archive.suffix.lower()
+        unrar_exe = which("unrar") if suffix == ".rar" else None
+        if suffix == ".7z" or (suffix == ".rar" and not unrar_exe):
+            results.append(ArchiveResult(archive.name, "skipped", "unsupported"))
+            continue
+        if suffix not in (".zip", ".rar"):
             continue
 
         target = dest_dir / archive.stem
@@ -64,25 +136,12 @@ def extract_archives(files_dir: Path, dest_dir: Path,
             shutil.rmtree(target)
         target.mkdir(parents=True)
 
-        try:
-            with zipfile.ZipFile(archive) as zf:
-                members = [m for m in zf.namelist() if not m.endswith("/")]
-                if len(members) > max_files_per_student:
-                    results.append(ArchiveResult(
-                        archive.name, "skipped", "too_many", count=len(members)))
-                    shutil.rmtree(target)
-                    continue
-                for member in members:
-                    # حماية من zip-slip
-                    out = (target / member).resolve()
-                    if not str(out).startswith(str(target.resolve())):
-                        continue
-                    out.parent.mkdir(parents=True, exist_ok=True)
-                    with zf.open(member) as src, open(out, "wb") as dst:
-                        shutil.copyfileobj(src, dst)
-        except (zipfile.BadZipFile, OSError) as exc:
-            results.append(ArchiveResult(archive.name, "failed", str(exc)))
-            shutil.rmtree(target, ignore_errors=True)
+        if suffix == ".zip":
+            proceed = _extract_zip(archive, target, max_files_per_student, results)
+        else:
+            proceed = _extract_rar(unrar_exe, archive, target,
+                                   max_files_per_student, run, results)
+        if not proceed:
             continue
 
         # نظّف الزبالة
