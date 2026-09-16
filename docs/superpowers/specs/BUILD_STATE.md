@@ -161,9 +161,49 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
 - **Test count:** 282 collected → 281 passed / 1 skipped (live-parity gate) on
   `feat/gui-phase3` @ `7663cba` (221/1 on `main` @ `38a3229`). Full suite ~3–5 min.
   All Phase-3-touched files ruff-clean.
-- **Phase 3 — still OPEN before merge:**
-  - **Opus-mandatory reviews NOT run:** R1 (P3-U1, P3-U6) + R7 (P3-U2, P3-U4). Required
-    before the Fable Phase-3 checkpoint.
+- **Review session 2026-09-16 (`fix/gui-phase3-triage`) — R1, R7, R8, R9 done.**
+  Manual pass (not the Opus-mandatory subagent — that still needs to run before the
+  Fable checkpoint; this is a first read to unblock forward progress):
+  - **R1 (P3-U1 `1feba30`, P3-U6 `97cc593`) → approved-with-nits.** `write_grades`
+    extraction is behaviour-preserving, `test_cli_stdout_is_unchanged` proves parity
+    via a real subprocess run; only gap is the ⚠️-imbalance stdout line has no test
+    (code identical to before, low risk). `grading_io.resolve_rubric` extraction out
+    of `grading_workspace` is byte-for-byte equivalent, tested. **Nit (not fixed):**
+    new code in this commit (`grading_io.py:43`, `grades_draft.py:90`) uses blind
+    `except Exception` with a `# noqa: BLE001`, which CLAUDE.md's clean-code floor
+    says is sanctioned *only* in `gui/worker.py`. Grepping the whole tree shows this
+    is already the pattern at **every** screen's `load()`/config boundary (dashboard,
+    rubrics, settings, setup_wizard, grading_workspace, claude_provider, doctor,
+    auth — 16 call sites) — a deliberate, consistent "catch-all-and-surface-as-error-
+    state" convention, not something this commit invented. Flagging for a human call:
+    either the clean-code wording gets amended to allow a documented per-screen
+    boundary catch (mirrors `worker.py`'s own carve-out), or a follow-up sweep narrows
+    every one of the 16 to named exception types. Not blocking — carried forward.
+  - **R7 (P3-U2 `dde335a`, P3-U4 `4d42946`) → approved.** `rubric.py` round-trip +
+    atomic write + `.bak` mirrors `config.py`'s R-B protection exactly; zero blind
+    excepts in this file. `rubrics.py`'s `_edited_doc()` reuses a `CommentedMap` by
+    `key` to preserve per-criterion comments on edit; duplicate/blank keys alias the
+    same object, but `validate_rubric` always blocks Save on both cases first, so it's
+    not reachable — verified by reading the guard, not just trusting it.
+  - **R8 (P4-U2 `4e29d0f`, P4-U5 `36f0d3e`) → approved-with-fix.** Found and fixed a
+    real gap: `provider_status()` treated `returncode == 0` alone as "ready", but
+    `complete()` two functions down (and the P4-U1 preflight doc that established the
+    success gate in the first place) also require `is_error:false` /
+    `subtype:success`. A `claude -p` probe that exits 0 with a soft failure in the
+    JSON body would show "ready" on the Settings badge / wizard step 2, then fail for
+    real on the first suggest call. Fixed in `05c0834` (`_probe_json_ok()`), TDD:
+    red test `test_status_not_logged_in_when_probe_exits_zero_but_json_reports_error`
+    added and confirmed failing first. Full suite green after the fix. Wizard's
+    `_next_btn` correctly never gated by Claude state either way (verified).
+  - **R9 (P4-U3 `0465798`, P4-U6 `8da325a`) → approved.** `suggest()`/`suggest_batch()`
+    never raise (contract verified: the one `except Exception` here is the explicit
+    point of the function, not a boundary-catch nit); cancel-between-students checked
+    correctly; AI panel's accept buttons are the only path that writes to score/
+    feedback widgets — confirmed nothing is auto-applied on a batch result arriving.
+  - **Still needed before the Fable Phase-3/4/5 checkpoint:** the actual Opus-mandatory
+    subagent pass on all four (this was a manual review, useful but not a substitute),
+    and R8/R9's own §5.11 "5 AI states" needs a live screenshot set (not just tests) —
+    P5-U1 state matrix covers the stub version, not a real `claude` run.
   - **Fable Phase-3 checkpoint** not run (Haiku sweep, guardrail sweep, goldens).
   - **Manual-test punch list (2026-09-10, mostafa):** in the *real* app "many screens not
     working" + a **Google auth failure** ("there was a problem"). Auth is almost certainly
