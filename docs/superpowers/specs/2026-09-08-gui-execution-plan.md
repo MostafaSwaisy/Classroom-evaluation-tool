@@ -210,6 +210,33 @@ verifiable from git history / gate output at the next Fable checkpoint.
   `BaseException` slot boundary); **no `SystemExit`/`sys.exit()` outside `cli.py`**; no
   print-driven control flow — return or raise, emit via injected `log`/`progress`; dependency
   direction inward — `classroom_tool/` never imports `gui/` or PySide6.
+  - **Ruling 2026-09-16 — second sanctioned broad catch: the screen/module boundary catch.**
+    Phase 3/4/5 review (R1/R7/R8/R9) found 15 `except Exception` sites outside `worker.py`,
+    all following one shape: the outermost entry point of a screen's `load()`, a probe
+    (`provider_status`, `_safe_status`), or a single-purpose config/file read
+    (`_cfg()`, `resolve_rubric()`'s per-file skip) — catching whatever a heterogeneous
+    external call can throw (subprocess, keyring, YAML/xlsx parsing, filesystem) and turning
+    it into either a visible error state (`state_view.set_error(...)`) or a safe default for
+    a non-critical secondary lookup (an empty dropdown, `{}`, `None`) — never a silent no-op
+    that masks a primary-content load failure or leaves stale/wrong data looking valid. This
+    is the same shape `gui/worker.py`'s `BaseException` slot boundary was already carved out
+    for, just applied per-screen instead of centrally. It is now a **second sanctioned broad
+    catch**, conditional on all of:
+    1. **Location** — only at the outermost boundary of a `load()`, a probe/status function,
+       or a single-purpose read-and-report helper. Never mid-function, never wrapping more
+       than the one failure-prone call plus its immediate use.
+    2. **Type** — `Exception`, never `BaseException` (that stays `worker.py`-only).
+    3. **Disposition** — must produce an observable outcome: an error state, a returned
+       sentinel/default, or a skip-and-continue in a loop over independent items. A bare
+       `except Exception: pass` with no fallback and no visible effect does **not** qualify.
+    4. **Documentation** — `# noqa: BLE001` plus a same-line reason naming what's being
+       guarded and why (matches the existing 15 sites' style).
+    5. **Narrowing still wins when it's cheap** — if a call only realistically raises 1-2
+       known types (`json.JSONDecodeError`, `OSError`), catch those by name instead; this
+       carve-out is for genuinely heterogeneous external boundaries, not a default reach.
+    New sites get the same reviewer scrutiny as any other floor item — check 1-4 explicitly,
+    don't wave a site through just because it matches the shape. The 15 existing sites (see
+    `BUILD_STATE.md` Phase-3/4/5 review notes) were checked against 1-4 and comply.
 - **R-refactors (R1–R11):** behaviour-preserving is the hard constraint — the CLI parity diff
   must stay byte-identical. Clean **only inside the seam** being extracted (new signature,
   print→callback, splitting the extracted function). Do not reformat the file, do not touch
