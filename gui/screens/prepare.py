@@ -101,6 +101,9 @@ def _outcome_text(r: dict) -> str:
     if r["outcome"] == "extracted":
         return f"استُخرج {r['count']} ملف كود"
     if r["outcome"] == "skipped":
+        if r["detail"] == "no_unrar":
+            # قابل للإصلاح — قول للمصحح شو يعمل بدل "غير مدعومة"
+            return "صيغة RAR — ثبّت UnRAR أو ضيف مجلد WinRAR إلى PATH"
         if r["detail"] == "unsupported":
             return "تُخطّي: صيغة غير مدعومة"
         if r["detail"] == "too_many":

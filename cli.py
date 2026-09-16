@@ -114,6 +114,9 @@ def prepare_cmd(ctx, work_dir):
     def _skip_reason(r):
         if r.detail == "unsupported":
             return "صيغة غير مدعومة"
+        if r.detail == "no_unrar":
+            # قابل للإصلاح — قول للمصحح كيف بدل ما تقول "غير مدعومة" وخلص
+            return "صيغة RAR — ثبّت UnRAR أو ضيف مجلد WinRAR إلى PATH"
         if r.detail == "too_many":
             return f"{r.count} ملف — أكثر من الحد"
         return r.detail

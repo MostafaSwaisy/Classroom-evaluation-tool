@@ -9,17 +9,28 @@ import os
 import shutil
 import subprocess
 import zipfile
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from .errors import OperationCancelled
+from .fsutil import clear_readonly, rmdir_force, rmtree_force
 from .progress import CancelFn, ProgressFn
 
 WhichFn = Callable[[str], str | None]
 RunFn = Callable[..., subprocess.CompletedProcess]
 
 _UNRAR_TIMEOUT = 120.0
+
+#: أماكن UnRAR المعتادة على ويندوز. WinRAR مثبَّت عند معظم المصححين بس مجلده
+#: مش على PATH، فـ `shutil.which("unrar")` بيرجّع None وكل ملفات .rar بتتكتب
+#: "غير مدعومة" بصمت — وهاد كان بيضيّع ربع التسليمات.
+UNRAR_CANDIDATES = (
+    r"C:\Program Files\WinRAR\UnRAR.exe",
+    r"C:\Program Files (x86)\WinRAR\UnRAR.exe",
+    r"C:\Program Files\WinRAR\Rar.exe",
+    r"C:\Program Files (x86)\WinRAR\Rar.exe",
+)
 
 #: الامتدادات اللي بتعتبر "أرشيف" — كل واحد منها بياخد سطر نتيجة و tick واحد.
 #: .7z داخل لأنه بيتسجّل "skipped: unsupported" وبيتعدّ، مش بيتجاهل بالسكوت.
@@ -73,7 +84,7 @@ def _extract_zip(archive: Path, target: Path, max_files_per_student: int,
             if len(members) > max_files_per_student:
                 results.append(ArchiveResult(
                     archive.name, "skipped", "too_many", count=len(members)))
-                shutil.rmtree(target)
+                rmtree_force(target)
                 return False
             for member in members:
                 # حماية من zip-slip
@@ -85,7 +96,7 @@ def _extract_zip(archive: Path, target: Path, max_files_per_student: int,
                     shutil.copyfileobj(src, dst)
     except (zipfile.BadZipFile, OSError) as exc:
         results.append(ArchiveResult(archive.name, "failed", str(exc)))
-        shutil.rmtree(target, ignore_errors=True)
+        rmtree_force(target)
         return False
     return True
 
@@ -100,12 +111,12 @@ def _extract_rar(exe: str, archive: Path, target: Path, max_files_per_student: i
                    errors="replace", timeout=_UNRAR_TIMEOUT)
     except (subprocess.SubprocessError, OSError) as exc:
         results.append(ArchiveResult(archive.name, "failed", str(exc)[:300]))
-        shutil.rmtree(target, ignore_errors=True)
+        rmtree_force(target)
         return False
     if proc.returncode != 0:
         detail = (proc.stderr or proc.stdout or "").strip()[:300] or "فشل unrar."
         results.append(ArchiveResult(archive.name, "failed", detail))
-        shutil.rmtree(target, ignore_errors=True)
+        rmtree_force(target)
         return False
     # unrar has no pre-listing step as cheap as zipfile's namelist(); count
     # what actually landed on disk instead of pre-checking before extraction.
@@ -113,9 +124,29 @@ def _extract_rar(exe: str, archive: Path, target: Path, max_files_per_student: i
     if len(extracted) > max_files_per_student:
         results.append(ArchiveResult(
             archive.name, "skipped", "too_many", count=len(extracted)))
-        shutil.rmtree(target)
+        rmtree_force(target)
         return False
     return True
+
+
+def find_unrar(which: WhichFn = shutil.which,
+               candidates: Sequence[str] | None = None) -> str | None:
+    """مسار UnRAR إذا كان متوفراً: PATH أول، وبعدين أماكن تثبيت WinRAR.
+
+    بيجرّب الاسمين `unrar` و`UnRAR` لأن WinRAR بيسمّي الملف `UnRAR.exe`.
+    `candidates=None` يعني اقرأ `UNRAR_CANDIDATES` وقت النداء — القيمة الافتراضية
+    لو انربطت وقت التعريف ما بينفع الاختبار يبدّلها.
+    """
+    if candidates is None:
+        candidates = UNRAR_CANDIDATES
+    for name in ("unrar", "UnRAR"):
+        found = which(name)
+        if found:
+            return found
+    for path in candidates:
+        if Path(path).is_file():
+            return path
+    return None
 
 
 def extract_archives(files_dir: Path, dest_dir: Path,
@@ -140,6 +171,9 @@ def extract_archives(files_dir: Path, dest_dir: Path,
                 if a.suffix.lower() in COUNTED_SUFFIXES]
     total = len(archives)
     done = 0
+    # فحص واحد لكل تشغيل — مش لكل أرشيف
+    unrar_exe = find_unrar(which) if any(
+        a.suffix.lower() == ".rar" for a in archives) else None
 
     def tick(name: str) -> None:
         nonlocal done
@@ -151,15 +185,16 @@ def extract_archives(files_dir: Path, dest_dir: Path,
         if should_cancel is not None and should_cancel():
             raise OperationCancelled
         suffix = archive.suffix.lower()
-        unrar_exe = which("unrar") if suffix == ".rar" else None
         if suffix == ".7z" or (suffix == ".rar" and not unrar_exe):
-            results.append(ArchiveResult(archive.name, "skipped", "unsupported"))
+            # .7z ما إله حل؛ .rar بلا UnRAR إله — التقرير لازم يفرّق بينهم
+            detail = "unsupported" if suffix == ".7z" else "no_unrar"
+            results.append(ArchiveResult(archive.name, "skipped", detail))
             tick(archive.name)
             continue
 
         target = dest_dir / archive.stem
         if target.exists():
-            shutil.rmtree(target)
+            rmtree_force(target)
         target.mkdir(parents=True)
 
         if suffix == ".zip":
@@ -175,8 +210,9 @@ def extract_archives(files_dir: Path, dest_dir: Path,
         for path in sorted(target.rglob("*"), key=lambda p: -len(p.parts)):
             if path.exists() and _is_junk(path, target):
                 if path.is_dir():
-                    shutil.rmtree(path, ignore_errors=True)
+                    rmtree_force(path)
                 else:
+                    clear_readonly(path)
                     path.unlink(missing_ok=True)
 
         # سطّح مجلد وحيد ملفوف (student.zip -> HW03/ -> الملفات)
@@ -191,7 +227,7 @@ def extract_archives(files_dir: Path, dest_dir: Path,
             inner = entries[0]
             for item in inner.iterdir():
                 shutil.move(str(item), str(target / item.name))
-            inner.rmdir()
+            rmdir_force(inner)
             entries = [p for p in target.iterdir()]
 
         code_files = [p for p in target.rglob("*")
