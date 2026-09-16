@@ -26,7 +26,11 @@ from typing import Protocol
 #: معرّف النموذج — بالضبط، بلا لاحقة تاريخ.
 DEFAULT_MODEL = "claude-opus-5"
 
-_PROBE_TIMEOUT = 60.0
+#: provider_status() runs synchronously on the GUI thread (wizard step 2,
+#: Settings badge, grading_workspace's pre-flight check all call it outside
+#: the §8 worker) -- kept short so a stuck `claude -p` can't freeze the UI.
+#: The real call (_CALL_TIMEOUT) always runs inside a worker job.
+_PROBE_TIMEOUT = 8.0
 _CALL_TIMEOUT = 180.0
 
 
