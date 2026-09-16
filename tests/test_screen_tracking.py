@@ -41,15 +41,20 @@ class _FakeWorker(QObject):
     finished = Signal(str, object)
     failed = Signal(str, str, str, str)
     progress = Signal(str, int, int)
+    cancelled = Signal(str)
 
 
 class _FakeBackend:
     def __init__(self) -> None:
         self.worker = _FakeWorker()
         self.calls: list[str] = []
+        self.cancelled = False
 
     def submit(self, job_id: str, fn) -> None:  # noqa: ANN001
         self.calls.append(job_id)
+
+    def cancel(self) -> None:
+        self.cancelled = True
 
 
 class _Services:
@@ -157,3 +162,38 @@ def test_export_finished_shows_path_and_reenables(screen):
         _JOB_EXPORT, r"submissions\SE2026\_status_20260908.xlsx")
     assert "_status_20260908.xlsx" in screen._export_note.text()
     assert screen._export_btn.isEnabled()
+
+
+# --- progress (fix/progress) -----------------------------------------
+def test_loading_shows_a_cancellable_panel(screen):
+    screen.load()
+    assert screen.state_view.state == "loading"
+    assert screen.state_view.progress.is_running
+    assert not screen.state_view.progress._cancel_btn.isHidden()
+
+
+def test_per_assignment_ticks_reach_the_loading_panel(screen):
+    screen.load()
+    screen.services.backend.worker.progress.emit("جلب تسليمات: HW01", 1, 4)
+    panel = screen.state_view.progress
+    assert panel._percent.text() == "25%"
+    assert panel._counter.text() == "1 من 4"
+    assert "HW01" in panel._detail.text()
+
+
+def test_ticks_are_ignored_outside_the_loading_state(screen):
+    screen.services.backend.worker.progress.emit("شيء تاني", 2, 9)
+    assert screen.state_view.progress._percent.text() == ""
+
+
+def test_cancelling_the_matrix_asks_the_backend_to_stop(screen):
+    screen.load()
+    screen.state_view.progress._cancel_btn.click()
+    assert screen.services.backend.cancelled
+
+
+def test_cancelled_matrix_lands_in_empty_not_a_stuck_bar(screen):
+    screen.load()
+    screen.services.backend.worker.cancelled.emit(_JOB_LOAD)
+    assert not screen.state_view.progress.is_running
+    assert screen.state_view.state == "empty"

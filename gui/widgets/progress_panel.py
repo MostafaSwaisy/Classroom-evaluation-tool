@@ -97,6 +97,12 @@ class ProgressPanel(QFrame):
     def is_running(self) -> bool:
         return self._running
 
+    def set_cancellable(self, cancellable: bool) -> None:
+        """Opt into (or out of) the cancel button. Takes effect on next `start`."""
+        self._cancellable = cancellable
+        if self._running:
+            self._cancel_btn.setVisible(cancellable)
+
     def start(self, message: str = "جارٍ التنفيذ…") -> None:
         """Reset to indeterminate and begin. Safe on a panel that already ran."""
         self._running = True

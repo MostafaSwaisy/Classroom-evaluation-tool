@@ -3,18 +3,25 @@
 States: "empty" | "loading" | "error" | "ok". Exactly one is shown at a time
 (QStackedWidget). Screens set their real content with `set_content(widget)` and
 flip states via `set_state(...)`; helpers set the placeholder copy.
+
+The `loading` page is a `ProgressPanel`, not a bare marquee: entering the state
+starts it, leaving stops it, and a screen that has counted ticks to report feeds
+them to `state_view.progress` — so every data screen gets a percentage and a
+count for free, and the ones with a cancellable job call
+`enable_loading_cancel(...)` to get a cancel button too.
 """
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QLabel,
-    QProgressBar,
     QPushButton,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
+
+from gui.widgets.progress_panel import ProgressPanel
 
 STATES = ("empty", "loading", "error", "ok")
 
@@ -39,12 +46,9 @@ class StateView(QStackedWidget):
         self._empty_label = QLabel("لا يوجد شيء لعرضه بعد.")
         self._empty_label.setProperty("role", "muted")
 
-        self._loading_label = QLabel("جارٍ التحميل…")
-        self._loading_label.setProperty("role", "muted")
-        self._progress = QProgressBar()
-        self._progress.setRange(0, 0)  # indeterminate
-        self._progress.setFixedWidth(200)
-        self._progress.setTextVisible(False)
+        self.progress = ProgressPanel()
+        self.progress.setMaximumWidth(520)
+        self._loading_text = "جارٍ التحميل…"
 
         self._error_label = QLabel("صار في خطأ.")
         self._error_label.setProperty("role", "title")
@@ -59,7 +63,7 @@ class StateView(QStackedWidget):
 
         self._pages = {
             "empty": _centered(self._empty_label),
-            "loading": _centered(self._loading_label, self._progress),
+            "loading": _centered(self.progress),
             "error": _centered(self._error_label, self._error_button),
             "ok": self._content_host,
         }
@@ -72,6 +76,12 @@ class StateView(QStackedWidget):
         if state not in STATES:
             raise ValueError(f"unknown state: {state!r}")
         self._state = state
+        # Start/stop with the state so a stale percentage or a ticking elapsed
+        # clock can never outlive the operation it was describing.
+        if state == "loading":
+            self.progress.start(self._loading_text)
+        elif self.progress.is_running:
+            self.progress.finish()
         self.setCurrentWidget(self._pages[state])
 
     @property
@@ -93,7 +103,15 @@ class StateView(QStackedWidget):
         self._empty_label.setText(text)
 
     def set_loading_text(self, text: str) -> None:
-        self._loading_label.setText(text)
+        """The copy the panel shows each time `loading` is entered."""
+        self._loading_text = text
+        if self._state == "loading":
+            self.progress.update_progress(text, 0, 0)
+
+    def enable_loading_cancel(self, on_cancel) -> None:  # noqa: ANN001 - callable
+        """Give the loading panel a cancel button wired to `on_cancel`."""
+        self.progress.set_cancellable(True)
+        self.progress.cancel_requested.connect(on_cancel)
 
     def set_error(self, text: str, action_text: str | None = None,
                   on_action=None) -> None:
