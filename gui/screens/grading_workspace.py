@@ -379,6 +379,7 @@ class Screen(ScreenBase):
 
     def _run_ai(self, *, whole_batch: bool) -> None:
         if self._current_key is None:
+            self._ai_show("error", "اختر طالباً من القائمة أولاً.")
             return
         status = _safe_status(self._cfg())
         if status in ("not_installed", "disabled", "no_api_key"):

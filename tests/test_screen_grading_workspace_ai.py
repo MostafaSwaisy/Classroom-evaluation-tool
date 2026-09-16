@@ -99,6 +99,20 @@ def _ai_state(s) -> str:
     return gw._AI_STATES[s._ai_stack.currentIndex()]
 
 
+def test_clicking_suggest_with_no_student_selected_shows_an_error_not_silence(env, qtbot):
+    """was a silent no-op before -- clicking اقترح with nothing selected in
+    the student list did nothing at all: no error, no state change, no clue
+    why it "didn't work". Confirmed against mostafa's screenshot: the panel
+    was stuck on its idle page with no feedback."""
+    wd, rub = env
+    s = Screen(_Services(wd, rub))
+    qtbot.addWidget(s)
+    assert s._current_key is None
+    s._run_ai(whole_batch=False)
+    assert _ai_state(s) == "error"
+    assert s.services.backend.jobs == []
+
+
 # --- the 5 §5.11 states -------------------------------------
 def test_state_not_connected(screen, monkeypatch):
     monkeypatch.setattr(gw, "_safe_status", lambda _c: "not_installed")
