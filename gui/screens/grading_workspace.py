@@ -147,6 +147,7 @@ class Screen(ScreenBase):
         self._current_key: str | None = None
         self._score_inputs: dict[str, QDoubleSpinBox] = {}
         self._suggestions: dict[str, dict] = {}
+        self._ai_last_batch = False
         self._loading = False
         b = self._backend()
         if b is not None:
@@ -324,6 +325,13 @@ class Screen(ScreenBase):
         row.addStretch(1)
         lay.addLayout(row)
 
+        #: batch result summary -- stays visible across student switches so
+        #: mostafa doesn't have to click through all 10 to see who failed.
+        self._ai_batch_summary = QLabel("")
+        self._ai_batch_summary.setWordWrap(True)
+        self._ai_batch_summary.hide()
+        lay.addWidget(self._ai_batch_summary)
+
         self._ai_stack = QStackedWidget()
         self._ai_msgs: dict[str, QLabel] = {}
         for state in _AI_STATES:
@@ -388,6 +396,8 @@ class Screen(ScreenBase):
             self._ai_show("error", "لا ملفات مستخرَجة لهذا الطالب.")
             return
         self._ai_progress.setRange(0, 0)  # indeterminate until the first progress tick
+        self._ai_batch_summary.hide()
+        self._ai_last_batch = whole_batch
         self._ai_show("running")
         b.submit(_JOB_AI, ai_suggest_job(
             students, self._rubric, instructions=_AI_INSTRUCTIONS,
@@ -427,7 +437,30 @@ class Screen(ScreenBase):
         if job_id != _JOB_AI:
             return
         self._suggestions = result if isinstance(result, dict) else {}
+        if self._ai_last_batch:
+            self._show_batch_summary()
         self._render_suggestion()
+
+    def _show_batch_summary(self) -> None:
+        total = len(self._suggestions)
+        failed = [key for key, sugg in self._suggestions.items()
+                 if not isinstance(sugg, dict) or sugg.get("error")]
+        ok = total - len(failed)
+        text = f"نتيجة الدفعة: {ok} نجح"
+        if failed:
+            names = "، ".join(self._name_for_key(k) for k in failed[:5])
+            more = f" +{len(failed) - 5}" if len(failed) > 5 else ""
+            text += f"، {len(failed)} فشل ({names}{more}) — راجع كل طالب قبل الاعتماد."
+            self._ai_batch_summary.setStyleSheet("color: #d83c3c;")
+        else:
+            text += f" من {total}."
+            self._ai_batch_summary.setStyleSheet("color: #3ba55d;")
+        self._ai_batch_summary.setText(text)
+        self._ai_batch_summary.show()
+
+    def _name_for_key(self, key: str) -> str:
+        row = self._row_for_key(key)
+        return str(row.get("name") or key) if row else key
 
     @Slot(str, str, str, str)
     def _on_ai_failed(self, job_id: str, exc_type: str, message: str, _tb: str) -> None:

@@ -125,6 +125,32 @@ def test_state_running_then_suggestions_shown(screen):
     assert _ai_state(screen) == "shown"
 
 
+def test_batch_finish_shows_a_pass_fail_summary_without_clicking_through_students(screen):
+    """mostafa's report: after a whole-batch run, the only way to tell which
+    of the 10 students actually got a usable suggestion was to click through
+    each one individually -- there was no aggregate result anywhere."""
+    screen._run_ai(whole_batch=True)
+    screen.services.backend.worker.finished.emit(_JOB_AI, {
+        screen._current_key: {"scores": {"correctness": 5, "style": 3},
+                              "feedback": "ok", "flags": [], "error": None},
+        "12021002": {"scores": {}, "feedback": "", "flags": [],
+                    "error": "ردّ غير صالح"},
+    })
+    assert not screen._ai_batch_summary.isHidden()
+    text = screen._ai_batch_summary.text()
+    assert "1 نجح" in text
+    assert "1 فشل" in text
+
+
+def test_single_student_suggest_never_shows_the_batch_summary(screen):
+    screen._run_ai(whole_batch=False)
+    screen.services.backend.worker.finished.emit(_JOB_AI, {
+        screen._current_key: {"scores": {"correctness": 5, "style": 3},
+                              "feedback": "ok", "flags": [], "error": None},
+    })
+    assert screen._ai_batch_summary.isHidden()
+
+
 def test_batch_progress_updates_the_running_bar(screen):
     """mostafa's report: no visible sign a batch suggest run is actually
     progressing. ai_suggest_job already emits ctx.progress(key, done, total)
