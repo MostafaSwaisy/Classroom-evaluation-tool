@@ -61,6 +61,23 @@ def test_status_probe_uses_a_gui_tolerable_timeout():
     assert seen["timeout"] <= 10
 
 
+def test_status_probe_decodes_as_utf8_not_the_locale_codepage():
+    """Windows' default subprocess text-mode decodes with the locale codepage
+    (cp1252 here), which crashes on real claude output containing non-Latin1
+    bytes (Arabic text echoed back, etc.) -- complete() already pins utf-8;
+    the probe must match it exactly."""
+    seen = {}
+
+    def _run(*a, **k):
+        seen.update(k)
+        return _completed(0, _ok_json())
+
+    provider_status({"ai_provider": "claude_cli"},
+                    which=lambda _n: "/usr/bin/claude", run=_run)
+    assert seen["encoding"] == "utf-8"
+    assert seen["errors"] == "replace"
+
+
 def test_status_not_installed_when_claude_absent():
     st = provider_status({"ai_provider": "claude_cli"},
                          which=lambda _n: None,
