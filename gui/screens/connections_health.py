@@ -1,5 +1,7 @@
 """الاتصالات وفحص الجاهزية (spec §5.2) — يشغّل doctor() على الـ worker ويعرض
-كل CheckResult كصف مع زر الإصلاح المقابل. بطاقة Claude ثابتة (تُربط في Phase 4).
+كل CheckResult كصف مع زر الإصلاح المقابل. بطاقة Claude تعرض حالة حيّة من
+`claude_provider.provider_status()` (Phase 4)، مُفحوصة عند الطلب فقط — نفس
+نمط `settings.py`'s الزر «افحص»، حتى لا يبطّئ `load()`.
 
 مهم: الوظيفة تلتقط `DoctorAborted` بنفسها وترجّع الصفوف الجزئية كنتيجة عادية —
 لو تركناها تخرج، حدّ `BaseException` في gui/worker.py بيبلعها ويضيّع الصفوف.
@@ -12,11 +14,12 @@ from PySide6.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
 
-from classroom_tool import auth, doctor
+from classroom_tool import auth, claude_provider, config, doctor
 from gui.screens.base import ScreenBase
 from gui.widgets import Card, StatusDot
 from gui.worker import JobContext
@@ -27,6 +30,14 @@ _JOB_RESET = "connections.reset_auth"
 
 _MARK = {True: "✓", False: "✗", None: "⚠"}
 _STATE = {True: "ok", False: "error", None: "warn"}
+
+_CLAUDE_BADGE = {
+    "ready": ("Claude جاهز", "ok"),
+    "not_logged_in": ("Claude غير مُسجَّل دخول", "warn"),
+    "not_installed": ("Claude غير مثبَّت", "idle"),
+    "no_api_key": ("لا مفتاح Anthropic", "warn"),
+    "disabled": ("مساعدة AI معطّلة", "idle"),
+}
 
 _FIX_LABEL = {
     doctor.FixAction.GET_CREDENTIALS: "كيف أنزّله؟",
@@ -91,6 +102,18 @@ class Screen(ScreenBase):
     def _active_course_id(self) -> str | None:
         return getattr(self.services, "active_course_id", None)
 
+    def _cfg_path(self):
+        return getattr(self.services, "config_path", None)
+
+    def _refresh_claude_badge(self) -> None:
+        try:
+            state = claude_provider.provider_status(
+                config.load_config(self._cfg_path())).state
+        except Exception:  # noqa: BLE001 - a probe failure is just "unknown"
+            state = "not_installed"
+        text, tone = _CLAUDE_BADGE.get(state, ("Claude — غير معروف", "idle"))
+        self._claude_badge.set_status(tone, text)
+
     # --- job results -----------------------------------------------
     @Slot(str, object)
     def _on_finished(self, job_id: str, result: object) -> None:
@@ -109,6 +132,13 @@ class Screen(ScreenBase):
 
     # --- rendering -------------------------------------------------
     def _build_ok_page(self) -> QWidget:
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll.setWidget(self._build_form())
+        return scroll
+
+    def _build_form(self) -> QWidget:
         page = QWidget()
         lay = QVBoxLayout(page)
         lay.setSpacing(10)
@@ -130,9 +160,15 @@ class Screen(ScreenBase):
         self._google_card.body.addLayout(self._google_rows)
         lay.addWidget(self._google_card)
 
-        claude_card = Card("Claude — المساعد الذكي")
-        claude_card.add_header_action(StatusDot("غير مربوط", "idle"))
-        claude_card.add_widget(QLabel("يُربط في مرحلة لاحقة عبر Claude Code على جهازك."))
+        claude_card = Card("Claude — المساعد الذكي (اختياري)")
+        self._claude_badge = StatusDot("—", "idle")
+        claude_card.add_header_action(self._claude_badge)
+        claude_recheck = QPushButton("افحص")
+        claude_recheck.clicked.connect(self._refresh_claude_badge)
+        claude_card.add_header_action(claude_recheck)
+        claude_card.add_widget(
+            QLabel("مساعدة اختيارية على التصحيح — عبر Claude Code المثبَّت والمُسجَّل"
+                  " دخوله على جهازك. التصحيح اليدوي شغّال دائماً بدونه."))
         lay.addWidget(claude_card)
 
         lay.addStretch(1)

@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -106,6 +107,13 @@ class Screen(ScreenBase):
 
     # --- page -------------------------------------------------
     def _build_page(self) -> QWidget:
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll.setWidget(self._build_form())
+        return scroll
+
+    def _build_form(self) -> QWidget:
         page = QWidget()
         outer = QVBoxLayout(page)
         outer.setSpacing(12)
