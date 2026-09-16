@@ -13,10 +13,13 @@ from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 
-from PySide6.QtCore import Signal, Slot
+from PySide6.QtCore import Qt, QUrl, Signal, Slot
+from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QHeaderView,
     QLabel,
+    QLineEdit,
     QPlainTextEdit,
     QPushButton,
     QStackedWidget,
@@ -27,13 +30,22 @@ from PySide6.QtWidgets import (
 
 from classroom_tool.extract import build_index, extract_archives
 from gui.screens.base import ScreenBase
-from gui.widgets import DataTable, ProgressPanel
+from gui.widgets import Card, DataTable, FilterTabs, ProgressPanel, StatCard
 
 _JOB_PREPARE = "prepare.run"
 
 _GRADING_KEY = "grading_workspace"
 
-_HEADERS = ("الأرشيف", "النتيجة")
+_NO_ID = "بلا رقم"
+
+_HEADERS = ("الرقم الجامعي", "اسم ملف الأرشيف", "نتيجة الفك والمحتوى", "الحجم")
+_COL_NAME = 1
+
+#: (key, title) للفلاتر — الترتيب هو ترتيب الأزرار على الشاشة.
+_TABS = (("all", "الكل"), ("ok", "ناجح"), ("skipped", "متخطى"), ("failed", "فشل"))
+
+#: key الفلتر -> الـ outcome اللي بيوافقه في `ArchiveResult`.
+_TAB_OUTCOME = {"ok": "extracted", "skipped": "skipped", "failed": "failed"}
 
 _PHASE_FORM, _PHASE_RUNNING, _PHASE_REPORT = 0, 1, 2
 
@@ -50,8 +62,39 @@ def _prepare_job(work_dir: Path):
         ctx.progress("بناء الفهرس _index.md…", 0, 0)
         index = build_index(extracted, files_dir)
         (work_dir / "_index.md").write_text(index, encoding="utf-8")
-        return {"results": [asdict(r) for r in results], "index": index}
+        rows = []
+        for r in results:
+            row = asdict(r)
+            row["size"] = _size_of(files_dir / r.name)
+            rows.append(row)
+        return {"results": rows, "index": index}
     return run
+
+
+def _size_of(path: Path) -> int:
+    try:
+        return path.stat().st_size
+    except OSError:
+        return 0
+
+
+def _human_size(n: int) -> str:
+    """Archive sizes only — they never reach GB, so two units are enough."""
+    if n >= 1024 * 1024:
+        return f"{n / (1024 * 1024):.1f} MB"
+    if n >= 1024:
+        return f"{n / 1024:.1f} KB"
+    return f"{n} B"
+
+
+def _student_id(archive_name: str) -> str:
+    """pull names files `<id>_<name>.<ext>` (naming.build_filename), with the
+    literal `noid` when the email never matched student_id_pattern. Anything
+    else came from somewhere we don't control — say so rather than guess."""
+    head = archive_name.split("_", 1)[0]
+    if head.isdigit():
+        return head
+    return _NO_ID
 
 
 def _outcome_text(r: dict) -> str:
@@ -161,17 +204,87 @@ class Screen(ScreenBase):
         lay.addStretch(1)
         return w
 
+    def _build_kpis(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        specs = (
+            ("total", "إجمالي الأرشيفات", "neutral"),
+            ("ok", "فك وفهرسة ناجحة", "accent"),
+            ("skipped", "صيغ أرشيف متخطاة", "warn"),
+            ("failed", "فشل الاستخراج / تالف", "error"),
+        )
+        self._kpi: dict[str, StatCard] = {}
+        for key, label, variant in specs:
+            card = StatCard(label, "0", variant=variant)
+            self._kpi[key] = card
+            row.addWidget(card)
+        return row
+
+    def _build_table_panel(self) -> QWidget:
+        panel = Card("تقرير فك الأرشيف وفحص المحتويات")
+
+        self._tabs = FilterTabs(_TABS)
+        self._tabs.changed.connect(lambda _k: self._refresh_table())
+        panel.add_widget(self._tabs)
+
+        self._search = QLineEdit()
+        self._search.setPlaceholderText("ابحث برقم جامعي أو باسم ملف…")
+        self._search.setClearButtonEnabled(True)
+        self._search.textChanged.connect(lambda _t: self._refresh_table())
+        panel.add_widget(self._search)
+
+        self._table = DataTable()
+        # اسم الملف هو العمود الطويل — خلّيه يتمدد بدل ما الجدول يطلّع شريط أفقي
+        self._table.horizontalHeader().setStretchLastSection(False)
+        panel.add_widget(self._table, 1)
+
+        self._no_match = QLabel("لا نتائج مطابقة للفلتر أو البحث الحالي.")
+        self._no_match.setProperty("role", "muted")
+        self._no_match.hide()
+        panel.add_widget(self._no_match)
+        return panel
+
+    def _build_index_panel(self) -> QWidget:
+        panel = Card("معاينة الفهرس (_index.md)")
+
+        copy_btn = QPushButton("نسخ المسار")
+        copy_btn.clicked.connect(self._copy_index_path)
+        panel.add_header_action(copy_btn)
+        open_btn = QPushButton("افتح المجلد")
+        open_btn.clicked.connect(self._open_work_dir)
+        panel.add_header_action(open_btn)
+
+        self._index_path = QLabel("")
+        self._index_path.setProperty("role", "muted")
+        self._index_path.setWordWrap(True)
+        self._index_path.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse)
+        panel.add_widget(self._index_path)
+
+        self._preview = QTextBrowser()
+        panel.add_widget(self._preview, 1)
+
+        self._alert_card = Card("تنبيه المراجع — تحتاج معالجة يدوية")
+        self._alert_label = QLabel("")
+        self._alert_label.setWordWrap(True)
+        self._alert_label.setProperty("role", "muted")
+        self._alert_card.add_widget(self._alert_label)
+        self._alert_card.hide()
+        panel.add_widget(self._alert_card)
+        return panel
+
     def _build_report(self) -> QWidget:
         w = QWidget()
         lay = QVBoxLayout(w)
-        lay.setSpacing(8)
+        lay.setSpacing(10)
 
-        self._table = DataTable()
-        lay.addWidget(self._table, 1)
+        lay.addLayout(self._build_kpis())
 
-        lay.addWidget(QLabel("معاينة _index.md (للعرض فقط):"))
-        self._preview = QTextBrowser()
-        lay.addWidget(self._preview, 2)
+        split = QHBoxLayout()
+        split.setSpacing(10)
+        split.addWidget(self._build_table_panel(), 3)
+        split.addWidget(self._build_index_panel(), 2)
+        lay.addLayout(split, 1)
 
         row = QHBoxLayout()
         self._grade_btn = QPushButton("ابدأ التصحيح")
@@ -227,10 +340,13 @@ class Screen(ScreenBase):
             return
         data = result if isinstance(result, dict) else {}
         self._results = list(data.get("results") or [])
-        self._table.set_rows(
-            _HEADERS,
-            [[r["name"], _outcome_text(r)] for r in self._results])
+        self._fill_kpis()
+        self._tabs.set_counts(self._counts())
+        self._refresh_table()
+        self._fill_alert()
         self._preview.setMarkdown(data.get("index") or "")
+        self._index_path.setText(str(self._work_dir / "_index.md")
+                                 if self._work_dir else "")
         self._grade_btn.setEnabled(
             any(r["outcome"] == "extracted" for r in self._results))
         self._progress.finish()
@@ -247,6 +363,74 @@ class Screen(ScreenBase):
         self.state_view.set_error(
             f"تعذّر التحضير ({exc_type}): {message}\n"
             "تأكد إنه في مجلد files/ داخل مجلد الواجب.")
+
+    # --- report data ----------------------------------------
+    def _counts(self) -> dict[str, int]:
+        counts = {"all": len(self._results)}
+        for key, outcome in _TAB_OUTCOME.items():
+            counts[key] = sum(1 for r in self._results if r["outcome"] == outcome)
+        return counts
+
+    def _fill_kpis(self) -> None:
+        counts = self._counts()
+        total_size = sum(int(r.get("size") or 0) for r in self._results)
+        code_files = sum(int(r.get("count") or 0) for r in self._results
+                         if r["outcome"] == "extracted")
+
+        self._kpi["total"].set_value(
+            str(counts["all"]), f"الحجم الكلي: {_human_size(total_size)}")
+        self._kpi["ok"].set_value(
+            str(counts["ok"]), f"{code_files} ملف كود جاهز للمراجعة")
+        self._kpi["skipped"].set_value(
+            str(counts["skipped"]),
+            "تتطلب فكاً يدوياً" if counts["skipped"] else "ما في صيغ متخطاة")
+        self._kpi["failed"].set_value(
+            str(counts["failed"]),
+            "الأرشيف ما بينفتح" if counts["failed"] else "ما في أرشيف تالف")
+
+    def _visible_rows(self) -> list[dict]:
+        wanted = _TAB_OUTCOME.get(self._tabs.current)
+        needle = self._search.text().strip()
+        rows = []
+        for r in self._results:
+            if wanted is not None and r["outcome"] != wanted:
+                continue
+            if needle and needle not in r["name"] and \
+                    needle not in _student_id(r["name"]):
+                continue
+            rows.append(r)
+        return rows
+
+    def _refresh_table(self) -> None:
+        rows = self._visible_rows()
+        self._table.set_rows(
+            _HEADERS,
+            [[_student_id(r["name"]), r["name"], _outcome_text(r),
+              _human_size(int(r.get("size") or 0))] for r in rows],
+            row_keys=[r["name"] for r in rows])
+        self._table.horizontalHeader().setSectionResizeMode(
+            _COL_NAME, QHeaderView.ResizeMode.Stretch)
+        # a blank grid reads as a bug; say which filter emptied it (P1-U8 nit)
+        self._no_match.setVisible(not rows and bool(self._results))
+
+    def _fill_alert(self) -> None:
+        needs_hand = [r for r in self._results if r["outcome"] != "extracted"]
+        self._alert_card.setVisible(bool(needs_hand))
+        self._alert_label.setText("\n".join(
+            f"{_student_id(r['name'])} — {r['name']}: {_outcome_text(r)}"
+            for r in needs_hand))
+
+    # --- actions --------------------------------------------
+    def _copy_index_path(self) -> None:
+        text = self._index_path.text()
+        if text:
+            QGuiApplication.clipboard().setText(text)
+
+    def _open_work_dir(self) -> None:
+        """Opens the assignment folder for inspection. Read-only by nature —
+        nothing under submissions/ is written or deleted from here."""
+        if self._work_dir is not None:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(self._work_dir)))
 
     # --- nav ------------------------------------------------
     def _go_grade(self) -> None:

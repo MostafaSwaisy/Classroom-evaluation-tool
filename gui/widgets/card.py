@@ -35,5 +35,7 @@ class Card(QFrame):
         """Add a widget (usually a button) to the trailing edge of the header."""
         self._header.addWidget(widget)
 
-    def add_widget(self, widget: QWidget) -> None:
-        self.body.addWidget(widget)
+    def add_widget(self, widget: QWidget, stretch: int = 0) -> None:
+        """`stretch > 0` lets a table or preview fill the panel's spare height
+        instead of leaving it dead space under a top-aligned stack."""
+        self.body.addWidget(widget, stretch)

@@ -112,10 +112,11 @@ def test_finished_fills_report_table_and_preview(screen):
     assert screen._phases.currentIndex() == 2      # form=0, running=1, report=2
     assert screen._table.row_count == 4
 
+    # columns: الرقم الجامعي | اسم الملف | النتيجة | الحجم
     model = screen._table.model()
     rar_row = next(r for r in range(model.rowCount())
-                   if model.item(r, 0).text() == "c.rar")
-    assert model.item(rar_row, 1).text() == "تُخطّي: صيغة غير مدعومة"
+                   if model.item(r, 1).text() == "c.rar")
+    assert model.item(rar_row, 2).text() == "تُخطّي: صيغة غير مدعومة"
     assert "فهرس التسليمات" in screen._preview.toPlainText()
 
 
@@ -211,3 +212,124 @@ def test_failure_re_enables_the_run_button(screen):
         _JOB_PREPARE, "FileNotFoundError", "files/ مش موجود", "tb")
     assert not screen._progress.is_running
     assert screen._run_btn.isEnabled()
+
+
+# --- the report, rebuilt against design/screens/prepare.png ------------
+_RICH = [
+    {"name": "120210123_احمد.zip", "outcome": "extracted", "detail": "", "count": 12,
+     "size": 1_468_006},
+    {"name": "120210145_سارة.zip", "outcome": "extracted", "detail": "", "count": 9,
+     "size": 911_360},
+    {"name": "120210204_خالد.rar", "outcome": "skipped", "detail": "unsupported",
+     "count": 0, "size": 3_565_158},
+    {"name": "noid_مجهول.zip", "outcome": "failed", "detail": "File is not a zip file",
+     "count": 0, "size": 34_816},
+]
+
+
+def _rich(screen):
+    return _run_and_finish(screen, _RICH)
+
+
+def test_kpi_cards_carry_the_four_real_outcome_counts(screen):
+    _rich(screen)
+    assert screen._kpi["total"]._value.text() == "4"
+    assert screen._kpi["ok"]._value.text() == "2"
+    assert screen._kpi["skipped"]._value.text() == "1"
+    assert screen._kpi["failed"]._value.text() == "1"
+
+
+def test_total_card_reports_the_combined_archive_size(screen):
+    _rich(screen)
+    assert "MB" in screen._kpi["total"]._sub.text()
+
+
+def test_success_card_sums_the_extracted_code_files(screen):
+    _rich(screen)
+    assert "21" in screen._kpi["ok"]._sub.text()      # 12 + 9
+
+
+def test_filter_tabs_carry_counts_and_narrow_the_table(screen):
+    _rich(screen)
+    assert screen._tabs.button("all").text() == "الكل (4)"
+    assert screen._table.row_count == 4
+
+    screen._tabs.button("skipped").click()
+    assert screen._table.row_count == 1
+
+    screen._tabs.button("all").click()
+    assert screen._table.row_count == 4
+
+
+def test_a_filter_with_no_rows_is_disabled(screen):
+    _run_and_finish(screen, [_RICH[0]])
+    assert not screen._tabs.button("failed").isEnabled()
+
+
+def test_search_matches_student_id_and_archive_name(screen):
+    _rich(screen)
+    screen._search.setText("120210145")
+    assert screen._table.row_count == 1
+
+    screen._search.setText("noid")
+    assert screen._table.row_count == 1
+
+    screen._search.setText("")
+    assert screen._table.row_count == 4
+
+
+def test_search_and_filter_compose(screen):
+    _rich(screen)
+    screen._tabs.button("ok").click()
+    screen._search.setText("120210204")          # a skipped archive
+    assert screen._table.row_count == 0
+
+
+def test_student_id_column_comes_from_the_filename_prefix(screen):
+    _rich(screen)
+    ids = _column(screen, 0)
+    assert ids[:3] == ["120210123", "120210145", "120210204"]
+
+
+def test_an_unmatched_id_reads_as_noid_not_a_fake_number(screen):
+    _rich(screen)
+    assert _column(screen, 0)[3] == "بلا رقم"
+
+
+def test_size_column_is_human_readable(screen):
+    _rich(screen)
+    assert _column(screen, 3)[0] == "1.4 MB"
+    assert _column(screen, 3)[3] == "34.0 KB"
+
+
+def test_no_matches_says_so_instead_of_a_blank_grid(screen):
+    _rich(screen)
+    screen._search.setText("لا يوجد")
+    assert screen._table.row_count == 0
+    assert not screen._no_match.isHidden()
+
+    screen._search.setText("")
+    assert screen._no_match.isHidden()
+
+
+def test_reviewer_alert_lists_only_what_needs_manual_handling(screen):
+    _rich(screen)
+    text = screen._alert_label.text()
+    assert "120210204" in text and "noid_مجهول.zip" in text
+    assert "120210123" not in text
+    assert not screen._alert_card.isHidden()
+
+
+def test_reviewer_alert_is_hidden_when_every_archive_extracted(screen):
+    _run_and_finish(screen, [_RICH[0], _RICH[1]])
+    assert screen._alert_card.isHidden()
+
+
+def test_index_path_is_shown_for_copying(screen):
+    _rich(screen)
+    assert "_index.md" in screen._index_path.text()
+
+
+def _column(screen, col: int) -> list[str]:
+    model = screen._table.model()
+    return [model.item(r, col).text() for r in range(model.rowCount())]
