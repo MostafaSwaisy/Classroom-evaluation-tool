@@ -200,10 +200,45 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
     point of the function, not a boundary-catch nit); cancel-between-students checked
     correctly; AI panel's accept buttons are the only path that writes to score/
     feedback widgets — confirmed nothing is auto-applied on a batch result arriving.
-  - **Still needed before the Fable Phase-3/4/5 checkpoint:** the actual Opus-mandatory
-    subagent pass on all four (this was a manual review, useful but not a substitute),
-    and R8/R9's own §5.11 "5 AI states" needs a live screenshot set (not just tests) —
-    P5-U1 state matrix covers the stub version, not a real `claude` run.
+  - **Opus-mandatory subagent pass (same session, independent run) — done.**
+    Confirmed R7/R9 **approved** outright with no new findings. Confirmed R1
+    **approved-with-nits** (same call). Confirmed the R8 `05c0834` fix is sound and
+    found nothing else wrong adjacent to it — but surfaced one **Important** finding
+    the manual pass missed: `provider_status()`'s subprocess probe
+    (`_PROBE_TIMEOUT`, was 60s) runs **synchronously on the GUI thread** from three
+    call sites — `setup_wizard._probe_claude()`, `settings._refresh_claude_badge()`,
+    `grading_workspace._safe_status()` (pre-flight before submitting the real AI
+    job) — none routed through `gui/worker.py`, contradicting the plan's own
+    "subprocess through the §8 worker with timeout + cancel" line for this exact
+    seam (P4-U2–U5). A stuck `claude -p ok` could freeze the UI up to a minute.
+    **Fixed in `575b138`:** `_PROBE_TIMEOUT` 60s→8s (this probe only answers a
+    yes/no readiness check; the real suggest call already runs on the worker via
+    `gui/grading_ai.ai_suggest_job` — full worker-routing of the probe itself was
+    judged bigger-than-necessary for the actual risk). TDD: red test
+    `test_status_probe_uses_a_gui_tolerable_timeout` first, confirmed failing at
+    60s. Also deleted `gui/grading_ai.py`'s unused `_JOB_AI_BATCH` dead constant
+    (same review pass). Full suite green after both fixes.
+    Subagent also **disagreed with treating the blind-`except Exception` pattern as
+    a pure policy question** — confirmed 15 sites inside this phase's "new code"
+    (not 16; 3 of the ones grepped predate this phase per `git blame`, out of
+    scope) — called it "a real, spec-documented rule violation ... should be
+    logged against every unit that introduced a site ... resolved either by (a) a
+    quick pass narrowing each catch to the 2-3 concrete exception types it's
+    actually guarding against, or (b) a written amendment to §B" — agreed it's not
+    a correctness bug and shouldn't bounce any unit on its own, but said leaving it
+    un-adjudicated will just repeat the ambiguity for the next reviewer.
+    **→ still needs mostafa's call: (a) or (b) above, nobody's picked one yet.**
+    Two cosmetic nits not fixed (both non-blocking, both confirmed real):
+    `grades_draft._on_export()` doesn't guard a second click mid-export (harmless —
+    same target path every time); `grading_workspace.py:595` falls back to the
+    "not_connected" AI-panel page (text: "Claude غير مربوط") when switching to a
+    student with no cached suggestion, even if Claude *is* connected — mislabels
+    idle as disconnected. Spec's §5.11 fixes the AI panel at exactly 5 states with
+    no separate "idle" state, so a real fix needs a spec amendment, not just code.
+  - **Still needed before the Fable Phase-3/4/5 checkpoint:** mostafa's decision on
+    the blind-except carve-out (see above); R8/R9's own §5.11 "5 AI states" needs a
+    live screenshot set (not just tests) — P5-U1 state matrix covers the stub
+    version, not a real `claude` run.
   - **Fable Phase-3 checkpoint** not run (Haiku sweep, guardrail sweep, goldens).
   - **Manual-test punch list (2026-09-10, mostafa):** in the *real* app "many screens not
     working" + a **Google auth failure** ("there was a problem"). Auth is almost certainly
