@@ -186,7 +186,8 @@ def provider_status(cfg: dict | None = None, *,
                               "`claude` غير موجود في PATH.")
     try:
         probe = run([exe, "-p", "ok", "--output-format", "json"],
-                    capture_output=True, text=True, timeout=_PROBE_TIMEOUT)
+                    capture_output=True, text=True, encoding="utf-8",
+                    errors="replace", timeout=_PROBE_TIMEOUT)
     except Exception as exc:  # noqa: BLE001 - probe failure == not usable
         return ProviderStatus("claude_cli", "not_logged_in", str(exc)[:200])
     if probe.returncode == 0 and _probe_json_ok(probe.stdout):
