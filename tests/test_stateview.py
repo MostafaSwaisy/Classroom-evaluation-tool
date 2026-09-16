@@ -56,3 +56,62 @@ def test_set_error_optional_action_button(qapp):
     # a plain set_error afterwards hides the button again
     sv.set_error("خطأ تاني")
     assert sv._error_button.isHidden()
+
+
+# --- the loading state IS a ProgressPanel now (fix/progress) -------------
+def test_loading_state_hosts_a_progress_panel(qapp):
+    from gui.widgets import ProgressPanel
+    sv = StateView()
+    assert isinstance(sv.progress, ProgressPanel)
+
+
+def test_entering_loading_starts_the_panel_and_leaving_stops_it(qapp):
+    sv = StateView()
+    sv.set_state("loading")
+    assert sv.progress.is_running
+    sv.set_state("ok")
+    assert not sv.progress.is_running
+
+
+def test_set_loading_text_becomes_the_panels_detail_line(qapp):
+    sv = StateView()
+    sv.set_loading_text("جارٍ حساب المصفوفة…")
+    sv.set_state("loading")
+    assert sv.progress._detail.text() == "جارٍ حساب المصفوفة…"
+
+
+def test_counted_ticks_drive_the_loading_panel(qapp):
+    sv = StateView()
+    sv.set_state("loading")
+    sv.progress.update_progress("جلب تسليمات: HW01", 1, 3)
+    assert sv.progress._percent.text() == "33%"
+    assert sv.progress._counter.text() == "1 من 3"
+
+
+def test_re_entering_loading_resets_a_stale_percentage(qapp):
+    sv = StateView()
+    sv.set_state("loading")
+    sv.progress.update_progress("x", 3, 3)
+    sv.set_state("ok")
+    sv.set_state("loading")
+    assert sv.progress._percent.text() == ""
+
+
+def test_error_state_stops_the_panel_so_no_bar_keeps_ticking(qapp):
+    sv = StateView()
+    sv.set_state("loading")
+    sv.set_error("فشل")
+    assert not sv.progress.is_running
+
+
+def test_loading_is_not_cancellable_until_a_screen_opts_in(qapp):
+    sv = StateView()
+    sv.set_state("loading")
+    assert sv.progress._cancel_btn.isHidden()
+
+    seen: list[int] = []
+    sv.enable_loading_cancel(lambda: seen.append(1))
+    sv.set_state("loading")
+    assert not sv.progress._cancel_btn.isHidden()
+    sv.progress._cancel_btn.click()
+    assert seen == [1]

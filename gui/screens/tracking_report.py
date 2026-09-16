@@ -51,10 +51,14 @@ _TRAIL = ("نسبة التسليم", "متأخر", "متوسط الدرجة", "�
 
 
 def _compute_job(course_id: str, threshold: float):
-    def run(_ctx) -> dict:  # noqa: ANN001 - JobContext, unused
+    def run(ctx) -> dict:  # noqa: ANN001 - JobContext
         classroom, _drive = get_services()
         cfg = config.load_config()
-        return compute_status(classroom, cfg, course_id, threshold)
+        # المصفوفة نداء API لكل واجب — بتطوّل على مساق كبير، فالعدّاد ضروري
+        return compute_status(
+            classroom, cfg, course_id, threshold,
+            progress=lambda msg, done, total: ctx.progress(msg, done or 0, total or 0),
+            should_cancel=ctx.cancelled)
     return run
 
 
@@ -74,10 +78,14 @@ class Screen(ScreenBase):
                  parent: QWidget | None = None) -> None:
         super().__init__(services, parent)
         self._computed: dict | None = None
+        self.state_view.set_loading_text("جارٍ حساب مصفوفة الإنجاز…")
+        self.state_view.enable_loading_cancel(self._cancel)
         b = self._backend()
         if b is not None:
             b.worker.finished.connect(self._on_finished)
             b.worker.failed.connect(self._on_failed)
+            b.worker.progress.connect(self._on_progress)
+            b.worker.cancelled.connect(self._on_cancelled)
         self.state_view.set_content(self._build_page())
 
     # --- lifecycle ------------------------------------------------
@@ -90,6 +98,27 @@ class Screen(ScreenBase):
             return
         self.state_view.set_state("loading")
         b.submit(_JOB_LOAD, _compute_job(course_id, self._threshold()))
+
+    def _cancel(self) -> None:
+        b = self._backend()
+        if b is not None:
+            b.cancel()
+
+    @Slot(str, int, int)
+    def _on_progress(self, message: str, current: int, total: int) -> None:
+        # worker.progress carries no job_id — the loading state is our guard that
+        # the ticks belong to our own compute job.
+        if self.state_view.state != "loading":
+            return
+        self.state_view.progress.update_progress(message, current, total)
+
+    @Slot(str)
+    def _on_cancelled(self, job_id: str) -> None:
+        if job_id != _JOB_LOAD:
+            return
+        self.state_view.set_empty_text(
+            "أُلغي حساب المصفوفة — اضغط تحديث لإعادة المحاولة.")
+        self.state_view.set_state("empty")
 
     @Slot(str, object)
     def _on_finished(self, job_id: str, result: object) -> None:
