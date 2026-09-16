@@ -81,6 +81,7 @@ class Screen(ScreenBase):
     def __init__(self, services: object | None = None,
                  parent: QWidget | None = None) -> None:
         super().__init__(services, parent)
+        self.state_view.set_loading_text("جارٍ قراءة _roster.xlsx…")
         self._rows: list[dict] = []
         self._missing: list[str] = []
         self._sel_model = None

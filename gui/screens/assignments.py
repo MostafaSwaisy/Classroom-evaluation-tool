@@ -66,6 +66,7 @@ class Screen(ScreenBase):
     def __init__(self, services: object | None = None,
                  parent: QWidget | None = None) -> None:
         super().__init__(services, parent)
+        self.state_view.set_loading_text("جارٍ جلب واجبات المساق…")
         self._works: list[dict] = []
         b = self._backend()
         if b is not None:

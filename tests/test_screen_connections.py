@@ -163,3 +163,26 @@ def test_auth_job_success_triggers_recheck(screen):
     screen.services.backend.calls.clear()
     screen.services.backend.worker.finished.emit(_JOB_AUTH, "ok")
     assert screen.services.backend.calls == [_JOB_CHECKS]
+
+
+# --- progress (fix/progress) -----------------------------------------
+def test_checks_report_a_stage_count_on_the_loading_panel(screen):
+    screen.load()
+    panel = screen.state_view.progress
+    assert panel.is_running
+    screen.services.backend.worker.progress.emit("فحص الصلاحيات (scopes)…", 2, 3)
+    assert panel._percent.text() == "67%"
+    assert panel._counter.text() == "2 من 3"
+    assert "scopes" in panel._detail.text()
+
+
+def test_ticks_are_ignored_when_no_job_is_busy(screen):
+    screen.services.backend.worker.finished.emit(_JOB_CHECKS, _ALL_OK)
+    screen.services.backend.worker.progress.emit("شيء تاني", 1, 5)
+    assert screen.state_view.progress._percent.text() == ""
+
+
+def test_finishing_the_checks_stops_the_panel(screen):
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_CHECKS, _ALL_OK)
+    assert not screen.state_view.progress.is_running
