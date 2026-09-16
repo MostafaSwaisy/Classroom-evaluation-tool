@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+import classroom_tool.extract as extract_mod
 from classroom_tool.errors import OperationCancelled
 from classroom_tool.extract import ArchiveResult, extract_archives
 
@@ -18,12 +19,28 @@ REPO = Path(__file__).resolve().parent.parent
 GOLDEN = REPO / "tests" / "golden"
 FIXTURE_FILES = REPO / "submissions" / "860473355891" / "واجب_1" / "files"
 
+#: Captured at import, before `_no_installed_unrar` patches the module constant.
+#: The CLI-parity test shells out to a real subprocess, so it has to know what
+#: that subprocess will actually find -- not what this module has patched away.
+REAL_UNRAR_CANDIDATES = extract_mod.UNRAR_CANDIDATES
+
 
 def _zip(path: Path, members: dict[str, bytes]) -> Path:
     with zipfile.ZipFile(path, "w") as zf:
         for name, data in members.items():
             zf.writestr(name, data)
     return path
+
+
+@pytest.fixture(autouse=True)
+def _no_installed_unrar(monkeypatch):
+    """Neutralise the WinRAR install-dir probe for the whole module.
+
+    Without this these tests pass or fail depending on whether the machine
+    running them happens to have WinRAR installed -- `which=lambda _n: None`
+    only covers PATH. Tests that want an UnRAR inject one explicitly.
+    """
+    monkeypatch.setattr("classroom_tool.extract.UNRAR_CANDIDATES", ())
 
 
 @pytest.fixture
@@ -57,11 +74,11 @@ def test_corrupt_zip_is_failed_and_leaves_no_target_dir(files_dir, tmp_path):
     assert not (tmp_path / "extracted" / "bad").exists()
 
 
-def test_rar_is_skipped_as_unsupported_when_unrar_is_not_installed(files_dir, tmp_path):
+def test_rar_is_skipped_when_unrar_is_not_installed(files_dir, tmp_path):
     (files_dir / "x.rar").write_bytes(b"Rar!\x1a\x07\x00")
 
     (res,) = _run(files_dir, tmp_path, which=lambda _n: None)
-    assert res == ArchiveResult(name="x.rar", outcome="skipped", detail="unsupported")
+    assert res == ArchiveResult(name="x.rar", outcome="skipped", detail="no_unrar")
 
 
 def _fake_unrar_writing(files: dict[str, bytes]):
@@ -151,6 +168,14 @@ def test_archiveresult_fields():
 
 # --- CLI parity --------------------------------------------------
 def test_cli_prepare_report_unchanged_vs_golden():
+    """The zip half of the fixture report is pinned byte-for-byte; the .rar
+    half depends on whether this machine has an UnRAR, so it is asserted by
+    shape instead.
+
+    Pinning the .rar lines to a golden made the suite pass only on a machine
+    without UnRAR -- which is exactly the configuration that was silently
+    losing a quarter of every batch.
+    """
     # a short base path — pytest's tmp_path + deep Arabic zip trees blow past
     # Windows MAX_PATH and turn real extractions into spurious failures.
     root = Path(tempfile.mkdtemp())
@@ -163,14 +188,36 @@ def test_cli_prepare_report_unchanged_vs_golden():
         proc = subprocess.run(
             [sys.executable, str(REPO / "cli.py"), "prepare", str(wd)],
             capture_output=True, text=True, encoding="utf-8", errors="replace",
-            timeout=120, cwd=REPO, env=dict(os.environ),
+            timeout=300, cwd=REPO, env=dict(os.environ),
         )
         assert proc.returncode == 0, proc.stderr
 
         golden = (GOLDEN / "prepare_fixture.txt").read_text(encoding="utf-8")
-        got = proc.stdout.replace("\r\n", "\n")
-        # trailing "✅ <_index.md path>" line is workdir-specific — compare the body
-        assert got.split("\n\n✅")[0] == golden.split("\n\n✅")[0]
+        body = proc.stdout.replace("\r\n", "\n").split("\n\n✅")[0]
+        lines = [ln for ln in body.split("\n") if ln.strip()]
+
+        rar_stems = {f.stem for f in FIXTURE_FILES.iterdir()
+                     if f.suffix.lower() == ".rar"}
+        assert rar_stems, "the fixture is supposed to carry .rar submissions"
+
+        def mentions_rar(line: str) -> bool:
+            return any(stem in line for stem in rar_stems)
+
+        # 1. the zip lines stay pinned to the golden, exactly and in order
+        golden_body = golden.replace("\r\n", "\n").split("\n\n✅")[0]
+        golden_zip = [ln for ln in golden_body.split("\n")
+                      if ln.strip() and not mentions_rar(ln)]
+        assert [ln for ln in lines if not mentions_rar(ln)] == golden_zip
+
+        # 2. every .rar is accounted for: extracted, or skipped with a reason
+        #    that tells the user what to install
+        rar_lines = [ln for ln in lines if mentions_rar(ln)]
+        assert len(rar_lines) == len(rar_stems)
+        if extract_mod.find_unrar(candidates=REAL_UNRAR_CANDIDATES):
+            assert all(ln.startswith("  ✓") for ln in rar_lines), rar_lines
+        else:
+            assert all(ln.startswith("  ⊘") and "UnRAR" in ln
+                       for ln in rar_lines), rar_lines
     finally:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -248,3 +295,63 @@ def test_cancel_leaves_no_half_written_target_dir(files_dir, tmp_path):
 
     # cancelled before any archive ran -> nothing extracted
     assert not list((tmp_path / "extracted").iterdir())
+
+
+# --- finding UnRAR (mostafa's report: .rar submissions silently skipped) ---
+def test_find_unrar_prefers_whatever_is_on_path():
+    from classroom_tool.extract import find_unrar
+    assert find_unrar(which=lambda n: "/usr/bin/unrar" if n == "unrar" else None,
+                      candidates=()) == "/usr/bin/unrar"
+
+
+def test_find_unrar_also_tries_the_capitalised_name():
+    """WinRAR ships the binary as `UnRAR.exe`; a PATH lookup for the lowercase
+    name misses it on a case-sensitive filesystem."""
+    from classroom_tool.extract import find_unrar
+    assert find_unrar(which=lambda n: "/opt/UnRAR" if n == "UnRAR" else None,
+                      candidates=()) == "/opt/UnRAR"
+
+
+def test_find_unrar_falls_back_to_the_winrar_install_dir(tmp_path):
+    """The actual bug: WinRAR is installed but its folder isn't on PATH, so
+    shutil.which returns None and every .rar is written off as unsupported."""
+    from classroom_tool.extract import find_unrar
+    exe = tmp_path / "UnRAR.exe"
+    exe.write_bytes(b"MZ")
+    assert find_unrar(which=lambda _n: None,
+                      candidates=(str(tmp_path / "nope.exe"), str(exe))) == str(exe)
+
+
+def test_find_unrar_returns_none_when_nothing_is_installed():
+    from classroom_tool.extract import find_unrar
+    assert find_unrar(which=lambda _n: None, candidates=()) is None
+
+
+def test_rar_without_any_unrar_is_flagged_no_unrar_not_just_unsupported(
+        files_dir, tmp_path):
+    """`unsupported` is what .7z gets -- nothing can be done about it. A .rar
+    with no UnRAR is fixable, and the report has to say which it is."""
+    (files_dir / "x.rar").write_bytes(b"Rar!\x1a\x07\x00")
+
+    (res,) = _run(files_dir, tmp_path, which=lambda _n: None)
+    assert res == ArchiveResult(name="x.rar", outcome="skipped", detail="no_unrar")
+
+
+def test_7z_stays_unsupported_because_nothing_can_fix_it(files_dir, tmp_path):
+    (files_dir / "x.7z").write_bytes(b"7z\xbc\xaf\x27\x1c")
+    (res,) = _run(files_dir, tmp_path)
+    assert res.detail == "unsupported"
+
+
+def test_unrar_is_probed_once_not_once_per_archive(files_dir, tmp_path):
+    for n in ("a.rar", "b.rar", "c.rar"):
+        (files_dir / n).write_bytes(b"Rar!\x1a\x07\x00")
+    calls: list[str] = []
+
+    def counting_which(name: str):
+        calls.append(name)
+        return None
+
+    _run(files_dir, tmp_path, which=counting_which)
+    # two names tried ("unrar", "UnRAR"), once for the whole run
+    assert len(calls) == 2
