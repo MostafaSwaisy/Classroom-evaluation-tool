@@ -54,13 +54,26 @@ class AppServices:
         self.active_assignment_dir = None  # set by the assignments / pull flow (P2)
 
 
+#: الحجم المفضّل لما تسمح الشاشة، والحد الأدنى المطلوب للتخطيط.
+_PREFERRED_SIZE = (1280, 800)
+_PREFERRED_MIN = (1024, 680)
+
+#: نسبة من المساحة المتاحة منستخدمها لما الشاشة أصغر من المفضّل.
+_FIT_RATIO = 0.95
+
+
+def _available_size():
+    """مساحة الشاشة المتاحة (بدون شريط المهام). دالة عشان الاختبار يبدّلها."""
+    screen = QApplication.primaryScreen()
+    return screen.availableGeometry() if screen is not None else None
+
+
 class MainWindow(QMainWindow):
     def __init__(self, services: AppServices | None = None) -> None:
         super().__init__()
         self.services = services or AppServices()
         self.setWindowTitle("classroom-tool")
-        self.resize(1280, 800)
-        self.setMinimumSize(1024, 680)
+        self._size_to_fit_screen()
         self._apply_shell_qss()
 
         central = QWidget()
@@ -223,6 +236,25 @@ class MainWindow(QMainWindow):
         if self._reconnect_toast is not None:
             self._reconnect_toast._label.setText("جارٍ إعادة الربط…")
         self.services.backend.submit(_JOB_RECONNECT, _reconnect_job())
+
+    def _size_to_fit_screen(self) -> None:
+        """افتح بحجم بيدخل على الشاشة فعلاً.
+
+        `resize(1280, 800)` الثابت بيطلع أوسع من شاشة 1536x816 لما تكون نسبة
+        تكبير ويندوز 125%، والواجهة RTL فالمقصوص هو الحافة اليمين — مكان
+        العناصر الأساسية. والحد الأدنى لو تجاوز الشاشة بيمنع التصغير أصلاً.
+        """
+        avail = _available_size()
+        pref_w, pref_h = _PREFERRED_SIZE
+        min_w, min_h = _PREFERRED_MIN
+        if avail is not None:
+            cap_w, cap_h = avail.width(), avail.height()
+            pref_w = min(pref_w, int(cap_w * _FIT_RATIO))
+            pref_h = min(pref_h, int(cap_h * _FIT_RATIO))
+            min_w = min(min_w, cap_w)
+            min_h = min(min_h, cap_h)
+        self.setMinimumSize(min_w, min_h)
+        self.resize(max(pref_w, min_w), max(pref_h, min_h))
 
     def _position_toast_layer(self) -> None:
         central = self.centralWidget()
