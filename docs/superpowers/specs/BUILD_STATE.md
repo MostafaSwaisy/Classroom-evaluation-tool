@@ -276,6 +276,78 @@ _Live pointer to where the build is. Full plan: `2026-09-08-gui-execution-plan.m
   `api.py:40` + B904 ×3 in `auth.py` (present on `main`). Out of scope for the per-unit
   "clean on NEW code" gate; fold into a cleanup pass.
 
+## Fable checkpoint — Phase 3+4+5, evidence & decision (2026-09-16, `fix/gui-phase3-triage`)
+
+Per plan §"Fable — per-checkpoint monitoring". This checkpoint covers Phase 3, 4, and 5
+**together** — see Deviations (8) below for why, and why that itself needs a human sign-off.
+
+1. **CHECKPOINT: Phase 3+4+5 — COMPLETE**, pending item 9's sign-off gate.
+2. **Units table** — every unit's own done-command was green at commit time (Sonnet
+   self-check, per-unit commit messages); Opus-mandatory verdicts recorded this session:
+
+   | unit(s) | Opus-mandatory? | verdict |
+   |---|---|---|
+   | P3-U1, P3-U6 (R1) | yes | approved-with-nits → **nit resolved** (boundary-catch policy, `3349820`) |
+   | P3-U2, P3-U4 (R7) | yes | **approved** |
+   | P4-U2, P4-U5 (R8) | yes | approved-with-fix ×2 → **both fixed** (`05c0834` is_error/subtype gate, `575b138` GUI-thread-blocking probe, `2fb3ed2` utf-8 decode crash) |
+   | P4-U3, P4-U6 (R9) | yes | **approved** |
+   | P0-U4, P1-U1/P2-U6, P1-U3, P2-U1 | yes | already approved at the Phase 1/2 checkpoints — out of this checkpoint's scope |
+   | all other Phase 3/4/5 units | no (Haiku-only) | mechanical gate green, see (5) |
+
+3. **Refactors landed: R# → unit → test.** R1 → P3-U1/P3-U6 →
+   `test_write_grades.py`, `test_screen_grades_draft.py`. R7 → P3-U2/P3-U4 →
+   `test_rubric.py`, `test_screen_rubrics.py`. R8 → P4-U2/P4-U5 →
+   `test_claude_provider.py`, `test_screen_setup_wizard.py`. R9 → P4-U3/P4-U6 →
+   `test_grading_assist.py`, `test_screen_grading_workspace_ai.py`. R11 → P3-U3 →
+   `test_state.py`. All confirmed behaviour-preserving where R-refactors, all TDD'd.
+4. **CLI parity: OK.** `cli.py --help` byte-identical to golden; all 8 subcommand
+   `--help` trees (`auth`, `courses`, `doctor`, `prepare`, `pull`, `reset-auth`,
+   `status`, `work`) byte-identical to their goldens, this session, on the HEAD carrying
+   all three fixes above.
+5. **Guardrails: sweep clean.** `test_guardrails.py` green (part of the full suite);
+   manual re-grep this session: 0 push/upload/confirm/sync hits, every `_roster.xlsx`
+   hit a read, no destructive-op hits outside a tmp-sidecar `.unlink`, `anthropic`
+   confined to `claude_provider.py`. Banner (`grades_draft.py`) non-dismissible —
+   confirmed no close handler in the source. Roster `NoEditTriggers` — confirmed
+   P1-U8's carry note, unchanged this phase.
+6. **Visual states: flagged screens → present.** `test_state_matrix.py` green (every
+   data-screen × state cell renders non-blank, P5-U1). P5-U4's light/dark **eyeball**
+   pass is still a human-only step — not satisfied by this gate, logged open below.
+7. **Spec §8 criteria demonstrable + artifact.** Criterion 3 (e2e xlsx parity minus AI):
+   `test_e2e_xlsx.py`, P3-U7. Criterion 5 (expired-token toast + reconnect): P5-U2,
+   `debbaa6`. §5.11 "5 AI states": covered by `test_screen_grading_workspace_ai.py`
+   (stubbed client) — **not yet by a live screenshot set against a real `claude`**,
+   logged open below (same gap noted after the Opus-mandatory pass).
+8. **Deviations from plan + reason:**
+   - **Three phases on one branch, one combined checkpoint**, vs. plan §"Working
+     method A"'s "one integration branch per phase, merge at each Fable PROCEED."
+     This predates this session (see the 2026-09-10 entries above) — inherited, not
+     introduced here. **No logged human-approved reason found in this doc for the
+     bundling itself.** Flagging for mostafa: either retroactively approve treating
+     Phase 3+4+5 as one combined checkpoint/merge (what this report assumes), or
+     require unbundling into three checkpoints/merges before any merge to `main`
+     (would mean re-running this gate three times against three separate HEADs).
+   - **P5-U4 (light/dark eyeball pass)** and **the live 5-AI-states screenshot set**
+     are human-only steps this automated pass cannot satisfy — both logged open, not
+     silently skipped.
+9. **DECISION: PROCEED, conditional.** All automatable evidence is green: every
+   Opus-mandatory verdict is `approved` (nits filed and resolved), the mechanical
+   gate is clean on the HEAD carrying all three review-driven fixes, CLI parity
+   holds, refactor coverage is complete, guardrails are clean. **What's still needed
+   before this converts to an unconditional PROCEED and a merge to `main`:**
+   (a) mostafa's sign-off on the three-phases-as-one-checkpoint deviation (item 8);
+   (b) the P5-U4 light/dark eyeball pass; (c) a live screenshot set of the AI panel's
+   5 states against a real `claude` CLI run. None of the three are code changes —
+   they're human-in-the-loop or artifact-generation steps this session can prep but
+   not close out unilaterally.
+10. **Risks touched this phase + status:** R-D (Provider-B assumption) — validated,
+    P4-U1 real probe + human sign-off recorded. R-E (`claude -p` hangs/blocks) —
+    **status upgraded this session**: the *suggest* call was already correctly
+    worker-routed, but the *status probe* wasn't (found + fixed, `575b138`) and had
+    its own latent crash (found + fixed, `2fb3ed2`) — both were live risks until
+    today. R-A/R-B/R-C — not touched this phase (their units are in Phase 0-2,
+    already merged).
+
 - **Phase 4 code complete (P4-U1…U6) on `feat/gui-phase3`.** Provider B only, per §7.
   - **P4-U1 (`preflight note` + sign-off)** — `docs/…/2026-09-10-provider-b-preflight.md`.
     Real probe of `claude -p "ok" --output-format json --model claude-opus-5` (CLI 2.1.263):
