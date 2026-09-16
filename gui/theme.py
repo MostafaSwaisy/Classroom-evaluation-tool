@@ -176,6 +176,25 @@ def _qss(t: dict[str, str]) -> str:
     }}
     QPushButton[accent="true"]:hover {{ background-color: {t['primary']}; }}
 
+    /* FilterTabs pills: quiet until selected, then the accent underlines them. */
+    QPushButton[tab="true"] {{
+        background-color: transparent;
+        color: {t['on-surface-variant']};
+        border: 1px solid {t['outline-variant']};
+        padding: 4px 12px;
+    }}
+    QPushButton[tab="true"]:hover {{ color: {t['on-surface']}; }}
+    QPushButton[tab="true"]:checked {{
+        background-color: {t['primary-container']};
+        color: {t['on-primary-container']};
+        border-color: {t['primary-container']};
+        font-weight: 600;
+    }}
+    QPushButton[tab="true"]:disabled {{
+        color: {t['outline']};
+        border-color: {t['outline-variant']};
+    }}
+
     QLineEdit, QPlainTextEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {{
         background-color: {t['surface-container-lowest']};
         color: {t['on-surface']};
