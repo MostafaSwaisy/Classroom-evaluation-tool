@@ -45,6 +45,22 @@ def test_status_ready_when_claude_on_path_and_probe_succeeds():
     assert st.provider == "claude_cli"
 
 
+def test_status_probe_uses_a_gui_tolerable_timeout():
+    """provider_status() runs synchronously on the GUI thread (wizard/Settings/
+    grading_workspace all call it outside the §8 worker) -- its probe timeout
+    must stay short enough not to freeze the UI, unlike the real call's
+    _CALL_TIMEOUT which runs on the worker."""
+    seen = {}
+
+    def _run(*a, **k):
+        seen.update(k)
+        return _completed(0, _ok_json())
+
+    provider_status({"ai_provider": "claude_cli"},
+                    which=lambda _n: "/usr/bin/claude", run=_run)
+    assert seen["timeout"] <= 10
+
+
 def test_status_not_installed_when_claude_absent():
     st = provider_status({"ai_provider": "claude_cli"},
                          which=lambda _n: None,

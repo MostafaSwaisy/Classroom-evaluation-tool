@@ -15,8 +15,6 @@ from dataclasses import asdict
 from classroom_tool.claude_provider import get_client
 from classroom_tool.grading_assist import suggest_batch
 
-_JOB_AI_BATCH = "grading_workspace.ai_batch"
-
 
 def ai_suggest_job(students: dict[str, dict[str, str]], rubric: dict, *,
                    instructions: str = "", cfg: dict | None = None,
