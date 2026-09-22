@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import pytest
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Qt, Signal
+from PySide6.QtWidgets import QLabel
 
 from gui.screens.tracking_report import _JOB_EXPORT, _JOB_LOAD, Screen
 
@@ -127,7 +128,7 @@ def test_at_risk_panel_ascending_by_ratio_at_default_threshold(screen):
     _loaded(screen)
     names = [r["name"] for r in screen._at_risk]
     assert names == ["عمر", "ليان"]           # 0.00 then 0.33, both < 0.60
-    assert "سارة" not in screen._risk_label.text()
+    assert "سارة" not in [c.property("name") for c in screen._risk_cards]
 
 
 # --- threshold slider: local recompute, no network ----------
@@ -197,3 +198,101 @@ def test_cancelled_matrix_lands_in_empty_not_a_stuck_bar(screen):
     screen.services.backend.worker.cancelled.emit(_JOB_LOAD)
     assert not screen.state_view.progress.is_running
     assert screen.state_view.state == "empty"
+
+
+# --- rebuilt against design/screens/tracking-report.png ----------------------
+def test_kpi_row_carries_real_totals(screen):
+    _loaded(screen)
+    k = screen._kpi
+    assert k["students"]._value.text() == "4"
+    assert "2" in k["students"]._sub.text()            # 2 under follow-up at 0.60
+    # 3 + 2 + 1 + 0 submitted out of 4 x 3 possible
+    assert k["rate"]._value.text() == "50%"
+    assert "6 / 12" in k["rate"]._sub.text()
+    assert k["avg"]._value.text() == "79"              # mean of 88 and 70
+    assert "2" in k["avg"]._sub.text()
+    assert k["late"]._value.text() == "1"
+    assert "6" in k["late"]._sub.text()                # 6 missing submissions
+
+
+def test_average_card_says_so_when_nothing_is_graded(screen):
+    ungraded = [dict(r, avg=None) for r in _ROWS]
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_LOAD, dict(_COMPUTED, rows=ungraded))
+    assert screen._kpi["avg"]._value.text() == "—"
+
+
+def test_filter_tabs_count_and_narrow_the_matrix(screen):
+    _loaded(screen)
+    tabs = screen._tabs
+    assert tabs.button("all").text() == "الكل (4)"
+    assert tabs.button("stable").text() == "المستقرون (2)"
+    assert tabs.button("risk").text() == "تحت المتابعة (2)"
+    assert tabs.button("complete").text() == "مكتمل 100% (1)"
+    tabs.set_current("risk")
+    assert screen._table.row_count == 2
+
+
+def test_slider_moves_students_between_tabs(screen):
+    _loaded(screen)
+    screen._slider.setValue(80)                        # خالد (0.67) joins the at-risk
+    assert screen._tabs.button("risk").text() == "تحت المتابعة (3)"
+    assert screen._tabs.button("stable").text() == "المستقرون (1)"
+    assert "3" in screen._kpi["students"]._sub.text()
+
+
+def test_search_matches_id_or_name_and_composes_with_tabs(screen):
+    _loaded(screen)
+    screen._search.setText("ليان")
+    assert screen._table.row_count == 1
+    screen._search.setText("12")
+    assert screen._table.row_count == 4
+    screen._tabs.set_current("risk")
+    assert screen._table.row_count == 2
+
+
+def test_empty_filter_says_so_instead_of_a_blank_grid(screen):
+    _loaded(screen)
+    screen._search.setText("لا يوجد")
+    assert screen._table.row_count == 0
+    assert not screen._no_match.isHidden()
+    screen._search.setText("")
+    assert screen._no_match.isHidden()
+
+
+def test_at_risk_cards_name_the_missing_assignments(screen):
+    _loaded(screen)
+    cards = screen._risk_cards
+    assert [c.property("student_id") for c in cards] == ["123", "122"]
+    liyan = cards[1].findChild(QLabel, "missing").text()
+    assert "HW01 Intro" in liyan and "HW02 Forms" in liyan
+    assert "HW03 Auth" not in liyan
+
+
+def test_at_risk_cards_follow_the_slider(screen):
+    _loaded(screen)
+    screen._slider.setValue(0)
+    assert screen._risk_cards == []
+    assert not screen._risk_empty.isHidden()
+
+
+def test_long_assignment_titles_wrap_to_two_lines_with_full_tooltip(screen):
+    from gui.screens.tracking_report import _LEAD, _wrap_title
+    assert _wrap_title("HW3: Auth & MW") == "HW3:\nAuth & MW"
+    assert _wrap_title("HW01 Intro") == "HW01 Intro"
+    assert "\n" in _wrap_title("Final project submission")
+    _loaded(screen)
+    model = screen._table.model()
+    assert model.headerData(len(_LEAD) + 2, Qt.Orientation.Horizontal,
+                            Qt.ItemDataRole.ToolTipRole) == "HW03 Auth"
+
+
+def test_ratio_and_status_sit_next_to_the_name_and_status_is_tinted(screen):
+    from gui.screens.tracking_report import _COL_STATUS, _RISK_COLOR
+    _loaded(screen)
+    model = screen._table.model()
+    headers = [model.headerData(c, Qt.Orientation.Horizontal)
+               for c in range(model.columnCount())]
+    assert headers[:4] == ["الرقم الجامعي", "الاسم", "نسبة التسليم", "الحالة"]
+    omar = next(i for i in range(model.rowCount()) if model.item(i, 1).text() == "عمر")
+    assert model.item(omar, _COL_STATUS).background().color() == _RISK_COLOR
