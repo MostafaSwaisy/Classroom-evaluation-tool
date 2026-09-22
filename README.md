@@ -36,6 +36,9 @@ pip install -r requirements.txt
 copy config.example.yaml config.yaml
 ```
 
+**ملفات `.rar`** محتاجة WinRAR (أو UnRAR) على الجهاز — الـ zip ما بيحتاج إشي. الأداة بتلاقيه
+تلقائياً في مكان تثبيت WinRAR المعتاد أو من `PATH`، و`python cli.py doctor` بيحذّرك لو مش موجود.
+
 ---
 
 ## 3. أول تشغيل
@@ -117,6 +120,7 @@ drive.readonly
 | `Access blocked: app not verified` | الـ Workspace admin لازم يضيف الـ Client ID للـ allow-list |
 | طلاب بدون رقم جامعي | عدّل `student_id_pattern` — شوف الإيميلات في الرسالة التحذيرية |
 | `429 rate limit` | الأداة بتعمل retry تلقائي؛ إذا استمر، قسّم الشغل على دفعات |
+| تسليمات `.rar` ما انفكّت | ثبّت WinRAR، شغّل `doctor` للتأكد، بعدين أعد `prepare` |
 | ملفات ما تحمّلت | تأكد إن `drive.readonly` ضمن الصلاحيات، وإن حجم الملف تحت `max_file_mb` |
 
 ---
