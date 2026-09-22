@@ -10,7 +10,7 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 
-from . import api
+from . import api, extract
 from .auth import CREDENTIALS_FILE, SCOPES, TOKEN_FILE, get_services
 from .config import project_root
 from .progress import ProgressFn
@@ -33,6 +33,7 @@ class FixAction(Enum):
     RESET_THEN_AUTH = "reset_then_auth"        # reset-auth ثم auth (صلاحية ناقصة / توكن تالف)
     RECONNECT = "reconnect"                    # أعد بناء الاتصال / حاول ثانية
     CHECK_COURSE_SCOPE = "check_course_scope"  # صلاحية coursework على هذا المساق
+    INSTALL_UNRAR = "install_unrar"            # ثبّت WinRAR / UnRAR عشان تنفك الـ .rar
 
 
 @dataclass(frozen=True)
@@ -94,6 +95,17 @@ def _check_files() -> tuple[list[CheckResult], bool]:
         out.append(CheckResult("files.token", None,
                                f"{TOKEN_FILE} مفقود — لسا ما سجّلت دخول",
                                fix_action=FixAction.RUN_AUTH, section=_SEC_FILES))
+
+    # تحذير مش فشل: الـ zip بيشتغل بدونه، بس كل .rar بيتخطّى — وهيك ضاعوا ٦ تسليمات بصمت.
+    unrar = extract.find_unrar()
+    if unrar:
+        out.append(CheckResult("files.unrar", True, f"UnRAR موجود ({unrar})",
+                               section=_SEC_FILES))
+    else:
+        out.append(CheckResult("files.unrar", None,
+                               "UnRAR غير موجود — تسليمات .rar رح تتخطّى بدون فك",
+                               cause="ما لقيت unrar في PATH ولا في أماكن تثبيت WinRAR",
+                               fix_action=FixAction.INSTALL_UNRAR, section=_SEC_FILES))
 
     return out, files_ok
 

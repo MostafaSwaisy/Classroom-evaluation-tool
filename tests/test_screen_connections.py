@@ -158,6 +158,24 @@ def test_reconnect_fix_reruns_checks(screen):
     assert screen.services.backend.calls == [_JOB_CHECKS]
 
 
+def test_install_unrar_fix_explains_winrar_without_submitting_a_job(screen, monkeypatch):
+    shown: list[str] = []
+    monkeypatch.setattr(QMessageBox, "information",
+                        lambda _p, _t, text, *a, **k: shown.append(text))
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_CHECKS, {
+        "aborted": False, "reason": "",
+        "results": [_cr("files.unrar", None, "UnRAR غير موجود", "الملفات",
+                        doctor.FixAction.INSTALL_UNRAR),
+                    _cr("overall", True, "كله تمام", None)],
+    })
+    screen.services.backend.calls.clear()
+    btn = next(b for b in screen.findChildren(QPushButton) if b.text() == "كيف أثبّته؟")
+    btn.click()
+    assert shown and "WinRAR" in shown[0]
+    assert screen.services.backend.calls == []
+
+
 def test_auth_job_success_triggers_recheck(screen):
     screen.load()
     screen.services.backend.calls.clear()

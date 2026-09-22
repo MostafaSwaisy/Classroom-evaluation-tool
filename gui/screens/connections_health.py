@@ -45,6 +45,7 @@ _FIX_LABEL = {
     doctor.FixAction.RESET_THEN_AUTH: "إعادة ضبط + دخول",
     doctor.FixAction.RECONNECT: "أعد المحاولة",
     doctor.FixAction.CHECK_COURSE_SCOPE: "تفاصيل",
+    doctor.FixAction.INSTALL_UNRAR: "كيف أثبّته؟",
 }
 
 
@@ -257,6 +258,12 @@ class Screen(ScreenBase):
                 self, "صلاحية coursework",
                 "الاتصال شغّال بس list_coursework فشل لهذا المساق — غالباً صلاحية "
                 "classroom.coursework ناقصة. اعمل إعادة ضبط + دخول وأشّر على كل الصناديق.")
+        elif action == doctor.FixAction.INSTALL_UNRAR:
+            QMessageBox.information(
+                self, "UnRAR",
+                "فك ملفات .rar محتاج WinRAR (أو UnRAR). ثبّته من win-rar.com، والأداة "
+                "بتلاقيه لحالها في مكان التثبيت المعتاد أو من PATH. بعدها أعد الفحص، "
+                "وأعد تحضير أي واجب كان فيه .rar متخطّى.")
 
     def _confirm_reset_auth(self) -> None:
         answer = QMessageBox.question(

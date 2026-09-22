@@ -72,6 +72,30 @@ def test_live_no_token_row_carries_run_auth(monkeypatch, tmp_path):
     assert row.ok is None and row.fix_action is doc.FixAction.RUN_AUTH
 
 
+def test_unrar_found_is_an_ok_row_naming_the_path(monkeypatch, tmp_path):
+    _fake_root(monkeypatch, tmp_path, token=None)
+    monkeypatch.setattr(doc.extract, "find_unrar", lambda: r"C:\WinRAR\UnRAR.exe")
+    row = next(r for r in doc.doctor() if r.key == "files.unrar")
+    assert row.ok is True and row.section == "الملفات"
+    assert r"C:\WinRAR\UnRAR.exe" in row.label
+    assert row.fix_action is None
+
+
+def test_missing_unrar_warns_with_install_action_but_does_not_fail_overall(
+        monkeypatch, tmp_path):
+    """zip still works without UnRAR -- a warning, never a red row, never unhealthy."""
+    _fake_root(monkeypatch, tmp_path, token='{"scopes": []}', files=True)
+    monkeypatch.setattr(doc, "SCOPES", [])
+    _stub_services(monkeypatch, courses=[1])
+    monkeypatch.setattr(doc.extract, "find_unrar", lambda: None)
+    results = doc.doctor()
+    row = next(r for r in results if r.key == "files.unrar")
+    assert row.ok is None and row.section == "الملفات"
+    assert row.fix_action is doc.FixAction.INSTALL_UNRAR
+    assert ".rar" in row.label
+    assert doc.is_healthy(results) is True
+
+
 def test_cli_doctor_abort_renders_partial_then_exits_1(monkeypatch):
     from click.testing import CliRunner
 
