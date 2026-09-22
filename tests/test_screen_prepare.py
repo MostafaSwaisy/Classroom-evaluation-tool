@@ -325,6 +325,25 @@ def test_reviewer_alert_is_hidden_when_every_archive_extracted(screen):
     assert screen._alert_card.isHidden()
 
 
+_NO_UNRAR = {"name": "120210300_ليلى.rar", "outcome": "skipped", "detail": "no_unrar",
+             "count": 0, "size": 2048}
+
+
+def test_no_unrar_alert_offers_a_button_to_the_readiness_screen(screen):
+    seen: list[tuple] = []
+    screen.navigation_requested.connect(lambda k, c: seen.append((k, c)))
+    _run_and_finish(screen, [_RICH[0], _NO_UNRAR])
+    assert not screen._unrar_btn.isHidden()
+    screen._unrar_btn.click()
+    assert seen[-1][0] == "connections_health"
+
+
+def test_unrar_button_hidden_when_no_skip_is_about_unrar(screen):
+    _rich(screen)  # the .rar there is "unsupported", not "no_unrar"
+    assert not screen._alert_card.isHidden()
+    assert screen._unrar_btn.isHidden()
+
+
 def test_index_path_is_shown_for_copying(screen):
     _rich(screen)
     assert "_index.md" in screen._index_path.text()

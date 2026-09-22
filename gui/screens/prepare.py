@@ -35,6 +35,7 @@ from gui.widgets import Card, DataTable, FilterTabs, ProgressPanel, StatCard
 _JOB_PREPARE = "prepare.run"
 
 _GRADING_KEY = "grading_workspace"
+_CONNECTIONS_KEY = "connections_health"
 
 _NO_ID = "بلا رقم"
 
@@ -272,6 +273,12 @@ class Screen(ScreenBase):
         self._alert_label.setWordWrap(True)
         self._alert_label.setProperty("role", "muted")
         self._alert_card.add_widget(self._alert_label)
+        # نفس نمط زر student_id_pattern في pull: السبب قابل للإصلاح، ودّيه لمكان الإصلاح
+        self._unrar_btn = QPushButton("افحص UnRAR في شاشة الجاهزية")
+        self._unrar_btn.clicked.connect(
+            lambda: self.navigation_requested.emit(_CONNECTIONS_KEY, {}))
+        self._unrar_btn.hide()
+        self._alert_card.add_widget(self._unrar_btn)
         self._alert_card.hide()
         panel.add_widget(self._alert_card)
         return panel
@@ -422,6 +429,7 @@ class Screen(ScreenBase):
         self._alert_label.setText("\n".join(
             f"{_student_id(r['name'])} — {r['name']}: {_outcome_text(r)}"
             for r in needs_hand))
+        self._unrar_btn.setVisible(any(r["detail"] == "no_unrar" for r in needs_hand))
 
     # --- actions --------------------------------------------
     def _copy_index_path(self) -> None:
