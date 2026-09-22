@@ -118,7 +118,7 @@ def test_finished_fills_all_three_cards(screen):
     screen.services.backend.worker.finished.emit(_JOB_LOAD, _RESULT)
 
     assert "HW03" in screen._pull_card_body.text()
-    assert "سلّم: 18" in screen._pull_card_body.text()
+    assert screen._pull_stats["submitted"]._value.text() == "18"
     assert "مسودة موجودة" in screen._draft_card_body.text()
     assert "2 مشاكل" in screen._health_card_body.text()
 
@@ -162,3 +162,90 @@ def test_no_upload_tokens_in_source():
            / "gui" / "screens" / "dashboard.py").read_text(encoding="utf-8")
     hit = re.search(r"\b(push|upload|confirm|sync)\b|--confirm", src, re.IGNORECASE)
     assert hit is None, f"forbidden token {hit.group(0)!r} in dashboard.py"
+
+
+# --- rebuilt against design/screens/dashboard.png ---------------------------
+_ASSIGNMENTS = [
+    {"assignment": "HW03", "dir": "subs/PHP2026/HW03", "when": "2026-03-02",
+     "submitted": 18, "late": 4, "missing": 6, "total": 28,
+     "prepared": True, "draft": True},
+    {"assignment": "HW02", "dir": "subs/PHP2026/HW02", "when": "2026-02-20",
+     "submitted": 25, "late": 1, "missing": 2, "total": 28,
+     "prepared": True, "draft": False},
+]
+_RICH = {**_RESULT, "assignments": _ASSIGNMENTS,
+         "last_pull": {**_RESULT["last_pull"], "dir": "subs/PHP2026/HW03"},
+         "draft": {**_RESULT["draft"], "dir": "subs/PHP2026/HW03"}}
+
+
+def test_scan_lists_every_local_assignment_newest_first(tmp_path, monkeypatch):
+    import os
+
+    import gui.screens.dashboard as dash
+    rows = [{"state": "سلّم", "late": False}, {"state": "سلّم", "late": True},
+            {"state": "لم يسلّم", "late": False}]
+    monkeypatch.setattr(dash, "read_roster", lambda _p: rows)
+    course = tmp_path / "PHP2026"
+    for name, mtime in (("HW01", 1_000), ("HW02", 3_000), (".HW03.partial.ab", 5_000)):
+        d = course / name
+        d.mkdir(parents=True)
+        (d / "_roster.xlsx").write_bytes(b"x")
+        os.utime(d / "_roster.xlsx", (mtime, mtime))
+    (course / "HW02" / "extracted").mkdir()
+    (course / "HW01" / "grades_draft.xlsx").write_bytes(b"x")
+
+    items = dash._scan_assignments(course)
+    assert [i["assignment"] for i in items] == ["HW02", "HW01"]     # partial skipped
+    assert items[0]["prepared"] is True and items[0]["draft"] is False
+    assert items[1]["prepared"] is False and items[1]["draft"] is True
+    assert (items[0]["submitted"], items[0]["late"], items[0]["missing"],
+            items[0]["total"]) == (2, 1, 1, 3)
+
+
+def test_kpis_come_from_the_local_scan(screen):
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_LOAD, _RICH)
+    k = screen._kpi
+    assert k["pulled"]._value.text() == "2"
+    assert "2026-03-02" in k["pulled"]._sub.text()
+    assert k["students"]._value.text() == "28"
+    assert k["submitted"]._value.text() == "18 / 28"
+    assert k["drafts"]._value.text() == "1"
+
+
+def test_last_pull_card_shows_the_three_counts(screen):
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_LOAD, _RICH)
+    assert screen._pull_stats["submitted"]._value.text() == "18"
+    assert screen._pull_stats["late"]._value.text() == "4"
+    assert screen._pull_stats["missing"]._value.text() == "6"
+
+
+def test_open_roster_and_workspace_carry_the_work_dir(screen):
+    seen: list[tuple] = []
+    screen.navigation_requested.connect(lambda k, c: seen.append((k, c)))
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_LOAD, _RICH)
+    screen._open_roster_btn.click()
+    assert seen[-1] == ("roster", {"work_dir": "subs/PHP2026/HW03"})
+    screen._open_workspace_btn.click()
+    assert seen[-1] == ("grading_workspace", {"work_dir": "subs/PHP2026/HW03"})
+
+
+def test_local_assignments_table_fills_the_page(screen):
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_LOAD, _RICH)
+    assert screen._local_table.row_count == 2
+    model = screen._local_table.model()
+    assert model.item(0, 0).text() == "HW03"
+
+
+def test_nothing_pulled_disables_the_card_buttons(screen):
+    screen.load()
+    screen.services.backend.worker.finished.emit(_JOB_LOAD, {
+        "health": {"ok": True, "problems": 0, "error": ""},
+        "last_pull": None, "draft": None, "assignments": []})
+    assert not screen._open_roster_btn.isEnabled()
+    assert not screen._open_workspace_btn.isEnabled()
+    assert screen._kpi["pulled"]._value.text() == "0"
+    assert not screen._local_empty.isHidden()
