@@ -4,6 +4,10 @@
 العلامة الكاملة، العنوان، آخر موعد (`pull._due_datetime`)، وشارة «انسحب قبل»
 مبنيّة على فحص القرص (`output_dir/<alias>/<slug>/_roster.xlsx`).
 
+مبنية مقابل design/screens/assignments.png: صف KPI، تابات (مسحوبة / بانتظار
+السحب) وبحث، ووصف الواجب وموعده النسبي. «بحاجة لتحديث» من الـ mockup متروكة —
+الأداة ما بتعرف بالتسليمات الجديدة بدون سحب، فالرقم كان رح يكون مخترع.
+
 أزرار الصف (سحب / سحب الكشف فقط / فتح الكشف) تنقّل فقط في هذه المرحلة —
 تبثّ `navigation_requested(key, context)` ولا تشغّل أي عملية. حالة الخطأ
 تربط بشاشة الاتصالات والفحص.
@@ -11,14 +15,15 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
-from PySide6.QtCore import Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QPushButton,
     QScrollArea,
     QVBoxLayout,
@@ -31,12 +36,20 @@ from classroom_tool.naming import safe_filename
 from classroom_tool.pull import _due_datetime
 from gui.screens import CONNECTIONS_KEY
 from gui.screens.base import ScreenBase
-from gui.widgets import Card, Chip
+from gui.widgets import Card, Chip, FilterTabs, StatCard
 
 _JOB_LIST = "assignments.list"
 
 _PULL_KEY = "pull"
 _ROSTER_KEY = "roster"
+
+_TABS = (("all", "الكل"), ("pulled", "مسحوبة محلياً"), ("waiting", "بانتظار السحب"))
+_DESC_MAX = 140
+
+
+def _now() -> datetime:
+    """Seam for tests — relative due text depends on today."""
+    return datetime.now(UTC)
 
 
 def _coursework_job(course_id: str):
@@ -54,6 +67,32 @@ def _slug_for(title: str) -> str:
 def _due_text(work: dict) -> str:
     due = _due_datetime(work)
     return due.strftime("%Y-%m-%d %H:%M") if due else "—"
+
+
+def _due_relative(work: dict, now: datetime) -> str:
+    """`متبقي 3 أيام` / `ينتهي اليوم` / `منتهي` — empty when there is no due date."""
+    due = _due_datetime(work)
+    if due is None:
+        return ""
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=UTC)
+    if due < now:
+        return "منتهي"
+    days = (due.date() - now.date()).days
+    if days == 0:
+        return "ينتهي اليوم"
+    if days == 1:
+        return "متبقي يوم"
+    if days == 2:
+        return "متبقي يومان"
+    if days <= 10:
+        return f"متبقي {days} أيام"
+    return f"متبقي {days} يوماً"
+
+
+def _clip(text: str, limit: int = _DESC_MAX) -> str:
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[:limit].rstrip() + "…"
 
 
 class Screen(ScreenBase):
@@ -117,33 +156,96 @@ class Screen(ScreenBase):
                 return str(alias)
         return None
 
-    def _pulled_date(self, cfg: dict, alias: str | None, work: dict) -> str | None:
+    def _work_dir(self, cfg: dict, alias: str | None, work: dict) -> Path | None:
         if not alias:
             return None
-        roster = Path(cfg["output_dir"]) / alias / _slug_for(work.get("title", "")) / "_roster.xlsx"
-        if not roster.exists():
+        return Path(cfg["output_dir"]) / alias / _slug_for(work.get("title", ""))
+
+    def _pulled_date(self, cfg: dict, alias: str | None, work: dict) -> str | None:
+        wd = self._work_dir(cfg, alias, work)
+        roster = wd / "_roster.xlsx" if wd else None
+        if roster is None or not roster.exists():
             return None
         return datetime.fromtimestamp(roster.stat().st_mtime).strftime("%Y-%m-%d")
 
+    def _saved_files(self, cfg: dict, alias: str | None, work: dict) -> int:
+        wd = self._work_dir(cfg, alias, work)
+        files = wd / "files" if wd else None
+        if files is None or not files.is_dir():
+            return 0
+        return sum(1 for p in files.iterdir() if p.is_file())
+
     # --- rendering ---------------------------------------------
     def _build_page(self) -> QWidget:
+        page = QWidget()
+        lay = QVBoxLayout(page)
+        lay.setSpacing(10)
+
+        lay.addLayout(self._build_kpis())
+
+        # صادقة حرفياً: الشاشة بتقرأ من Classroom وبتنزّل نسخة محلية، ولا إشي غير هيك
+        note = QLabel("وضع القراءة فقط — السحب بينزّل نسخة محلية للتحضير والتدقيق، "
+                      "ولا بيتعدّل أي إشي في Google Classroom من هون.")
+        note.setProperty("role", "muted")
+        note.setWordWrap(True)
+        lay.addWidget(note)
+
         self._card = Card("واجبات المساق")
+        self._refresh_btn = QPushButton("تحديث القائمة")
+        self._refresh_btn.clicked.connect(self.load)
+        self._card.add_header_action(self._refresh_btn)
+
+        self._tabs = FilterTabs(_TABS)
+        self._tabs.changed.connect(lambda _k: self._apply_filter())
+        self._card.add_widget(self._tabs)
+
+        self._search = QLineEdit()
+        self._search.setPlaceholderText("ابحث بعنوان الواجب أو رمزه…")
+        self._search.setClearButtonEnabled(True)
+        self._search.textChanged.connect(lambda _t: self._apply_filter())
+        self._card.add_widget(self._search)
+
         self._rows = QVBoxLayout()
-        self._rows.setSpacing(4)
+        self._rows.setSpacing(6)
         holder = QWidget()
         holder.setLayout(self._rows)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(holder)
-        self._card.body.addWidget(scroll)
-        return self._card
+        self._card.add_widget(scroll, 1)
+
+        self._no_match = QLabel("لا واجبات مطابقة للفلتر أو البحث الحالي.")
+        self._no_match.setProperty("role", "muted")
+        self._no_match.hide()
+        self._card.add_widget(self._no_match)
+
+        lay.addWidget(self._card, 1)
+        self._row_widgets: list[QWidget] = []
+        return page
+
+    def _build_kpis(self) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(10)
+        specs = (
+            ("total", "إجمالي الواجبات بالمساق", "neutral"),
+            ("pulled", "مسحوبة محلياً", "accent"),
+            ("files", "تسليمات محفوظة محلياً", "neutral"),
+            ("open", "مفتوحة للتسليم", "warn"),
+        )
+        self._kpi: dict[str, StatCard] = {}
+        for key, label, variant in specs:
+            card = StatCard(label, "0", variant=variant)
+            self._kpi[key] = card
+            row.addWidget(card)
+        return row
 
     def _render(self) -> None:
+        for w in self._row_widgets:
+            w.setParent(None)
+        self._row_widgets = []
         while self._rows.count():
-            item = self._rows.takeAt(0)
-            if item.widget():
-                item.widget().setParent(None)
+            self._rows.takeAt(0)
 
         if not self._works:
             self.state_view.set_empty_text("ما في واجبات في هذا المساق.")
@@ -152,34 +254,95 @@ class Screen(ScreenBase):
 
         cfg = config.load_config(self._cfg_path())
         alias = self._course_alias(cfg)
+        now = _now()
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=UTC)
+        pulled_n = files_n = open_n = 0
         for work in self._works:
             pulled = self._pulled_date(cfg, alias, work)
-            self._rows.addWidget(self._work_row(work, pulled))
+            saved = self._saved_files(cfg, alias, work) if pulled else 0
+            pulled_n += bool(pulled)
+            files_n += saved
+            due = _due_datetime(work)
+            open_n += due is None or due >= now
+            w = self._work_row(work, pulled, saved, now)
+            self._row_widgets.append(w)
+            self._rows.addWidget(w)
         self._rows.addStretch(1)
+
+        total = len(self._works)
+        self._kpi["total"].set_value(str(total), "واجب في Classroom")
+        self._kpi["pulled"].set_value(str(pulled_n), f"من أصل {total} واجب")
+        self._kpi["files"].set_value(str(files_n), "ملف في مجلدات files/")
+        self._kpi["open"].set_value(str(open_n), f"{total - open_n} منتهي الموعد")
+        self._tabs.set_counts({"all": total, "pulled": pulled_n,
+                               "waiting": total - pulled_n})
+        self._apply_filter()
         self.state_view.set_state("ok")
 
-    def _work_row(self, work: dict, pulled_date: str | None) -> QWidget:
+    def _apply_filter(self) -> None:
+        tab = self._tabs.current
+        needle = self._search.text().strip().casefold()
+        shown = 0
+        for w in self._row_widgets:
+            pulled = bool(w.property("pulled"))
+            ok_tab = tab == "all" or (tab == "pulled") == pulled
+            hay = f"{w.property('work_id')} {w.property('title')}".casefold()
+            visible = ok_tab and (not needle or needle in hay)
+            w.setVisible(visible)
+            shown += visible
+        self._no_match.setVisible(bool(self._row_widgets) and not shown)
+
+    def _visible_row_widgets(self) -> list[QWidget]:
+        return [w for w in self._row_widgets if not w.isHidden()]
+
+    def _work_row(self, work: dict, pulled_date: str | None, saved: int,
+                  now: datetime) -> QWidget:
         row = QFrame()
         row.setObjectName("Card")
+        row.setProperty("work_id", str(work.get("id", "")))
+        row.setProperty("title", work.get("title", ""))
+        row.setProperty("pulled", bool(pulled_date))
         lay = QHBoxLayout(row)
-        lay.setContentsMargins(8, 6, 8, 6)
+        lay.setContentsMargins(10, 8, 10, 8)
+        lay.setSpacing(12)
 
         wid = QLabel(str(work.get("id", "")))
         wid.setProperty("role", "muted")
+        wid.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         lay.addWidget(wid)
 
+        text = QVBoxLayout()
+        text.setSpacing(2)
         title = QLabel(work.get("title", "(بدون عنوان)"))
         title.setProperty("role", "title")
-        lay.addWidget(title)
+        title.setWordWrap(True)
+        text.addWidget(title)
+        desc = (work.get("description") or "").strip()
+        if desc:
+            d = QLabel(_clip(desc))
+            d.setProperty("role", "muted")
+            d.setWordWrap(True)
+            d.setToolTip(desc)
+            text.addWidget(d)
+        lay.addLayout(text, 1)
 
         pts = work.get("maxPoints")
         lay.addWidget(QLabel(f"{pts if pts is not None else '—'} علامة"))
-        lay.addWidget(QLabel(f"آخر موعد: {_due_text(work)}"))
 
-        if pulled_date:
-            lay.addWidget(Chip(f"انسحب {pulled_date}", "track"))
+        due = QVBoxLayout()
+        due.setSpacing(2)
+        due.addWidget(QLabel(f"آخر موعد: {_due_text(work)}"))
+        rel = _due_relative(work, now)
+        if rel:
+            r = QLabel(rel)
+            r.setProperty("role", "muted")
+            due.addWidget(r)
+        lay.addLayout(due)
 
-        lay.addStretch(1)
+        chip = (Chip(f"انسحب {pulled_date} · {saved} ملف", "accent") if pulled_date
+                else Chip("لم يُسحب بعد", "neutral"))
+        lay.addWidget(chip, 0, Qt.AlignmentFlag.AlignVCenter)
 
         pull_btn = QPushButton("سحب")
         pull_btn.setProperty("accent", "true")

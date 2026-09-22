@@ -170,3 +170,79 @@ def test_pull_buttons_emit_navigation_and_run_nothing(screen):
     assert seen[0][1]["no_files"] is False
     assert seen[1][1]["no_files"] is True
     assert screen.services.backend.calls == []   # nav-only: no worker job
+
+
+# --- rebuilt against design/screens/assignments.png -------------------------
+def _pull_to_disk(cfg, title, n_files=0):
+    from classroom_tool import config
+    d = Path(config.load_config(cfg)["output_dir"]) / _ALIAS / _slug_for(title)
+    (d / "files").mkdir(parents=True)
+    (d / "_roster.xlsx").write_bytes(b"x")
+    for i in range(n_files):
+        (d / "files" / f"12021{i}_x.zip").write_bytes(b"z")
+
+
+def _loaded(qtbot, cfg, monkeypatch, works=_WORKS):
+    from datetime import datetime
+
+    import gui.screens.assignments as mod
+    monkeypatch.setattr(mod, "_now", lambda: datetime(2026, 3, 7, 12, 0))
+    s = Screen(_Services(cfg))
+    qtbot.addWidget(s)
+    s.load()
+    s.services.backend.worker.finished.emit(_JOB_LIST, works)
+    return s
+
+
+def test_kpis_count_works_pulled_saved_files_and_open(qtbot, cfg, monkeypatch):
+    _pull_to_disk(cfg, "HW01 Routing", n_files=3)
+    s = _loaded(qtbot, cfg, monkeypatch)
+    assert s._kpi["total"]._value.text() == "2"
+    assert s._kpi["pulled"]._value.text() == "1"
+    assert "2" in s._kpi["pulled"]._sub.text()          # من أصل 2
+    assert s._kpi["files"]._value.text() == "3"
+    # w1 due 03-10 is still ahead of 03-07; w2 has no due date -> still open
+    assert s._kpi["open"]._value.text() == "2"
+
+
+def test_due_is_shown_relative_to_today(qtbot, cfg, monkeypatch):
+    works = [*_WORKS, {"id": "w3", "title": "HW00 Setup",
+                       "dueDate": {"year": 2026, "month": 2, "day": 1}}]
+    s = _loaded(qtbot, cfg, monkeypatch, works)
+    texts = _all_label_text(s)
+    assert "متبقي 3 أيام" in texts
+    assert "منتهي" in texts
+    assert s._kpi["open"]._value.text() == "2"
+
+
+def test_tabs_split_pulled_from_waiting(qtbot, cfg, monkeypatch):
+    _pull_to_disk(cfg, "HW01 Routing")
+    s = _loaded(qtbot, cfg, monkeypatch)
+    assert s._tabs.button("pulled").text() == "مسحوبة محلياً (1)"
+    assert s._tabs.button("waiting").text() == "بانتظار السحب (1)"
+    s._tabs.set_current("waiting")
+    assert [r.property("work_id") for r in s._visible_row_widgets()] == ["w2"]
+
+
+def test_search_matches_title_or_id(qtbot, cfg, monkeypatch):
+    s = _loaded(qtbot, cfg, monkeypatch)
+    s._search.setText("eloquent")
+    assert [r.property("work_id") for r in s._visible_row_widgets()] == ["w2"]
+    s._search.setText("w1")
+    assert [r.property("work_id") for r in s._visible_row_widgets()] == ["w1"]
+    s._search.setText("zzz")
+    assert s._visible_row_widgets() == []
+    assert not s._no_match.isHidden()
+
+
+def test_description_is_shown_under_the_title(qtbot, cfg, monkeypatch):
+    works = [dict(_WORKS[0], description="بناء routes و controllers")]
+    s = _loaded(qtbot, cfg, monkeypatch, works)
+    assert "بناء routes و controllers" in _all_label_text(s)
+
+
+def test_refresh_button_refetches(qtbot, cfg, monkeypatch):
+    s = _loaded(qtbot, cfg, monkeypatch)
+    s.services.backend.calls.clear()
+    s._refresh_btn.click()
+    assert s.services.backend.calls == [_JOB_LIST]
