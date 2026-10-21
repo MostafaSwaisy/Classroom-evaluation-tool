@@ -200,7 +200,7 @@ def test_cancelled_matrix_lands_in_empty_not_a_stuck_bar(screen):
     assert screen.state_view.state == "empty"
 
 
-# --- rebuilt against design/screens/tracking-report.png ----------------------
+# --- rebuilt against docs/design/screens/tracking-report.png ----------------------
 def test_kpi_row_carries_real_totals(screen):
     _loaded(screen)
     k = screen._kpi

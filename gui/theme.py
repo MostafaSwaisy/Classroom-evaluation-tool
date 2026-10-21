@@ -1,4 +1,4 @@
-"""Graphite + teal theme — QPalette + QSS built from DESIGN_System.md.
+"""Graphite + teal theme — QPalette + QSS built from docs/design/DESIGN_System.md.
 
 Dark is the canonical look (matches every generated screen's Tailwind config).
 Light is a coherent M3-style inversion for the shell's theme toggle (spec §6);
@@ -15,7 +15,7 @@ from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
 # --- token palettes -------------------------------------------------------------
-# Dark values are lifted verbatim from DESIGN_System.md (graphite ramp + the M3
+# Dark values are lifted verbatim from docs/design/DESIGN_System.md (graphite ramp + the M3
 # role colors the screens use). Keep these aligned with that file — tests enforce it.
 
 _DARK: dict[str, str] = {

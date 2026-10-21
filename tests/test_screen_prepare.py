@@ -214,7 +214,7 @@ def test_failure_re_enables_the_run_button(screen):
     assert screen._run_btn.isEnabled()
 
 
-# --- the report, rebuilt against design/screens/prepare.png ------------
+# --- the report, rebuilt against docs/design/screens/prepare.png ------------
 _RICH = [
     {"name": "120210123_احمد.zip", "outcome": "extracted", "detail": "", "count": 12,
      "size": 1_468_006},
