@@ -71,11 +71,11 @@ Expected: branch `feat/mcp-server`. Write down the pass/fail counts and any fail
 - [ ] **Step 2: Install the SDK and read its version**
 
 ```bash
-.venv/Scripts/python.exe -m pip install "mcp>=1.2"
+.venv/Scripts/python.exe -m pip install "mcp>=1.2,<2"
 .venv/Scripts/python.exe -c "import importlib.metadata as m; print(m.version('mcp'))"
 .venv/Scripts/python.exe -c "from mcp.server.fastmcp import FastMCP; from mcp.client.stdio import stdio_client; from mcp import ClientSession, StdioServerParameters; print('imports ok')"
 ```
-Expected: a version number (call it `X.Y.Z`) and `imports ok`. If the import fails, stop and report the error.
+Expected: a 1.x version number (call it `X.Y.Z`) and `imports ok`. If the import fails, stop and report the error.
 
 - [ ] **Step 3: Create the skeleton files**
 
@@ -92,9 +92,9 @@ Expected: a version number (call it `X.Y.Z`) and `imports ok`. If the import fai
 `mcp_server/requirements.txt` (use the version printed in step 2 for `X.Y.Z`):
 ```
 -r ../requirements.txt
-mcp>=X.Y.Z,<NEXT_MAJOR
+mcp>=X.Y.Z,<2
 ```
-where `NEXT_MAJOR` is the next major version number (for `1.9.4` write `<2`).
+(mcp 2.x renamed FastMCP to MCPServer and is NOT compatible with this plan; always keep `<2`.)
 
 - [ ] **Step 4: Add `mcp_server` to ruff's first-party list**
 
