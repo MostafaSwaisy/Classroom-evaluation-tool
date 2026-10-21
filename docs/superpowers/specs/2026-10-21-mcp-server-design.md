@@ -30,7 +30,7 @@ tool result. A stray write to stdout would corrupt the stream.
 mcp_server/
   __init__.py
   server.py          # FastMCP app, tool registration, stdout guard
-  tools/
+  handlers/
     classroom.py     # list_courses, list_coursework, status_report, doctor
     submissions.py   # pull_submissions, prepare_submissions, read_index,
                      # read_student_files, write_grades
@@ -38,8 +38,10 @@ mcp_server/
   safety.py          # path confinement, protected-file checks
   README.md          # registration + usage
   requirements.txt   # mcp>=1.x (separate from the CLI's requirements.txt)
-tests/mcp/           # tool tests with stubbed Classroom/Drive services
+tests/mcp_server/    # tool tests with stubbed Classroom/Drive services
 ```
+
+Note: the handlers folder is `handlers/`, not `tools/`, because the repo already has a top-level `tools/` package and a second `tools` name would shadow it when the server runs as a script.
 
 Entry point: `.venv\Scripts\python.exe -m mcp_server.server`, registered with
 `claude mcp add classroom -- <that command>` (or a project `.mcp.json`). The project venv is used so

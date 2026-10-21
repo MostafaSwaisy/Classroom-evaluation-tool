@@ -18,4 +18,4 @@ ignore = [
 "tests/*" = ["B011", "S"]
 
 [lint.isort]
-known-first-party = ["classroom_tool", "gui"]
+known-first-party = ["classroom_tool", "gui", "mcp_server", "tools"]
