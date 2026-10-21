@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import sys
+import time
+from pathlib import PureWindowsPath
 
 import pytest
 
@@ -18,6 +20,18 @@ def test_safe_segment_accepts_normal_names(value):
 def test_safe_segment_rejects_dangerous_names(value):
     with pytest.raises(ToolError):
         safe_segment(value)
+
+
+@pytest.mark.parametrize("value", ["CON", "con", "nul.yaml", "aux", "PRN.txt", "COM1", "lpt9.x",
+                                   "foo.", "SE2026.", "foo..", "COM¹"])
+def test_safe_segment_rejects_windows_reserved_and_trailing_dot(value):
+    with pytest.raises(ToolError):
+        safe_segment(value)
+
+
+def test_safe_segment_allows_names_merely_containing_reserved_words():
+    assert safe_segment("console") == "console"
+    assert safe_segment("com10") == "com10"
 
 
 # --- confine ------------------------------------------------------------
@@ -74,6 +88,43 @@ def test_confine_rejects_symlink_escape(tmp_path):
         pytest.skip("symlinks not permitted on this machine")
     with pytest.raises(ToolError):
         confine("link", root)
+
+
+def _other_drive(root) -> str:
+    own = PureWindowsPath(str(root.resolve())).drive[:1].upper() or "C"
+    return "Z" if own != "Z" else "Y"
+
+
+_BS = chr(92)
+
+_HOSTILE = [
+    _BS * 2 + "10.255.255.1" + _BS + "share" + _BS + "x",
+    _BS * 2 + "?" + _BS + "C:" + _BS + "Windows",
+    _BS * 2 + "." + _BS + "CON",
+    "//host/share/x",
+    _BS * 2 + "?" + _BS + "UNC" + _BS + "host" + _BS + "share",
+    "C:SE2026",
+    "x:rel",
+]
+
+
+@pytest.mark.parametrize("bad", _HOSTILE)
+def test_confine_rejects_unc_device_and_drive_relative_before_resolving(tmp_path, bad):
+    start = time.monotonic()
+    with pytest.raises(ToolError):
+        confine(bad, tmp_path)
+    assert time.monotonic() - start < 5
+
+
+def test_confine_rejects_absolute_path_on_another_drive(tmp_path):
+    letter = _other_drive(tmp_path)
+    with pytest.raises(ToolError):
+        confine(letter + ":" + _BS + "data" + _BS + "x", tmp_path)
+
+
+def test_confine_rejects_nul_byte(tmp_path):
+    with pytest.raises(ToolError):
+        confine("a" + chr(0) + "b", tmp_path)
 
 
 # --- run_tool -----------------------------------------------------------
@@ -136,6 +187,55 @@ def test_run_tool_adds_auth_hint_for_invalid_grant():
 
     with pytest.raises(ToolError, match=r"python cli\.py auth"):
         run_tool(work)
+
+
+def test_run_tool_no_auth_hint_for_unrelated_401_text():
+    def work():
+        raise ValueError("processed 4012 files, student 120210401")
+
+    with pytest.raises(ToolError) as info:
+        run_tool(work)
+    assert "cli.py auth" not in str(info.value)
+
+
+def test_run_tool_adds_auth_hint_for_http_401():
+    from googleapiclient.errors import HttpError
+
+    class Resp(dict):
+        status = 401
+        reason = "Unauthorized"
+
+    def work():
+        raise HttpError(Resp(), b"{}")
+
+    with pytest.raises(ToolError, match=r"python cli\.py auth"):
+        run_tool(work)
+
+
+def test_run_tool_no_auth_hint_for_http_403():
+    from googleapiclient.errors import HttpError
+
+    class Resp(dict):
+        status = 403
+        reason = "Forbidden"
+
+    def work():
+        raise HttpError(Resp(), b"{}")
+
+    with pytest.raises(ToolError) as info:
+        run_tool(work)
+    assert "cli.py auth" not in str(info.value)
+
+
+@pytest.mark.parametrize("code", [None, 0])
+def test_run_tool_system_exit_without_message(code):
+    def work():
+        raise SystemExit(code)
+
+    with pytest.raises(ToolError) as info:
+        run_tool(work)
+    assert "operation ended without a message" in str(info.value)
+    assert "exit code None" not in str(info.value)
 
 
 def test_run_tool_wraps_unexpected_errors():
