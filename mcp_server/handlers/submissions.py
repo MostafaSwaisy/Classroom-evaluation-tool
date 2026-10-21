@@ -8,6 +8,7 @@ from classroom_tool import pull as pull_mod
 from classroom_tool.config import resolve_course_id
 from mcp_server.context import ServerContext
 from mcp_server.safety import ToolError, confine, log_progress, safe_segment
+from tools.write_grades import write_grades as _write_grades_xlsx
 
 MAX_INDEX_CHARS = 100_000
 MAX_FILE_CHARS = 20_000
@@ -90,3 +91,25 @@ def read_student_files(ctx: ServerContext, work_dir: str, student: str) -> dict:
             "truncated": len(text) > len(content),
         })
     return {"student": key, "files": entries, "omitted": omitted}
+
+
+def write_grades(ctx: ServerContext, work_dir: str, grades: dict) -> dict:
+    """Write `grades_draft.xlsx` next to the roster. Same schema as grades.json."""
+    base = ctx.work_dir(work_dir)
+    criteria = grades.get("criteria")
+    rows = grades.get("grades")
+    if not isinstance(criteria, list) or not criteria:
+        raise ToolError("grades.criteria لازم يكون قائمة غير فاضية")
+    if not all(isinstance(c, dict) and {"key", "label", "points"} <= c.keys() for c in criteria):
+        raise ToolError("كل معيار لازم يحتوي key و label و points")
+    if not isinstance(rows, list):
+        raise ToolError("grades.grades لازم يكون قائمة (ممكن تكون فاضية)")
+
+    total = sum(c["points"] for c in criteria)
+    max_points = grades.get("max_points", total)
+    warnings = []
+    if abs(total - max_points) > 0.01:
+        warnings.append(f"مجموع المعايير {total} ≠ العلامة الكاملة {max_points}")
+
+    path = _write_grades_xlsx(base, grades)
+    return {"path": str(path), "students": len(rows), "warnings": warnings}
