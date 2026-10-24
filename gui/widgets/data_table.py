@@ -37,7 +37,15 @@ class DataTable(QTableView):
         """Fill the table. `row_keys[i]` (if given) is stashed on row i's first
         item under `Qt.ItemDataRole.UserRole` so callers can recover row identity
         after the user sorts — positional lookup into a parallel list breaks then.
+
+        The sort indicator is cleared: rows land in the caller's order, and
+        callers colour cells by row index right after — re-sorting here would
+        scramble that, and a leftover arrow would claim a sort that isn't there.
         """
+        if row_keys is not None and len(row_keys) != len(rows):
+            raise ValueError(
+                f"row_keys has {len(row_keys)} entries for {len(rows)} rows")
+        self.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         self._model.clear()
         self._model.setHorizontalHeaderLabels(list(headers))
         for i, r in enumerate(rows):

@@ -55,14 +55,16 @@ class DoctorAborted(SystemExit):
         self.partial = partial
 
 
-def reset_token() -> None:
-    """يحذف token.json لإجبار إعادة تسجيل الدخول."""
+def reset_token() -> CheckResult:
+    """يحذف token.json لإجبار إعادة تسجيل الدخول. ما بيطبع — الـ CLI بيعرض النتيجة."""
     path = project_root() / TOKEN_FILE
     if path.exists():
         path.unlink()
-        print(f"✓ حذفت {path}\n  شغّل الآن: python cli.py auth  (وأشّر على كل الصناديق)")
-    else:
-        print(f"⚠ ما في توكن محفوظ أصلاً ({path})")
+        return CheckResult(
+            "reset.deleted", True,
+            f"حذفت {path}\n  شغّل الآن: python cli.py auth  (وأشّر على كل الصناديق)",
+            fix_action=FixAction.RUN_AUTH)
+    return CheckResult("reset.no_token", None, f"ما في توكن محفوظ أصلاً ({path})")
 
 
 # --- individual check groups -------------------------------------------------

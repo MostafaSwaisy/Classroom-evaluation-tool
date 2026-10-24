@@ -180,3 +180,34 @@ def test_filters_and_search_do_not_refetch(screen):
     screen._state_filter.setCurrentText("لم يسلّم")
     screen._late_only.setChecked(True)
     assert screen.services.backend.calls == [_JOB_LOAD]
+
+
+# --- T3 carries -------------------------------------------------------------
+def test_open_carries_work_dir_and_the_workspace_student_key(screen):
+    seen: list[tuple[str, object]] = []
+    screen.navigation_requested.connect(lambda k, c: seen.append((k, c)))
+    _loaded(screen)
+    _select_row(screen, 0)
+    screen._open_btn.click()
+    ctx = seen[-1][1]
+    assert ctx["work_dir"] == str(FIXTURE)
+    sid = str(_ROWS[0].get("student_id") or "").strip()
+    assert ctx["student_key"] == (sid or f"name:{_ROWS[0]['name']}")
+
+
+def test_context_work_dir_wins_over_the_active_assignment(qtbot, tmp_path):
+    s = Screen(_Services(work_dir=None))
+    qtbot.addWidget(s)
+    s.apply_context({"work_dir": str(tmp_path)})
+    s.load()
+    assert s.services.backend.calls == [_JOB_LOAD]
+    assert s._work_dir() == tmp_path
+
+
+def test_filtering_to_nothing_says_so_instead_of_a_blank_grid(screen):
+    _loaded(screen)
+    screen._search.setText("لا يوجد طالب بهذا الاسم")
+    assert screen._table.row_count == 0
+    assert not screen._no_match.isHidden()
+    screen._search.setText("")
+    assert screen._no_match.isHidden()

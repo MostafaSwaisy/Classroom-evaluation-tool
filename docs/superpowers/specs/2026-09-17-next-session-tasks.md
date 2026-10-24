@@ -82,14 +82,14 @@ grep -rniE '\b(push|upload|confirm|sync)\b|--confirm' gui/ | wc -l # لازم 0
 
 مناسبة لما يكون وقتك قصير. التفاصيل في [BUILD_STATE.md](BUILD_STATE.md) تحت «Carry».
 
-- [ ] `DataTable` — مؤشر الترتيب بيبقى قديم بعد أي `set_rows`
-- [ ] `DataTable.set_rows` — حارس طول لـ `row_keys` (IndexError محتمل)
-- [ ] `roster.py` — الفلترة لصفر نتائج بترسم شبكة فاضية. **الحل جاهز:**
+- [x] `DataTable` — مؤشر الترتيب بيبقى قديم بعد أي `set_rows`
+- [x] `DataTable.set_rows` — حارس طول لـ `row_keys` (IndexError محتمل)
+- [x] `roster.py` — الفلترة لصفر نتائج بترسم شبكة فاضية. **الحل جاهز:**
       نمط `_no_match` في [prepare.py](../../../gui/screens/prepare.py) — انسخه
-- [ ] `roster_read.py` — `\t` حرفي بيضل بين الرقم والاسم في `_missing.txt`
-- [ ] `QCheckBox.stateChanged` مهجور في Qt 6.7+ → `checkStateChanged` (كنسة على كل المشروع)
-- [ ] `doctor.reset_token()` لسه بيطبع وبيرجّع `None` — بده نتيجة مركّبة
-- [ ] `roster.py` `_open_selected` — سياق التنقّل بيحمل `student_id` فاضي لكل صفوف الـ fixture
+- [x] `roster_read.py` — `\t` حرفي بيضل بين الرقم والاسم في `_missing.txt`
+- [x] `QCheckBox.stateChanged` مهجور في Qt 6.7+ → `checkStateChanged` (كنسة على كل المشروع)
+- [x] `doctor.reset_token()` لسه بيطبع وبيرجّع `None` — بده نتيجة مركّبة
+- [x] `roster.py` `_open_selected` — سياق التنقّل بيحمل `student_id` فاضي لكل صفوف الـ fixture
 
 ---
 

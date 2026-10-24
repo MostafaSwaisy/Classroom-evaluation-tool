@@ -54,3 +54,11 @@ def test_read_missing_parses_names_without_header_lines():
 
 def test_read_missing_missing_file_returns_empty(tmp_path):
     assert read_missing(tmp_path / "nope.txt") == []
+
+
+def test_read_missing_drops_the_literal_tab_between_id_and_name(tmp_path):
+    from classroom_tool.roster_read import read_missing
+    p = tmp_path / "_missing.txt"
+    p.write_text("لم يسلّموا واجب: HW1\nالعدد: 2\n\n120210\tاحمد سمير\n\tبلا رقم\n",
+                 encoding="utf-8")
+    assert read_missing(p) == ["120210 — احمد سمير", "بلا رقم"]

@@ -239,3 +239,22 @@ def _find_node(tree, name: str):
         return None
 
     return walk(tree.invisibleRootItem())
+
+
+# --- T3: arriving from the roster lands on that student ---------------------
+def test_context_student_key_selects_that_student_after_load(qtbot, work_dir, rubrics_dir):
+    # services point nowhere -- the context alone must carry the assignment
+    s = Screen(_Services(work_dir.parent / "nowhere", rubrics_dir))
+    qtbot.addWidget(s)
+    s.apply_context({"work_dir": str(work_dir), "student_key": _STUDENTS[12][0]})
+    s.load()
+    cur = s._list.currentItem()
+    assert cur is not None and cur.data(0x0100) == _STUDENTS[12][0]
+
+
+def test_unknown_student_key_is_ignored(qtbot, work_dir, rubrics_dir):
+    s = Screen(_Services(work_dir, rubrics_dir))
+    qtbot.addWidget(s)
+    s.apply_context({"work_dir": str(work_dir), "student_key": "999"})
+    s.load()
+    assert s.state_view.state == "ok"
