@@ -172,7 +172,7 @@ def test_pull_buttons_emit_navigation_and_run_nothing(screen):
     assert screen.services.backend.calls == []   # nav-only: no worker job
 
 
-# --- rebuilt against design/screens/assignments.png -------------------------
+# --- rebuilt against docs/design/screens/assignments.png -------------------------
 def _pull_to_disk(cfg, title, n_files=0):
     from classroom_tool import config
     d = Path(config.load_config(cfg)["output_dir"]) / _ALIAS / _slug_for(title)

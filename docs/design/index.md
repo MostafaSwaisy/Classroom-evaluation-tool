@@ -3,7 +3,7 @@
 Project ID: `6438416494363336239` · Theme: Classroom-Tool Desktop System (dark, RTL, IBM Plex Sans + JetBrains Mono, teal `#34e8bb`)
 
 الملفات في `screens/`: لكل شاشة `<slug>.html` = كود الشاشة الكامل (Tailwind CDN, RTL) · `<slug>.png` = لقطة معاينة.
-مرجع نظام التصميم (الألوان/الخطوط/المسافات): `../DESIGN_System.md`.
+مرجع نظام التصميم (الألوان/الخطوط/المسافات): `DESIGN_System.md`.
 
 | # | الشاشة | Slug | Screen ID |
 |---|--------|------|-----------|

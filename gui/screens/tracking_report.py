@@ -3,7 +3,7 @@
 `compute_status` (R5) يُشغَّل مرة على الـ worker للمساق النشط؛ سلايدر العتبة
 يعيد تصنيف المعرّضين للخطر **من الصفوف المكاشة محلياً** بلا أي نداء شبكة.
 Export يكتب `_status_YYYYMMDD.xlsx` عبر الـ worker بنفس تنسيق الأمر القديم.
-الشاشة مبنية مقابل design/screens/tracking-report.png: صف KPI، تابات فلترة
+الشاشة مبنية مقابل docs/design/screens/tracking-report.png: صف KPI، تابات فلترة
 وبحث، وكروت للمعرّضين للخطر — كلها محسوبة من الصفوف، ولا رقم مخترع.
 """
 from __future__ import annotations

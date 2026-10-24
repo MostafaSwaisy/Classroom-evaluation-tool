@@ -23,6 +23,8 @@
 .
 ├── cli.py                  ← أوامر Classroom (sحب، فك ضغط، متابعة)
 ├── classroom_tool/         ← الكود
+├── mcp_server/             ← خادم MCP: يعرّض أوامر الأداة لـ Claude (stdio)
+├── docs/design/            ← تصاميم الواجهة
 ├── tools/write_grades.py   ← يحوّل JSON درجات → xlsx
 ├── rubrics/                ← معايير التصحيح لكل واجب
 ├── config.yaml             ← اختصارات المساقات (لا تعدّله بدون إذن)
@@ -131,3 +133,4 @@ python tools/write_grades.py "submissions/PHP2026/HW03_..." grades.json
 - الاتصال ممكن ينقطع؛ لو فشل `pull` في النص، أعد تشغيله (بيكتب فوق القديم)
 - إذا طلع `401` أو `invalid_grant`: التوكن انتهى، شغّل `python cli.py auth`
 - ملفات الطلاب بالعربي — الترميز UTF-8 دايماً
+- الخادم `classroom` يعطي نفس صلاحيات الأوامر المسموحة فقط، وما فيه أي أداة push أو تعديل `_roster.xlsx`.

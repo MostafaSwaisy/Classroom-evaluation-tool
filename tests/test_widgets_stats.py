@@ -1,6 +1,6 @@
 """StatCard + FilterTabs — the two building blocks the Stitch screens assume.
 
-Every data screen in design/screens/ opens with a row of KPI cards and a row of
+Every data screen in docs/design/screens/ opens with a row of KPI cards and a row of
 count-carrying filter pills; the implementation had neither, which is why some
 screens read as "followed the design" and others didn't.
 """

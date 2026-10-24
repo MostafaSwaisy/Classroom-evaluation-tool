@@ -1,6 +1,6 @@
 """StatCard — the KPI tile every Stitch screen opens with.
 
-`design/screens/*.png` all start with a row of these: a quiet label, one big
+`docs/design/screens/*.png` all start with a row of these: a quiet label, one big
 number, and a sub-line giving it context ("38 · طالباً جاهزاً · 342 ملف كود").
 The variant tints the number, not the whole card, so a row of four reads as one
 surface rather than four competing colours.

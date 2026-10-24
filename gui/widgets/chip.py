@@ -1,4 +1,4 @@
-"""Chip — a small pill label for statuses / tags (DESIGN_System.md badges)."""
+"""Chip — a small pill label for statuses / tags (docs/design/DESIGN_System.md badges)."""
 from __future__ import annotations
 
 from PySide6.QtCore import Qt

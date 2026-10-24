@@ -17,7 +17,7 @@ APP_NAME = "classroom-tool"
 ORG_NAME = "UCAS"
 
 # Preferred families, first available wins (Qt 6 setFamilies). The IBM Plex /
-# JetBrains Mono faces come from DESIGN_System.md; system fonts are the fallback
+# JetBrains Mono faces come from docs/design/DESIGN_System.md; system fonts are the fallback
 # so the app still renders before the bundled fonts are wired in (P0-U2).
 UI_FONT_STACK = ["IBM Plex Sans Arabic", "IBM Plex Sans", "Segoe UI", "Tahoma", "sans-serif"]
 MONO_FONT_STACK = ["JetBrains Mono", "Cascadia Mono", "Consolas", "monospace"]

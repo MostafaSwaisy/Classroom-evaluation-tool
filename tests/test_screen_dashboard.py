@@ -164,7 +164,7 @@ def test_no_upload_tokens_in_source():
     assert hit is None, f"forbidden token {hit.group(0)!r} in dashboard.py"
 
 
-# --- rebuilt against design/screens/dashboard.png ---------------------------
+# --- rebuilt against docs/design/screens/dashboard.png ---------------------------
 _ASSIGNMENTS = [
     {"assignment": "HW03", "dir": "subs/PHP2026/HW03", "when": "2026-03-02",
      "submitted": 18, "late": 4, "missing": 6, "total": 28,

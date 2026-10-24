@@ -10,7 +10,19 @@
       "Read(./submissions/**)",
       "Read(./rubrics/**)",
       "Write(./submissions/**/grades.json)",
-      "Write(./rubrics/**)"
+      "Write(./rubrics/**)",
+      "mcp__classroom__list_courses",
+      "mcp__classroom__list_coursework",
+      "mcp__classroom__status_report",
+      "mcp__classroom__doctor",
+      "mcp__classroom__pull_submissions",
+      "mcp__classroom__prepare_submissions",
+      "mcp__classroom__read_index",
+      "mcp__classroom__read_student_files",
+      "mcp__classroom__write_grades",
+      "mcp__classroom__list_rubrics",
+      "mcp__classroom__read_rubric",
+      "mcp__classroom__save_rubric"
     ],
     "deny": [
       "Bash(python cli.py push:*)",

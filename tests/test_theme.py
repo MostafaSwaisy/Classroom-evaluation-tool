@@ -1,4 +1,4 @@
-"""P0-U2 done conditions: theme loads, RTL asserted, dark tokens == DESIGN_System.md."""
+"""P0-U2 done conditions: theme loads, RTL asserted, dark tokens == docs/design/DESIGN_System.md."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -9,10 +9,10 @@ from PySide6.QtCore import Qt
 from gui import theme
 
 REPO = Path(__file__).resolve().parent.parent
-DESIGN_MD = (REPO / "DESIGN_System.md").read_text(encoding="utf-8")
+DESIGN_MD = (REPO / "docs" / "design" / "DESIGN_System.md").read_text(encoding="utf-8")
 
 # The tokens the execution plan names explicitly ("#111417, surface-container-*, teal #34e8bb")
-# plus the structural/text values the shell needs. Each must match DESIGN_System.md.
+# plus the structural/text values the shell needs. Each must match docs/design/DESIGN_System.md.
 EXPECTED_DARK = {
     "surface-container-lowest": "#0c0e12",
     "surface": "#111417",
@@ -36,7 +36,7 @@ EXPECTED_DARK = {
 @pytest.mark.parametrize("token,hex_", EXPECTED_DARK.items())
 def test_dark_token_matches_theme_and_design_md(token, hex_):
     assert theme._DARK[token] == hex_, f"theme._DARK[{token!r}] drifted"
-    assert hex_ in DESIGN_MD, f"{hex_} ({token}) not present in DESIGN_System.md"
+    assert hex_ in DESIGN_MD, f"{hex_} ({token}) not present in docs/design/DESIGN_System.md"
 
 
 def test_load_dark_and_light(qapp):
