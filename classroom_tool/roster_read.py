@@ -73,7 +73,9 @@ def read_missing(path: str | Path) -> list[str]:
         s = line.strip()
         if not s or s.startswith(("لم يسلّموا", "العدد:")):
             continue
-        names.append(s)
+        # pull writes `id	name`; the reader shows it, so no literal tab
+        sid, _, name = s.partition("	")
+        names.append(f"{sid} — {name}" if name else sid)
     return names
 
 

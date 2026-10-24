@@ -182,7 +182,8 @@ def reset_auth_cmd(ctx):
     استخدمه لما تكون صلاحية ناقصة أو التوكن تلف.
     بعده شغّل: classroom auth  وأشّر على كل الصناديق.
     """
-    doctor_mod.reset_token()
+    r = doctor_mod.reset_token()
+    click.echo(f"{'✓' if r.ok else '⚠'} {r.label}")
 
 
 if __name__ == "__main__":

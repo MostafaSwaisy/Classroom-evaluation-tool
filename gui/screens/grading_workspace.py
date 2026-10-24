@@ -149,6 +149,7 @@ class Screen(ScreenBase):
         self._suggestions: dict[str, dict] = {}
         self._ai_last_batch = False
         self._loading = False
+        self._pending_student: str | None = None
         b = self._backend()
         if b is not None:
             b.worker.finished.connect(self._on_ai_finished)
@@ -159,8 +160,12 @@ class Screen(ScreenBase):
 
     # --- context + lifecycle -----------------------------------
     def apply_context(self, ctx: object) -> None:
-        if isinstance(ctx, dict) and ctx.get("work_dir"):
+        if not isinstance(ctx, dict):
+            return
+        if ctx.get("work_dir"):
             self._work_dir = Path(ctx["work_dir"])
+        # same key scheme as `_entry_key` — the roster sends it, load() selects it
+        self._pending_student = ctx.get("student_key") or None
 
     @Slot()
     def load(self) -> None:
@@ -184,7 +189,18 @@ class Screen(ScreenBase):
         self._fill_student_list()
         self._batch_label.setText("")
         self._clear_editor()
+        self._select_pending_student()
         self.state_view.set_state("ok")
+
+    def _select_pending_student(self) -> None:
+        key, self._pending_student = self._pending_student, None
+        if not key:
+            return
+        for i in range(self._list.count()):
+            it = self._list.item(i)
+            if it.data(Qt.ItemDataRole.UserRole) == key:
+                self._list.setCurrentItem(it)
+                return
 
     def _resolve_work_dir(self) -> Path | None:
         if self._work_dir is not None:

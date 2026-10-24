@@ -296,3 +296,32 @@ def test_doctor_results_are_identical_with_and_without_a_progress_sink(monkeypat
     _stub_stages(monkeypatch)
     with_bar = doc.doctor(progress=lambda m, d, t: None)
     assert plain == with_bar
+
+
+# --- reset_token: structured, silent (T3 carry) -----------------------------
+def test_reset_token_deletes_and_returns_an_ok_result_without_printing(
+        monkeypatch, tmp_path, capsys):
+    _fake_root(monkeypatch, tmp_path, token="{}")
+    r = doc.reset_token()
+    assert isinstance(r, doc.CheckResult) and r.ok is True and r.key == "reset.deleted"
+    assert not (tmp_path / doc.TOKEN_FILE).exists()
+    assert "auth" in r.label
+    assert capsys.readouterr().out == ""
+
+
+def test_reset_token_without_a_token_is_a_warning(monkeypatch, tmp_path):
+    _fake_root(monkeypatch, tmp_path, token=None)
+    r = doc.reset_token()
+    assert r.ok is None and r.key == "reset.no_token"
+
+
+def test_cli_reset_auth_prints_the_legacy_text(monkeypatch, tmp_path):
+    from click.testing import CliRunner
+
+    import cli
+    _fake_root(monkeypatch, tmp_path, token="{}")
+    result = CliRunner().invoke(cli.cli, ["reset-auth"])
+    assert result.exit_code == 0
+    path = tmp_path / doc.TOKEN_FILE
+    assert result.output == (f"✓ حذفت {path}\n"
+                             "  شغّل الآن: python cli.py auth  (وأشّر على كل الصناديق)\n")

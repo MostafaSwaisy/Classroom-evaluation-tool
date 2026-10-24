@@ -85,6 +85,7 @@ class Screen(ScreenBase):
         self._rows: list[dict] = []
         self._missing: list[str] = []
         self._sel_model = None
+        self._ctx_work_dir: Path | None = None
         b = self._backend()
         if b is not None:
             b.worker.finished.connect(self._on_finished)
@@ -102,7 +103,13 @@ class Screen(ScreenBase):
         self.state_view.set_state("loading")
         b.submit(_JOB_LOAD, _roster_job(work_dir))
 
+    def apply_context(self, ctx: object) -> None:
+        if isinstance(ctx, dict) and ctx.get("work_dir"):
+            self._ctx_work_dir = Path(ctx["work_dir"])
+
     def _work_dir(self) -> Path | None:
+        if self._ctx_work_dir is not None:
+            return self._ctx_work_dir
         raw = getattr(self.services, "active_assignment_dir", None)
         return Path(raw) if raw else None
 
@@ -145,6 +152,11 @@ class Screen(ScreenBase):
         self._wire_selection()
         lay.addWidget(self._table, 1)
 
+        self._no_match = QLabel("لا طلاب مطابقين للفلتر أو البحث الحالي.")
+        self._no_match.setProperty("role", "muted")
+        self._no_match.hide()
+        lay.addWidget(self._no_match)
+
         self._missing_card = Card("لم يسلّموا")
         self._missing_label = QLabel("")
         self._missing_label.setWordWrap(True)
@@ -165,11 +177,11 @@ class Screen(ScreenBase):
         row.addWidget(self._state_filter)
 
         self._late_only = QCheckBox("المتأخرون فقط")
-        self._late_only.stateChanged.connect(self._refresh)
+        self._late_only.checkStateChanged.connect(self._refresh)
         row.addWidget(self._late_only)
 
         self._has_files_only = QCheckBox("عندهم ملفات فقط")
-        self._has_files_only.stateChanged.connect(self._refresh)
+        self._has_files_only.checkStateChanged.connect(self._refresh)
         row.addWidget(self._has_files_only)
 
         self._search = QLineEdit()
@@ -222,6 +234,8 @@ class Screen(ScreenBase):
             row_keys=rows,  # recover identity after a header-click sort
         )
         self._wire_selection()  # set_rows can swap the view's selection model
+        # a blank grid reads as a bug; say which filter emptied it
+        self._no_match.setVisible(not rows)
         submitted = sum(1 for r in rows if r.get("state") == "سلّم")
         late = sum(1 for r in rows if r.get("late"))
         not_submitted = sum(1 for r in rows if r.get("state") == "لم يسلّم")
@@ -259,6 +273,11 @@ class Screen(ScreenBase):
         row = self._selected_row()
         if row is None:
             return
+        sid = str(row.get("student_id") or "").strip()
+        wd = self._work_dir()
         self.navigation_requested.emit(
             "grading_workspace",
-            {"student_id": row.get("student_id"), "name": row.get("name")})
+            {"student_id": row.get("student_id"), "name": row.get("name"),
+             # the workspace keys students by id, or `name:` when the id is blank
+             "student_key": sid or f"name:{row.get('name') or ''}",
+             "work_dir": str(wd) if wd else None})
