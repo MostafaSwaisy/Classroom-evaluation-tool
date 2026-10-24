@@ -111,6 +111,17 @@ python run_gui.py
 محرر المعايير، تقرير المتابعة، الإعدادات، والاتصالات والفحص. كل شاشة بتنده نفس منطق
 `classroom_tool/` تبع سطر الأوامر — الواجهة غلاف بس، مافي منطق مكرر.
 
+### Claude / MCP
+
+خادم MCP محلي (stdio) بيعرّض نفس الأوامر لـ Claude كـ 12 أداة — بدون أي أداة رفع درجات
+أو تعديل `_roster.xlsx`. التسجيل مرة وحدة:
+
+```
+claude mcp add classroom -- D:\GGProject\Classroom-tool\.venv\Scripts\python.exe D:\GGProject\Classroom-tool\mcp_server\server.py
+```
+
+التفاصيل (الأدوات، نموذج الأمان، حل المشاكل) في [mcp_server/README.md](mcp_server/README.md).
+
 ---
 
 ## 6. الصلاحيات المطلوبة

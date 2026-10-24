@@ -79,3 +79,13 @@ def test_real_stdio_round_trip_keeps_stdout_clean():
     names, result = asyncio.run(asyncio.wait_for(go(), timeout=60))
     assert names == EXPECTED_TOOLS
     assert result.isError is False
+
+
+def test_settings_allow_list_matches_the_tool_set():
+    import json
+
+    settings = json.loads(
+        (PKG.parent / ".claude" / "settings.json").read_text(encoding="utf-8"))
+    allowed = {p.removeprefix("mcp__classroom__") for p in settings["permissions"]["allow"]
+               if p.startswith("mcp__classroom__")}
+    assert allowed == EXPECTED_TOOLS

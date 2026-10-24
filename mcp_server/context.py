@@ -11,7 +11,6 @@ from classroom_tool.auth import get_services
 from classroom_tool.config import load_config, project_root
 from mcp_server.safety import ToolError, confine
 
-
 _SECRET_FILES = ("token.json", "credentials.json", "config.yaml")
 
 
