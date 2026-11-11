@@ -35,10 +35,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from classroom_tool import claude_provider, config
-from classroom_tool.naming import normalize_arabic
+from classroom_tool import config, grading_run, suggestions_store
 from classroom_tool.roster_read import read_roster
-from gui.grading_ai import ai_suggest_job
+from gui.grading_ai import ai_suggest_job, provider_state
 from gui.grading_io import resolve_rubric
 from gui.screens.base import ScreenBase
 from gui.state import GradingState
@@ -75,16 +74,11 @@ _AI_UNAVAILABLE_DETAIL = {
 }
 
 
-def _safe_status(cfg: dict) -> str:
-    try:
-        return claude_provider.provider_status(cfg).state
-    except Exception:  # noqa: BLE001 - a probe failure == not usable
-        return "not_installed"
+_safe_status = provider_state
 
 _BATCH = 10
 _DEFAULT_MAX = 100.0
-_CODE_SUFFIXES = {".php", ".py", ".js", ".ts", ".java", ".html", ".css",
-                  ".sql", ".json", ".txt", ".md", ".blade"}
+_CODE_SUFFIXES = grading_run.CODE_SUFFIXES
 
 _STD_FLAGS = (
     "الملف ما بينفتح",
@@ -147,7 +141,6 @@ class Screen(ScreenBase):
         self._current_key: str | None = None
         self._score_inputs: dict[str, QDoubleSpinBox] = {}
         self._suggestions: dict[str, dict] = {}
-        self._ai_last_batch = False
         self._loading = False
         self._pending_student: str | None = None
         b = self._backend()
@@ -178,6 +171,7 @@ class Screen(ScreenBase):
             self._students = read_roster(wd / "_roster.xlsx")
             self._rubric = self._resolve_rubric(wd)
             self._extracted = self._scan_extracted(wd)
+            self._suggestions = suggestions_store.load(wd)
         except Exception as exc:  # noqa: BLE001 - surface as a state
             self.state_view.set_error(f"تعذّر تحميل مساحة التصحيح: {exc}")
             return
@@ -227,23 +221,10 @@ class Screen(ScreenBase):
                               default_max=_DEFAULT_MAX)
 
     def _scan_extracted(self, wd: Path) -> dict[str, Path]:
-        base = wd / "extracted"
-        out: dict[str, Path] = {}
-        if not base.is_dir():
-            return out
-        for sub in sorted(p for p in base.iterdir() if p.is_dir()):
-            out[normalize_arabic(sub.name)] = sub
-        return out
+        return grading_run.scan_extracted(wd)
 
     def _dir_for_student(self, row: dict) -> Path | None:
-        name_norm = normalize_arabic(str(row.get("name") or ""))
-        sid = str(row.get("student_id") or "")
-        for norm, path in self._extracted.items():
-            if sid and sid in path.name:
-                return path
-            if name_norm and name_norm in norm:
-                return path
-        return None
+        return grading_run.find_student_dir(self._extracted, row)
 
     # --- page (3 panes) --------------------------------------
     def _build_page(self) -> QWidget:
@@ -334,20 +315,15 @@ class Screen(ScreenBase):
 
         row = QHBoxLayout()
         self._ai_one_btn = QPushButton("اقترح لهذا الطالب")
-        self._ai_one_btn.clicked.connect(lambda: self._run_ai(whole_batch=False))
+        self._ai_one_btn.clicked.connect(lambda: self._run_ai())
         row.addWidget(self._ai_one_btn)
-        self._ai_batch_btn = QPushButton("اقترح للدفعة")
-        self._ai_batch_btn.clicked.connect(lambda: self._run_ai(whole_batch=True))
-        row.addWidget(self._ai_batch_btn)
+        self._ai_run_link = QLabel('<a href="#run">صحّح الواجب كله ← تشغيل التصحيح</a>')
+        self._ai_run_link.linkActivated.connect(
+            lambda _u: self.navigation_requested.emit(
+                "grading_run", {"work_dir": str(self._work_dir)} if self._work_dir else None))
+        row.addWidget(self._ai_run_link)
         row.addStretch(1)
         lay.addLayout(row)
-
-        #: batch result summary -- stays visible across student switches so
-        #: mostafa doesn't have to click through all 10 to see who failed.
-        self._ai_batch_summary = QLabel("")
-        self._ai_batch_summary.setWordWrap(True)
-        self._ai_batch_summary.hide()
-        lay.addWidget(self._ai_batch_summary)
 
         self._ai_stack = QStackedWidget()
         self._ai_msgs: dict[str, QLabel] = {}
@@ -397,7 +373,7 @@ class Screen(ScreenBase):
         elif state in self._ai_msgs:
             self._ai_msgs[state].setText(_AI_STATE_TEXT[state])
 
-    def _run_ai(self, *, whole_batch: bool) -> None:
+    def _run_ai(self) -> None:
         if self._current_key is None:
             self._ai_show("error", "اختر طالباً من القائمة أولاً.")
             return
@@ -412,78 +388,34 @@ class Screen(ScreenBase):
         if b is None:
             self._ai_show("error", "لا يوجد عامل خلفية.")
             return
-        students = self._collect_ai_students(whole_batch)
-        if not students:
+        row = self._row_for_key(self._current_key)
+        files = self._read_student_files(row) if row else {}
+        if not files:
             self._ai_show("error", "لا ملفات مستخرَجة لهذا الطالب.")
             return
-        self._ai_progress.start(
-            "جارٍ توليد المقترحات — طالب واحد لكل نداء…")
-        self._ai_batch_summary.hide()
-        self._ai_last_batch = whole_batch
+        self._ai_progress.start("جارٍ توليد المقترح…")
         self._ai_show("running")
         b.submit(_JOB_AI, ai_suggest_job(
-            students, self._rubric, instructions=_AI_INSTRUCTIONS,
+            {self._current_key: files}, self._rubric, instructions=_AI_INSTRUCTIONS,
             cfg=self._cfg(), cwd=str(self._work_dir) if self._work_dir else None))
-
-    def _collect_ai_students(self, whole_batch: bool) -> dict[str, dict[str, str]]:
-        if whole_batch:
-            item = self._list.currentItem()
-            idx = (item.data(Qt.ItemDataRole.UserRole + 1) if item else 0) or 0
-            start = (idx // _BATCH) * _BATCH
-            rows = self._students[start:start + _BATCH]
-        else:
-            row = self._row_for_key(self._current_key)
-            rows = [row] if row else []
-        out: dict[str, dict[str, str]] = {}
-        for row in rows:
-            files = self._read_student_files(row)
-            if files:
-                out[self._entry_key(row)] = files
-        return out
 
     def _read_student_files(self, row: dict) -> dict[str, str]:
         path = self._dir_for_student(row)
-        if path is None:
-            return {}
-        files: dict[str, str] = {}
-        for f in sorted(path.rglob("*")):
-            if f.is_file() and f.suffix.lower() in _CODE_SUFFIXES:
-                try:
-                    files[str(f.relative_to(path))] = f.read_text(encoding="utf-8")
-                except (OSError, UnicodeDecodeError):
-                    continue
-        return files
+        return grading_run.read_code_files(path) if path is not None else {}
 
     @Slot(str, object)
     def _on_ai_finished(self, job_id: str, result: object) -> None:
         if job_id != _JOB_AI:
             return
         self._ai_progress.finish()
-        self._suggestions = result if isinstance(result, dict) else {}
-        if self._ai_last_batch:
-            self._show_batch_summary()
+        if self._work_dir is not None and isinstance(result, dict):
+            for key, sugg in result.items():
+                if isinstance(sugg, dict):
+                    suggestions_store.save_entry(self._work_dir, key, sugg)
+            self._suggestions = suggestions_store.load(self._work_dir)
+            for key in result:
+                self._refresh_item(key, self._state.get_entry(key) or {})
         self._render_suggestion()
-
-    def _show_batch_summary(self) -> None:
-        total = len(self._suggestions)
-        failed = [key for key, sugg in self._suggestions.items()
-                 if not isinstance(sugg, dict) or sugg.get("error")]
-        ok = total - len(failed)
-        text = f"نتيجة الدفعة: {ok} نجح"
-        if failed:
-            names = "، ".join(self._name_for_key(k) for k in failed[:5])
-            more = f" +{len(failed) - 5}" if len(failed) > 5 else ""
-            text += f"، {len(failed)} فشل ({names}{more}) — راجع كل طالب قبل الاعتماد."
-            self._ai_batch_summary.setStyleSheet("color: #d83c3c;")
-        else:
-            text += f" من {total}."
-            self._ai_batch_summary.setStyleSheet("color: #3ba55d;")
-        self._ai_batch_summary.setText(text)
-        self._ai_batch_summary.show()
-
-    def _name_for_key(self, key: str) -> str:
-        row = self._row_for_key(key)
-        return str(row.get("name") or key) if row else key
 
     @Slot(str, str, str, str)
     def _on_ai_failed(self, job_id: str, exc_type: str, message: str, _tb: str) -> None:
@@ -502,10 +434,7 @@ class Screen(ScreenBase):
         if job_id != _JOB_AI:
             return
         self._ai_progress.finish()
-        # suggest_batch cancels *between* students, so whoever finished already
-        # has a suggestion -- say so instead of implying the whole batch is gone.
-        self._ai_show("error", "أُلغي توليد المقترحات — المقترحات اللي خلصت قبل "
-                               "الإلغاء محفوظة، والباقي بدون مقترح.")
+        self._ai_show("error", "أُلغي توليد المقترح.")
 
     @Slot(str, int, int)
     def _on_ai_progress(self, message: str, current: int, total: int) -> None:
@@ -635,13 +564,19 @@ class Screen(ScreenBase):
             self._list.addItem(it)
         self._loading = False
 
+    def _item_label(self, key: str, base: str, entry: dict) -> str:
+        sugg = self._suggestions.get(key)
+        icon = ""
+        if isinstance(sugg, dict):
+            icon = "⚑ " if (sugg.get("error") or sugg.get("flags")) else "✓ "
+        return f"{icon}{base}   [{entry.get('status') or 'لم يبدأ'}]"
+
     def _decorate_item(self, it: QListWidgetItem, entry: dict) -> None:
-        status = entry.get("status") or "لم يبدأ"
-        it.setText(it.text().split("   [")[0] + f"   [{status}]")
+        it.setData(Qt.ItemDataRole.UserRole + 2, it.text())     # bare label
+        it.setText(self._item_label(it.data(Qt.ItemDataRole.UserRole), it.text(), entry))
 
     def _entry_key(self, row: dict) -> str:
-        sid = str(row.get("student_id") or "").strip()
-        return sid or f"name:{row.get('name') or ''}"
+        return grading_run.entry_key(row)
 
     def _row_for_key(self, key: str) -> dict | None:
         for row in self._students:
@@ -813,8 +748,8 @@ class Screen(ScreenBase):
         for i in range(self._list.count()):
             it = self._list.item(i)
             if it.data(Qt.ItemDataRole.UserRole) == key:
-                base = it.text().split("   [")[0]
-                it.setText(base + f"   [{entry.get('status') or 'لم يبدأ'}]")
+                base = it.data(Qt.ItemDataRole.UserRole + 2) or it.text()
+                it.setText(self._item_label(key, base, entry))
                 return
 
     def _recompute_total(self) -> None:

@@ -10,6 +10,7 @@ from openpyxl import Workbook
 from PySide6.QtCore import QObject, Signal
 
 import gui.screens.grading_workspace as gw
+from classroom_tool import suggestions_store as store
 from gui.screens.grading_workspace import _JOB_AI, Screen
 
 _HEADERS = ["الرقم الجامعي", "الاسم", "الإيميل", "الحالة", "متأخر",
@@ -113,7 +114,7 @@ def test_clicking_suggest_with_no_student_selected_shows_an_error_not_silence(en
     s = Screen(_Services(wd, rub))
     qtbot.addWidget(s)
     assert s._current_key is None
-    s._run_ai(whole_batch=False)
+    s._run_ai()
     assert _ai_state(s) == "error"
     assert s.services.backend.jobs == []
 
@@ -121,19 +122,19 @@ def test_clicking_suggest_with_no_student_selected_shows_an_error_not_silence(en
 # --- the 5 §5.11 states -------------------------------------
 def test_state_not_connected(screen, monkeypatch):
     monkeypatch.setattr(gw, "_safe_status", lambda _c: "not_installed")
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     assert _ai_state(screen) == "not_connected"
     assert screen.services.backend.jobs == []
 
 
 def test_state_not_logged_in(screen, monkeypatch):
     monkeypatch.setattr(gw, "_safe_status", lambda _c: "not_logged_in")
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     assert _ai_state(screen) == "not_logged_in"
 
 
 def test_state_running_then_suggestions_shown(screen):
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     assert _ai_state(screen) == "running"
     job_id, _fn = screen.services.backend.jobs[-1]
     assert job_id == _JOB_AI
@@ -144,52 +145,14 @@ def test_state_running_then_suggestions_shown(screen):
     assert _ai_state(screen) == "shown"
 
 
-def test_batch_finish_shows_a_pass_fail_summary_without_clicking_through_students(screen):
-    """mostafa's report: after a whole-batch run, the only way to tell which
-    of the 10 students actually got a usable suggestion was to click through
-    each one individually -- there was no aggregate result anywhere."""
-    screen._run_ai(whole_batch=True)
-    screen.services.backend.worker.finished.emit(_JOB_AI, {
-        screen._current_key: {"scores": {"correctness": 5, "style": 3},
-                              "feedback": "ok", "flags": [], "error": None},
-        "12021002": {"scores": {}, "feedback": "", "flags": [],
-                    "error": "ردّ غير صالح"},
-    })
-    assert not screen._ai_batch_summary.isHidden()
-    text = screen._ai_batch_summary.text()
-    assert "1 نجح" in text
-    assert "1 فشل" in text
-
-
-def test_single_student_suggest_never_shows_the_batch_summary(screen):
-    screen._run_ai(whole_batch=False)
-    screen.services.backend.worker.finished.emit(_JOB_AI, {
-        screen._current_key: {"scores": {"correctness": 5, "style": 3},
-                              "feedback": "ok", "flags": [], "error": None},
-    })
-    assert screen._ai_batch_summary.isHidden()
-
-
-def test_batch_progress_updates_the_running_bar(screen):
-    """mostafa's report: no visible sign a batch suggest run is actually
-    progressing. ai_suggest_job already emits ctx.progress(key, done, total)
-    per student (gui/grading_ai.py) -- the panel just never rendered it."""
-    screen._run_ai(whole_batch=True)
-    assert _ai_state(screen) == "running"
-    screen.services.backend.worker.progress.emit("مقترح: 12021001", 1, 2)
-    assert screen._ai_progress._bar.maximum() == 2
-    assert screen._ai_progress._bar.value() == 1
-    assert screen._ai_progress._counter.text() == "1 من 2"
-
-
 def test_state_error_on_worker_failure(screen):
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     screen.services.backend.worker.failed.emit(_JOB_AI, "RuntimeError", "boom", "")
     assert _ai_state(screen) == "error"
 
 
 def test_state_error_when_suggestion_carries_an_error(screen):
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     screen.services.backend.worker.finished.emit(_JOB_AI, {
         screen._current_key: {"scores": {}, "feedback": "", "flags": [],
                               "error": "ردّ غير صالح"}})
@@ -198,7 +161,7 @@ def test_state_error_when_suggestion_carries_an_error(screen):
 
 # --- nothing applied without an explicit accept -----------
 def test_suggestion_does_not_touch_scores_until_accepted(screen):
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     screen.services.backend.worker.finished.emit(_JOB_AI, {
         screen._current_key: {"scores": {"correctness": 5, "style": 3},
                               "feedback": "س", "flags": [], "error": None}})
@@ -246,14 +209,14 @@ def test_no_upload_tokens_in_source():
 
 # --- the AI batch is the longest job in the app; it needs a cancel ------
 def test_running_panel_is_the_shared_progress_panel_and_is_cancellable(screen):
-    screen._run_ai(whole_batch=True)
+    screen._run_ai()
     assert _ai_state(screen) == "running"
     assert screen._ai_progress.is_running
     assert not screen._ai_progress._cancel_btn.isHidden()
 
 
 def test_ticks_drive_a_percentage_and_a_count(screen):
-    screen._run_ai(whole_batch=True)
+    screen._run_ai()
     screen.services.backend.worker.progress.emit("مقترح: 120210123", 1, 4)
     assert screen._ai_progress._percent.text() == "25%"
     assert screen._ai_progress._counter.text() == "1 من 4"
@@ -266,13 +229,13 @@ def test_ticks_ignored_when_the_ai_panel_is_not_running(screen):
 
 
 def test_cancelling_the_batch_asks_the_backend_to_stop(screen):
-    screen._run_ai(whole_batch=True)
+    screen._run_ai()
     screen._ai_progress._cancel_btn.click()
     assert screen.services.backend.cancelled
 
 
 def test_cancelled_batch_stops_the_panel_and_says_what_was_kept(screen):
-    screen._run_ai(whole_batch=True)
+    screen._run_ai()
     screen.services.backend.worker.cancelled.emit(gw._JOB_AI)
     assert not screen._ai_progress.is_running
     assert _ai_state(screen) == "error"
@@ -280,14 +243,53 @@ def test_cancelled_batch_stops_the_panel_and_says_what_was_kept(screen):
 
 
 def test_finishing_stops_the_panel(screen):
-    screen._run_ai(whole_batch=False)
+    screen._run_ai()
     screen.services.backend.worker.finished.emit(gw._JOB_AI, {})
     assert not screen._ai_progress.is_running
 
 
 def test_a_restart_resets_a_stale_percentage(screen):
-    screen._run_ai(whole_batch=True)
+    screen._run_ai()
     screen.services.backend.worker.progress.emit("مقترح: x", 4, 4)
     screen.services.backend.worker.finished.emit(gw._JOB_AI, {})
-    screen._run_ai(whole_batch=True)
+    screen._run_ai()
     assert screen._ai_progress._percent.text() == ""
+
+
+def test_finished_suggestion_is_saved_to_the_store(screen):
+    screen._run_ai()
+    screen.services.backend.worker.finished.emit(_JOB_AI, {
+        screen._current_key: {"scores": {"correctness": 5, "style": 3},
+                              "feedback": "ok", "flags": [], "error": None}})
+    saved = store.load(screen._work_dir)
+    assert saved[screen._current_key]["feedback"] == "ok"
+
+
+def test_suggestions_from_a_run_show_on_load(env, qtbot, monkeypatch):
+    monkeypatch.setattr(gw, "_safe_status", lambda _cfg: "ready")
+    wd, rub = env
+    store.save_entry(wd, "12021001", {"scores": {"correctness": 4, "style": 2},
+                                      "feedback": "من التشغيل", "flags": [],
+                                      "error": None})
+    s = Screen(_Services(wd, rub))
+    qtbot.addWidget(s)
+    s.load()
+    _pick_first(s)
+    assert _ai_state(s) == "shown"
+
+
+def test_list_item_carries_a_suggestion_icon(env, qtbot):
+    wd, rub = env
+    store.save_entry(wd, "12021001", {"scores": {}, "feedback": "", "flags": ["x"],
+                                      "error": None})
+    s = Screen(_Services(wd, rub))
+    qtbot.addWidget(s)
+    s.load()
+    texts = [s._list.item(i).text() for i in range(s._list.count())]
+    assert any(t.startswith("⚑") and "12021001" in t for t in texts)
+
+
+def test_run_link_navigates_to_the_run_screen(screen, qtbot):
+    with qtbot.waitSignal(screen.navigation_requested) as sig:
+        screen._ai_run_link.linkActivated.emit("#run")
+    assert sig.args[0] == "grading_run"

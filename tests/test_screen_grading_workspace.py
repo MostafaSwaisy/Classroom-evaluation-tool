@@ -175,7 +175,7 @@ def test_ai_panel_is_present_and_starts_not_connected(screen):
               if g.title().startswith("مساعدة Claude"))
     assert ai is not None
     assert screen._ai_one_btn.text() == "اقترح لهذا الطالب"
-    assert screen._ai_batch_btn.text() == "اقترح للدفعة"
+    assert "تشغيل التصحيح" in screen._ai_run_link.text()
     # 5 §5.11 states, panel opens on "not connected" (no probe on construct)
     assert screen._ai_stack.count() == 5
     assert screen._ai_stack.currentIndex() == 0  # not_connected
