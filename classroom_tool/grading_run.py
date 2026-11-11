@@ -171,7 +171,7 @@ class EtaTracker:
 EventFn = Callable[[dict], None]
 
 
-def _total(scores: dict) -> float | None:
+def total_score(scores: dict) -> float | None:
     vals = [v for v in scores.values() if isinstance(v, (int, float))]
     return round(sum(vals), 2) if vals else None
 
@@ -219,7 +219,7 @@ def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
         suggestions_store.save_entry(work_dir, st.key, entry)
         bucket = ATTENTION if (sugg.error or sugg.flags) else GRADED
         on_event({"type": "student_done", **base, "bucket": bucket, "reason": "",
-                  "total": _total(sugg.scores), "max": max_points,
+                  "total": total_score(sugg.scores), "max": max_points,
                   "flags": list(sugg.flags), "error": sugg.error,
                   "duration_s": duration})
         if sugg.error:

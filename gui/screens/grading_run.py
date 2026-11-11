@@ -29,9 +29,9 @@ from classroom_tool.grading_run import (
     GRADED,
     SKIPPED,
     EtaTracker,
-    _total,
     entry_key,
     plan_run,
+    total_score,
 )
 from gui.grading_ai import ai_run_job, provider_state
 from gui.grading_io import read_roster, resolve_rubric
@@ -110,6 +110,8 @@ class Screen(ScreenBase):
         self._pending_dir: Path | None = None   # context received mid-run
         self._elapsed_total = 0.0               # accumulated across segments
         self._seg_t0 = 0.0
+        self._resumed: dict[str, int] = {}
+        self._after_pause = False               # next Start continues a paused run
         self.state_view.set_content(self._build_page())
 
     # --- public -------------------------------------------------
@@ -147,6 +149,7 @@ class Screen(ScreenBase):
             return
         if wd != self._loaded_dir:
             self._elapsed_total = 0.0
+            self._after_pause = False
             self._elapsed_label.setText(_elapsed_text(0.0))
         self._work_dir = wd
         self._loaded_dir = wd
@@ -268,11 +271,14 @@ class Screen(ScreenBase):
             bucket = ATTENTION if flags else GRADED
             n_attn += bucket == ATTENTION
             scores = ent.get("scores")
-            total = _total(scores) if isinstance(scores, dict) else None
+            total = total_score(scores) if isinstance(scores, dict) else None
             dur = ent.get("duration_s")
-            prev_rows.append((k, [_ICON[bucket], names.get(k, k), _trim(total),
+            prev_rows.append((k, [_ICON[bucket], names.get(k, k),
+                                  f"{_trim(total)} / {_trim(self._rubric.get('max_points'))}",
                                   "، ".join(flags),
                                   f"{int(dur)} ث" if isinstance(dur, (int, float)) else "—"]))
+        self._resumed = {"graded": len(self._plan.already_done) - n_attn,
+                         "attention": n_attn}
         self._counts = {
             "graded": len(self._plan.already_done) - n_attn, "attention": n_attn,
             "skipped": len(self._plan.skipped),
@@ -288,10 +294,11 @@ class Screen(ScreenBase):
     def _render_counts(self) -> None:
         for key, card in self._cards.items():
             card.set_value(str(self._counts.get(key, 0)))
-        if self._plan is not None and self._plan.already_done:
-            self._cards["graded"].set_value(
-                str(self._counts["graded"]),
-                f"منها {len(self._plan.already_done)} من تشغيل سابق")
+        for key in ("graded", "attention"):
+            n = self._resumed.get(key, 0)
+            self._cards[key].set_value(
+                str(self._counts.get(key, 0)),
+                f"منها {n} من تشغيل سابق" if n else "")
 
     # --- controls -------------------------------------------------
     @Slot()
@@ -322,6 +329,9 @@ class Screen(ScreenBase):
         self._eta = EtaTracker()
         self._running = True
         self._run_dir = self._work_dir
+        if not self._after_pause:        # fresh run: don't add onto the old total
+            self._elapsed_total = 0.0
+        self._after_pause = False
         self._seg_t0 = time.monotonic()
         self._set_controls()
         self._progress.start("جارٍ التصحيح — طالب واحد لكل نداء…")
@@ -360,8 +370,10 @@ class Screen(ScreenBase):
         elif kind == "student_done":
             self._on_student_done(e)
         elif kind == "paused":
+            self._after_pause = True        # next Start continues; keep elapsed
             self._show_banner("متوقف مؤقتاً — اضغط «ابدأ» للمتابعة من حيث وقفنا.")
         elif kind == "auto_paused":
+            self._after_pause = True
             self._show_banner(f"توقّف التشغيل تلقائياً بعد أخطاء متكررة: {e.get('reason')}")
         elif kind == "finished":
             self._show_banner("خلص التشغيل — راجع المقترحات في مساحة التصحيح.")
@@ -463,7 +475,7 @@ class Screen(ScreenBase):
     def _open_row(self, index: QModelIndex) -> None:
         item = self._log.model().index(index.row(), 0)
         key = item.data(Qt.ItemDataRole.UserRole)
-        target = self._run_dir or self._work_dir
+        target = self._run_dir or self._loaded_dir
         if key and target is not None:
             self.navigation_requested.emit(
                 "grading_workspace", {"work_dir": str(target), "student_key": key})

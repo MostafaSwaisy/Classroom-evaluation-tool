@@ -283,3 +283,43 @@ def test_elapsed_label_freezes_when_run_ends(screen):
     assert "1:15" in frozen
     screen._on_tick()
     assert screen._elapsed_label.text() == frozen
+
+
+def test_resumed_subtitles_and_rows_use_clean_and_attention_counts(qtbot, env, monkeypatch):
+    monkeypatch.setattr(mod, "provider_state", lambda _cfg: "ready")
+    wd, rub = env
+    (rub / "PHP2026").mkdir()
+    store.save_entry(wd, "1", {"scores": {"a": 5}, "flags": [], "error": None})
+    store.save_entry(wd, "2", {"scores": {"a": 3}, "flags": ["x"], "error": None})
+    s = Screen(_Services(wd, rub))
+    qtbot.addWidget(s)
+    s.load()
+    assert "1" in s._cards["graded"]._sub.text()
+    assert "1" in s._cards["attention"]._sub.text()
+    s._rubric = {"max_points": 10}
+    s._replan()
+    texts = [s._log.model().item(r, 2).text() for r in range(s._log.row_count)]
+    assert "5 / 10" in texts and "3 / 10" in texts
+
+
+def test_pending_folder_applied_after_cancelled_run(screen, env, tmp_path):
+    other = tmp_path / "submissions" / "PHP2026" / "HW02"
+    (other / "extracted" / "9_نور").mkdir(parents=True)
+    (other / "extracted" / "9_نور" / "a.php").write_text("<?php", encoding="utf-8")
+    _roster(other / "_roster.xlsx")
+    screen._start()
+    screen.apply_context({"work_dir": str(other)})
+    screen.services.backend.worker.cancelled.emit(_JOB_RUN)
+    assert screen._work_dir == other and "HW02" in screen._header.text()
+
+
+def test_elapsed_accumulates_across_pause_but_resets_on_fresh_run(screen):
+    screen._start()
+    screen._seg_t0 -= 60
+    _emit(screen, type="paused")
+    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen._start()                      # resume after pause
+    assert screen._elapsed_total >= 60
+    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen._start()                      # fresh run after a normal finish
+    assert screen._elapsed_total == 0.0
