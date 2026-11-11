@@ -183,8 +183,10 @@ def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
         clock: Callable[[], float] = time.monotonic) -> None:
     """Grade every student in `plan.queue`; emit events; save each result.
 
-    Stops between students only (one Claude call can't be interrupted):
-    cancel → raises OperationCancelled; pause → emits `paused` and returns;
+    cancel → raises OperationCancelled, immediately if the client polls
+    `should_cancel` mid-call (the CLI client kills `claude -p`; that student
+    isn't saved), else between students; pause → between students only, emits
+    `paused` and returns;
     3 failures in a row or an auth error → emits `auto_paused` and returns.
     """
     max_points = rubric.get("max_points")

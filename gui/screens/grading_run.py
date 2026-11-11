@@ -365,7 +365,7 @@ class Screen(ScreenBase):
         b = self._run_backend()
         if self._running and b is not None:
             b.cancel()
-            self._show_banner("جارٍ الإلغاء — بعد الطالب الحالي. اللي خلص محفوظ.")
+            self._show_banner("جارٍ الإلغاء — الطالب الحالي ما رح ينحفظ، والباقي محفوظ.")
             self._cancel_btn.setEnabled(False)
 
     # --- events -------------------------------------------------

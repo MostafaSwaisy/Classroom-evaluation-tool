@@ -197,12 +197,12 @@ class _Submitter(QObject):
 class BackendThread:
     """Owns the QThread + BackendWorker and the queued connection between them."""
 
-    def __init__(self) -> None:
+    def __init__(self, name: str = "backend-worker") -> None:
         if QCoreApplication.instance() is None:
             raise RuntimeError("BackendThread requires a QApplication to exist first")
 
         self._thread = QThread()
-        self._thread.setObjectName("backend-worker")
+        self._thread.setObjectName(name)
         self.worker = BackendWorker()
         self.worker.moveToThread(self._thread)
 

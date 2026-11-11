@@ -57,7 +57,7 @@ class AppServices:
         self.backend = BackendThread()
         # the grading run's own worker: a 30-minute run must not queue every
         # other screen's job behind it, and Cancel on one must not cancel the other.
-        self.run_backend = BackendThread()
+        self.run_backend = BackendThread("run-worker")
         self.config_path = None            # None -> config module uses the repo default
         self.active_course_id = None       # set by the dashboard course selector (P2-U5)
         self.active_assignment_dir = None  # set by the assignments / pull flow (P2)
@@ -338,13 +338,16 @@ class MainWindow(QMainWindow):
             if answer != QMessageBox.StandardButton.Yes:
                 event.ignore()
                 return
-            # Don't block the GUI thread on the run: cancel it (this also kills
-            # an in-flight `claude -p`), then close again once `run_ended` fires.
-            self._close_after_run = True
-            run.request_stop()
-            self.statusBar().showMessage("جارٍ إيقاف التشغيل…")
-            event.ignore()
-            return
+            # The dialog ran a nested event loop: the run may have ended (and
+            # emitted run_ended) while it was open -- then just close below.
+            if run.is_running:
+                # Don't block the GUI thread on the run: cancel it (this also
+                # kills an in-flight `claude -p`), close again on `run_ended`.
+                self._close_after_run = True
+                run.request_stop()
+                self.statusBar().showMessage("جارٍ إيقاف التشغيل…")
+                event.ignore()
+                return
         # If a worker won't stop, refuse the close rather than let a running
         # QThread be destroyed at interpreter shutdown (abort). A proper blocking
         # "جاري الإلغاء…" dialog is P5-U4; this is the safe interim.

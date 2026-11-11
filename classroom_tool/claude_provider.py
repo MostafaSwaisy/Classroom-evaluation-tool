@@ -16,9 +16,11 @@
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import shutil
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -37,6 +39,9 @@ _PROBE_TIMEOUT = 8.0
 _CALL_TIMEOUT = 180.0
 #: how often a running `claude -p` checks should_cancel / the deadline.
 _POLL_INTERVAL = 0.25
+#: bounds on killing / reaping a cancelled or timed-out `claude -p` tree.
+_KILL_TIMEOUT = 5.0
+_REAP_TIMEOUT = 5.0
 
 
 class ProviderNotConfigured(RuntimeError):
@@ -77,6 +82,24 @@ class ProviderTimeout(ProviderNotConfigured):
     """نداء `claude -p` تجاوز المهلة وقُتِلت العملية الفرعية."""
 
 
+def _kill_tree(proc: subprocess.Popen) -> None:
+    """Kill the `claude` child *and its descendants*, then reap it (bounded).
+
+    On Windows `claude` is often an npm `.cmd` launcher: `proc.kill()` alone
+    ends only cmd.exe while node keeps the pipes open, so the reap would block.
+    `taskkill /T /F` takes the whole tree; `proc.kill()` stays as a fallback.
+    """
+    if sys.platform == "win32":
+        with contextlib.suppress(OSError, subprocess.SubprocessError):
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+                           capture_output=True, timeout=_KILL_TIMEOUT, check=False)
+    with contextlib.suppress(OSError):
+        proc.kill()
+    # a grandchild may still hold the pipes: stop reading after the bound
+    with contextlib.suppress(subprocess.TimeoutExpired):
+        proc.communicate(timeout=_REAP_TIMEOUT)
+
+
 @dataclass(frozen=True)
 class _CliClient:
     #: مسار `claude`، أو قائمة بادئة (للاختبار: ``[python, stub.py]``).
@@ -109,13 +132,10 @@ class _CliClient:
                 break
             except subprocess.TimeoutExpired:
                 if self.should_cancel is not None and self.should_cancel():
-                    # kill *only* this child, then reap it
-                    proc.kill()
-                    proc.communicate()
+                    _kill_tree(proc)
                     raise OperationCancelled from None
                 if time.monotonic() >= deadline:
-                    proc.kill()
-                    proc.communicate()
+                    _kill_tree(proc)
                     raise ProviderTimeout(
                         f"claude -p تجاوز المهلة ({self.timeout}s)") from None
         if proc.returncode != 0:

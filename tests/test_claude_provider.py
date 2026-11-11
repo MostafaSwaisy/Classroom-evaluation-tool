@@ -245,6 +245,64 @@ def test_should_cancel_kills_the_child_and_raises_operation_cancelled(
     assert not marker.exists()                  # child was killed mid-sleep
 
 
+def test_popen_deadline_raises_provider_timeout_with_the_same_message(
+        tmp_path, monkeypatch):
+    stub = tmp_path / "stub_claude.py"
+    stub.write_text(_STUB, encoding="utf-8")
+    monkeypatch.setenv("STUB_MARKER", str(tmp_path / "finished.txt"))
+    client = _CliClient([sys.executable, str(stub)], DEFAULT_MODEL, timeout=0.5,
+                        should_cancel=lambda: False)
+    t0 = time.monotonic()
+    with pytest.raises(ProviderTimeout, match=r"تجاوز المهلة \(0\.5s\)"):
+        client.complete("", [{"role": "user", "content": "SLEEP"}])
+    assert time.monotonic() - t0 < 5
+
+
+def test_kill_tree_uses_taskkill_on_windows_and_bounds_the_reap(monkeypatch):
+    import classroom_tool.claude_provider as cp
+    calls = []
+
+    class _Stuck:
+        pid = 4242
+
+        def kill(self):
+            calls.append("kill")
+
+        def communicate(self, timeout=None):
+            calls.append(("reap", timeout))
+            # a grandchild still holds the pipes
+            raise subprocess.TimeoutExpired("claude", timeout)
+
+    monkeypatch.setattr(cp.sys, "platform", "win32")
+    monkeypatch.setattr(cp.subprocess, "run",
+                        lambda argv, **k: calls.append(argv[:3]))
+    cp._kill_tree(_Stuck())                   # must not raise / hang
+    assert calls[0] == ["taskkill", "/T", "/F"]
+    assert "kill" in calls                     # fallback still applied
+    assert calls[-1] == ("reap", cp._REAP_TIMEOUT)
+    assert cp._REAP_TIMEOUT is not None
+
+
+def test_kill_tree_elsewhere_just_kills(monkeypatch):
+    import classroom_tool.claude_provider as cp
+    calls = []
+
+    class _P:
+        pid = 1
+
+        def kill(self):
+            calls.append("kill")
+
+        def communicate(self, timeout=None):
+            return "", ""
+
+    monkeypatch.setattr(cp.sys, "platform", "linux")
+    monkeypatch.setattr(cp.subprocess, "run",
+                        lambda *a, **k: pytest.fail("no taskkill off Windows"))
+    cp._kill_tree(_P())
+    assert calls == ["kill"]
+
+
 def test_should_cancel_false_still_returns_the_result(tmp_path):
     stub = tmp_path / "stub_claude.py"
     stub.write_text(_STUB, encoding="utf-8")

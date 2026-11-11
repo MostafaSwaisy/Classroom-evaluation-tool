@@ -226,6 +226,36 @@ def test_close_yes_mid_run_stops_the_run_then_closes_on_run_ended(
     assert win.services.run_backend.is_running is False
 
 
+def test_close_yes_after_the_run_ended_during_the_dialog_closes_now(
+        win, monkeypatch, qtbot):
+    """The dialog's nested loop may deliver run_ended before Yes returns."""
+    from PySide6.QtWidgets import QMessageBox
+    screen = win._screens["grading_run"]
+    running = {"on": True}
+    monkeypatch.setattr(type(screen), "is_running",
+                        property(lambda _s: running["on"]))
+    stops = []
+    monkeypatch.setattr(screen, "request_stop", lambda: stops.append(1))
+
+    def _question(*_a, **_k):
+        running["on"] = False
+        screen.run_ended.emit()           # fires while _close_after_run is False
+        return QMessageBox.StandardButton.Yes
+
+    monkeypatch.setattr(QMessageBox, "question", _question)
+    win.show()
+    assert win.close() is True
+    assert stops == []
+    assert not win.isVisible()
+    assert win.services.backend.is_running is False
+    assert win.services.run_backend.is_running is False
+
+
+def test_run_backend_thread_is_named(win):
+    assert win.services.run_backend._thread.objectName() == "run-worker"
+    assert win.services.backend._thread.objectName() == "backend-worker"
+
+
 def test_run_ended_without_a_pending_close_keeps_the_window(win, qtbot):
     win.show()
     win._screens["grading_run"].run_ended.emit()
