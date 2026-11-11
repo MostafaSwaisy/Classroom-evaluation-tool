@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QStackedWidget,
     QStatusBar,
@@ -312,6 +313,15 @@ class MainWindow(QMainWindow):
         )
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        run = self._screens.get("grading_run")
+        if getattr(run, "is_running", False):
+            answer = QMessageBox.question(
+                self, "تشغيل التصحيح شغّال",
+                "في تشغيل تصحيح شغّال. المقترحات اللي خلصت محفوظة، والطالب "
+                "الحالي رح يضيع. تسكّر البرنامج؟")
+            if answer != QMessageBox.StandardButton.Yes:
+                event.ignore()
+                return
         # If the worker won't stop, refuse the close rather than let a running
         # QThread be destroyed at interpreter shutdown (abort). A proper blocking
         # "جاري الإلغاء…" dialog is P5-U4; this is the safe interim.

@@ -176,3 +176,23 @@ def test_minimum_size_never_exceeds_the_screen(qtbot, monkeypatch):
     qtbot.addWidget(w)
     assert w.minimumWidth() <= 900
     assert w.minimumHeight() <= 600
+
+
+def test_close_during_a_grading_run_asks_and_can_be_refused(win, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+    screen = win._screens["grading_run"]
+    monkeypatch.setattr(type(screen), "is_running", property(lambda _s: True))
+    asked = []
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: asked.append(1) or QMessageBox.StandardButton.No)
+    win.close()
+    assert asked
+    assert win.services.backend.is_running            # close refused
+
+
+def test_close_without_a_run_does_not_ask(win, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: pytest.fail("should not ask"))
+    win.close()
+    assert win.services.backend.is_running is False
