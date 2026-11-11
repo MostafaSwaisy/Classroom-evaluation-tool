@@ -23,7 +23,7 @@ from gui.widgets.state_view import STATES  # noqa: E402
 # screens 2,3,4,5,6,7,8,9,11,12,13 (spec) — the data screens with 4 states.
 DATA_SCREENS = [
     "dashboard", "courses_aliases", "connections_health", "assignments",
-    "pull", "prepare", "roster", "grading_workspace", "rubrics",
+    "pull", "prepare", "roster", "grading_workspace", "grading_run", "rubrics",
     "tracking_report", "grades_draft",
 ]
 #: grading_workspace also carries the 5 §5.11 AI-panel sub-states.

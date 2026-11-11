@@ -20,6 +20,7 @@ NAV: list[tuple[str, str, str | None]] = [
     ("prepare", "التحضير", _CURRENT),
     ("roster", "الكشف", _CURRENT),
     ("grading_workspace", "التصحيح", _CURRENT),
+    ("grading_run", "تشغيل التصحيح", _CURRENT),
     ("grades_draft", "المسودة", _CURRENT),
     ("rubrics", "محرر المعايير", None),
     ("tracking_report", "تقرير المتابعة", None),
