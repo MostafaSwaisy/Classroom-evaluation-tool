@@ -133,3 +133,20 @@ def test_batch_checks_cancel_between_students_and_raises():
         suggest_batch({"s1": {"a": "1"}, "s2": {"b": "2"}, "s3": {"c": "3"}},
                       _RUBRIC, client, should_cancel=cancel_after_first)
     assert len(client.calls) == 1  # only s1 was graded before the cancel
+
+
+# --- on_stage (grading run live view) ----------------------
+def test_on_stage_reports_waiting_then_parsing():
+    seen = []
+    suggest(_FILES, _RUBRIC, _FakeClient(_good()), on_stage=seen.append)
+    assert seen == ["waiting", "parsing"]
+
+
+def test_on_stage_reports_retry_before_the_second_call():
+    seen = []
+    suggest(_FILES, _RUBRIC, _FakeClient("garbage", _good()), on_stage=seen.append)
+    assert seen == ["waiting", "parsing", "retry", "waiting", "parsing"]
+
+
+def test_on_stage_is_optional():
+    assert suggest(_FILES, _RUBRIC, _FakeClient(_good())).error is None

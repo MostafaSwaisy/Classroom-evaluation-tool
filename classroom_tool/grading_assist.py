@@ -90,20 +90,30 @@ def _coerce(data: dict, rubric: dict) -> Suggestion | None:
 
 
 def suggest(student_files: dict[str, str], rubric: dict, client,  # noqa: ANN001
-            *, instructions: str = "", retries: int = 1) -> Suggestion:
-    """اقتراح درجة لطالب واحد. لا يرمي على ردّ سيّئ — يعيد Suggestion.error."""
+            *, instructions: str = "", retries: int = 1,
+            on_stage: Callable[[str], None] | None = None) -> Suggestion:
+    """اقتراح درجة لطالب واحد. لا يرمي على ردّ سيّئ — يعيد Suggestion.error.
+
+    `on_stage(stage)` اختياري لشاشة التشغيل الحيّة: "waiting" قبل كل نداء،
+    "parsing" بعده، و"retry" قبل المحاولة الثانية.
+    """
+    stage = on_stage or (lambda _s: None)
     prefix = _build_prefix(rubric, instructions)
     blob = _build_files_blob(student_files)
     messages = [{"role": "user", "content": blob}]
 
     last = ""
     for attempt in range(retries + 1):
+        if attempt:
+            stage("retry")
+        stage("waiting")
         try:
             reply = client.complete(prefix, messages, None)
         except OperationCancelled:
             raise
         except Exception as exc:  # noqa: BLE001 - surface as a sentinel, never leak
             return Suggestion(error=f"تعذّر نداء Claude: {exc}")
+        stage("parsing")
         last = reply or ""
         data = _extract_json(last)
         if data is not None:
