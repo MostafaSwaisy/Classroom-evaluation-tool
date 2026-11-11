@@ -61,7 +61,7 @@ def test_done_keys_excludes_errors():
 def test_transient_read_error_does_not_quarantine(tmp_path, monkeypatch):
     from pathlib import Path
     store.save_entry(tmp_path, "a", _entry())
-    real = Path.read_text
+    real = Path.read_bytes
     calls = {"n": 0}
 
     def flaky(self, *a, **k):
@@ -70,7 +70,7 @@ def test_transient_read_error_does_not_quarantine(tmp_path, monkeypatch):
             raise PermissionError("sharing violation")
         return real(self, *a, **k)
 
-    monkeypatch.setattr(Path, "read_text", flaky)
+    monkeypatch.setattr(Path, "read_bytes", flaky)
     store.save_entry(tmp_path, "b", _entry())
     monkeypatch.undo()
     assert not (tmp_path / (store.FILENAME + ".corrupt")).exists()
@@ -84,7 +84,7 @@ def test_persistent_read_error_raises_without_quarantine(tmp_path, monkeypatch):
     def always(self, *a, **k):
         raise PermissionError("locked")
 
-    monkeypatch.setattr(Path, "read_text", always)
+    monkeypatch.setattr(Path, "read_bytes", always)
     with pytest.raises(PermissionError):
         store.load(tmp_path)
     monkeypatch.undo()
@@ -96,3 +96,29 @@ def test_non_dict_json_is_quarantined(tmp_path):
     (tmp_path / store.FILENAME).write_text("[]", encoding="utf-8")
     assert store.load(tmp_path) == {}
     assert (tmp_path / (store.FILENAME + ".corrupt")).exists()
+
+
+def test_non_utf8_file_is_quarantined(tmp_path):
+    (tmp_path / store.FILENAME).write_bytes(bytes([0xFF, 0xFE]) + b"{bad")
+    assert store.load(tmp_path) == {}
+    assert (tmp_path / (store.FILENAME + ".corrupt")).exists()
+    store.save_entry(tmp_path, "a", _entry())
+    assert set(store.load(tmp_path)) == {"a"}
+
+
+def test_bom_prefixed_json_loads(tmp_path):
+    (tmp_path / store.FILENAME).write_bytes(
+        bytes([0xEF, 0xBB, 0xBF]) + json.dumps({"a": _entry()}).encode("utf-8"))
+    assert set(store.load(tmp_path)) == {"a"}
+    assert not (tmp_path / (store.FILENAME + ".corrupt")).exists()
+
+
+def test_file_vanishing_after_exists_returns_empty(tmp_path, monkeypatch):
+    from pathlib import Path
+    (tmp_path / store.FILENAME).write_text("{}", encoding="utf-8")
+
+    def gone(self, *a, **k):
+        raise FileNotFoundError("gone")
+
+    monkeypatch.setattr(Path, "read_bytes", gone)
+    assert store.load(tmp_path) == {}

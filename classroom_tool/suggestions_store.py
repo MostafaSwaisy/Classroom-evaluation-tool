@@ -27,11 +27,13 @@ def _path(work_dir: str | Path) -> Path:
     return Path(work_dir) / FILENAME
 
 
-def _read_text_retry(p: Path, attempts: int = 5) -> str:
-    """read_text, retried on transient OSError (Windows sharing violation)."""
+def _read_bytes_retry(p: Path, attempts: int = 5) -> bytes:
+    """read_bytes, retried on transient OSError (Windows sharing violation)."""
     for i in range(attempts):
         try:
-            return p.read_text(encoding="utf-8")
+            return p.read_bytes()
+        except FileNotFoundError:
+            raise
         except OSError:
             if i == attempts - 1:
                 raise
@@ -48,10 +50,13 @@ def load(work_dir: str | Path) -> dict[str, dict]:
     p = _path(work_dir)
     if not p.exists():
         return {}
-    text = _read_text_retry(p)
     try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
+        raw = _read_bytes_retry(p)
+    except FileNotFoundError:
+        return {}
+    try:
+        data = json.loads(raw.decode("utf-8-sig"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
         _quarantine(p)
         return {}
     if not isinstance(data, dict):
