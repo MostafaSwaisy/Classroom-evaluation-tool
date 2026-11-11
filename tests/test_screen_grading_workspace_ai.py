@@ -43,6 +43,7 @@ class _FakeBackend:
         self.worker = _FakeWorker()
         self.jobs = []
         self.cancelled = False
+        self.is_busy = False
 
     def submit(self, job_id, fn):  # noqa: ANN001
         self.jobs.append((job_id, fn))
@@ -293,3 +294,35 @@ def test_run_link_navigates_to_the_run_screen(screen, qtbot):
     with qtbot.waitSignal(screen.navigation_requested) as sig:
         screen._ai_run_link.linkActivated.emit("#run")
     assert sig.args[0] == "grading_run"
+
+
+def test_suggest_is_refused_while_the_worker_is_busy(screen):
+    screen.services.backend.is_busy = True
+    screen._run_ai()
+    assert screen.services.backend.jobs == []
+    assert _ai_state(screen) == "error"
+    assert "تشغيل التصحيح جارٍ" in screen._ai_msgs["error"].text()
+
+
+def test_suggestion_lands_in_the_folder_it_was_started_for(screen, tmp_path):
+    screen._run_ai()
+    original = screen._work_dir
+    key = screen._current_key
+    other = tmp_path / "other"
+    other.mkdir()
+    screen._work_dir = other
+    screen.services.backend.worker.finished.emit(_JOB_AI, {
+        key: {"scores": {}, "feedback": "x", "flags": [], "error": None}})
+    assert store.load(original)[key]["feedback"] == "x"
+    assert store.load(other) == {}
+
+
+def test_store_write_failure_shows_an_error(screen, monkeypatch):
+    screen._run_ai()
+
+    def boom(*_a, **_k):
+        raise OSError("disk")
+    monkeypatch.setattr(gw.suggestions_store, "save_entry", boom)
+    screen.services.backend.worker.finished.emit(_JOB_AI, {
+        screen._current_key: {"scores": {}, "feedback": "x", "flags": [], "error": None}})
+    assert _ai_state(screen) == "error"

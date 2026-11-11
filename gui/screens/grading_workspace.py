@@ -141,6 +141,7 @@ class Screen(ScreenBase):
         self._current_key: str | None = None
         self._score_inputs: dict[str, QDoubleSpinBox] = {}
         self._suggestions: dict[str, dict] = {}
+        self._ai_dir: Path | None = None
         self._loading = False
         self._pending_student: str | None = None
         b = self._backend()
@@ -348,9 +349,8 @@ class Screen(ScreenBase):
                 self._ai_msgs[state] = lbl
                 pl.addWidget(lbl)
                 if state == "running":
-                    # The shared panel, so the batch gets the same percentage +
-                    # count + cancel as every other long job. suggest_batch has
-                    # taken should_cancel all along; nothing ever exposed it.
+                    # The shared panel, so a suggestion gets the same
+                    # percentage + count + cancel as every other long job.
                     self._ai_progress = ProgressPanel(cancellable=True)
                     self._ai_progress.cancel_requested.connect(self._cancel_ai)
                     pl.addWidget(self._ai_progress)
@@ -388,11 +388,17 @@ class Screen(ScreenBase):
         if b is None:
             self._ai_show("error", "لا يوجد عامل خلفية.")
             return
+        if getattr(b, "is_busy", False):
+            # one worker: queuing here would be cancelled together with a run
+            self._ai_show("error", "تشغيل التصحيح جارٍ — جرّب بعد انتهائه.")
+            return
         row = self._row_for_key(self._current_key)
         files = self._read_student_files(row) if row else {}
         if not files:
             self._ai_show("error", "لا ملفات مستخرَجة لهذا الطالب.")
             return
+        # pin the target folder now: the user may switch assignment before it ends
+        self._ai_dir = self._work_dir
         self._ai_progress.start("جارٍ توليد المقترح…")
         self._ai_show("running")
         b.submit(_JOB_AI, ai_suggest_job(
@@ -408,13 +414,23 @@ class Screen(ScreenBase):
         if job_id != _JOB_AI:
             return
         self._ai_progress.finish()
-        if self._work_dir is not None and isinstance(result, dict):
-            for key, sugg in result.items():
-                if isinstance(sugg, dict):
-                    suggestions_store.save_entry(self._work_dir, key, sugg)
-            self._suggestions = suggestions_store.load(self._work_dir)
-            for key in result:
-                self._refresh_item(key, self._state.get_entry(key) or {})
+        target = self._ai_dir
+        if target is not None and isinstance(result, dict):
+            try:
+                for key, sugg in result.items():
+                    if isinstance(sugg, dict):
+                        suggestions_store.save_entry(target, key, sugg)
+                if target != self._work_dir:
+                    return
+                self._suggestions = suggestions_store.load(target)
+            except OSError as exc:
+                self._ai_show("error", f"تعذّر حفظ المقترح: {exc}")
+                return
+            if self._state is not None:
+                for key in result:
+                    self._refresh_item(key, self._state.get_entry(key) or {})
+        elif target is not None and target != self._work_dir:
+            return
         self._render_suggestion()
 
     @Slot(str, str, str, str)
@@ -451,7 +467,7 @@ class Screen(ScreenBase):
                 item.widget().setParent(None)
         sugg = self._suggestions.get(self._current_key or "")
         if not sugg:
-            self._ai_show("error", "لا مقترح لهذا الطالب في نتيجة الدفعة.")
+            self._ai_show("error", "لا مقترح لهذا الطالب بعد — شغّل «اقترح لهذا الطالب» أو تشغيل التصحيح.")
             return
         if sugg.get("error"):
             self._ai_show("error", str(sugg["error"]))
