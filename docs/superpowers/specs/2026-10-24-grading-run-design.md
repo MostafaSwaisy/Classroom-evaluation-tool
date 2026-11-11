@@ -72,7 +72,7 @@ Sidebar entry **تشغيل التصحيح**. Context: the current course and ass
 7. **Grading Workspace** (`gui/screens/grading_workspace.py`):
    - Suggestion box reads from `suggestions_store` instead of in-memory `_suggestions`.
    - "اقترح للدفعة" is replaced by a link to the Run screen. "اقترح لهذا الطالب" stays (single re-grade) and writes to the store too.
-   - Student list items get a small suggestion-status icon (✓ / ⚑ / ⤼ / none).
+   - Student list items get a small suggestion-status icon (✓ / ⚑ / none) — skips aren't persisted, so they show only in the Run screen's log.
 
 ## Data flow
 
