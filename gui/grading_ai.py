@@ -10,8 +10,11 @@
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import asdict
+from pathlib import Path
 
+from classroom_tool import claude_provider, grading_run
 from classroom_tool.claude_provider import get_client
 from classroom_tool.grading_assist import suggest_batch
 
@@ -36,5 +39,27 @@ def ai_suggest_job(students: dict[str, dict[str, str]], rubric: dict, *,
             should_cancel=ctx.cancelled, on_result=_tick,
         )
         return {key: asdict(sugg) for key, sugg in result.items()}
+
+    return run
+
+
+def provider_state(cfg: dict) -> str:
+    """حالة Claude (ready / not_installed / not_logged_in / …). فشل الفحص = غير متاح."""
+    try:
+        return claude_provider.provider_status(cfg).state
+    except Exception:  # noqa: BLE001 - a probe failure == not usable
+        return "not_installed"
+
+
+def ai_run_job(plan: grading_run.RunPlan, rubric: dict, *, work_dir: str | Path,
+               cfg: dict | None = None, instructions: str = "",
+               should_pause: Callable[[], bool]):
+    """دالة عمل لتشغيل التصحيح كاملاً. الأحداث تمرّ عبر `ctx.event`."""
+
+    def run(ctx) -> None:  # noqa: ANN001 - JobContext
+        client = get_client(cfg or {}, cwd=str(work_dir))   # built on the worker thread
+        grading_run.run(plan, rubric, client, work_dir=work_dir,
+                        instructions=instructions, on_event=ctx.event,
+                        should_cancel=ctx.cancelled, should_pause=should_pause)
 
     return run

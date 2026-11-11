@@ -82,3 +82,38 @@ def test_job_cancel_between_students_raises_and_stops_the_batch(patch_client):
         mod.ai_suggest_job({"s1": {"a": "1"}, "s2": {"b": "2"}, "s3": {"c": "3"}},
                            _RUBRIC, cfg={"ai_provider": "claude_cli"})(ctx)
     assert client.calls == 1
+
+
+def test_run_job_bridges_events_and_saves(patch_client, tmp_path):
+    from classroom_tool import grading_run as gr
+    from classroom_tool import suggestions_store as store
+
+    d = tmp_path / "extracted" / "1_a"
+    d.mkdir(parents=True)
+    (d / "a.php").write_text("<?php", encoding="utf-8")
+    plan = gr.plan_run(tmp_path, [{"student_id": "1", "name": "a", "state": "سلّم"}],
+                       done_keys=set())
+    patch_client(_good())
+
+    events = []
+
+    class Ctx:
+        def cancelled(self):
+            return False
+
+        def event(self, e):
+            events.append(e)
+
+    fn = mod.ai_run_job(plan, _RUBRIC, work_dir=str(tmp_path), cfg={},
+                        should_pause=lambda: False)
+    fn(Ctx())
+    assert events[-1]["type"] == "finished"
+    assert "1" in store.load(tmp_path)
+
+
+def test_provider_state_swallows_probe_errors(monkeypatch):
+    def boom(_cfg):
+        raise RuntimeError("probe died")
+
+    monkeypatch.setattr(mod.claude_provider, "provider_status", boom)
+    assert mod.provider_state({}) == "not_installed"
