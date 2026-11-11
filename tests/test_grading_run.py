@@ -227,6 +227,18 @@ def test_client_401_exception_auto_pauses(tmp_path):
     assert ev[-1]["type"] == "auto_paused"
 
 
+def test_bare_401_status_auto_pauses(tmp_path):
+    # Only the "401" alternative can match here — guards the word-boundary regex.
+    ev = _go(tmp_path, _plan_for(tmp_path, 3), _Client(RuntimeError("HTTP 401")))
+    assert ev[-1]["type"] == "auto_paused"
+
+
+def test_401_inside_a_number_does_not_auto_pause(tmp_path):
+    err = RuntimeError("timeout after 14010 ms")
+    ev = _go(tmp_path, _plan_for(tmp_path, 1), _Client(err, err))
+    assert ev[-1]["type"] == "finished"
+
+
 def test_partial_read_is_flagged_as_attention(tmp_path):
     _student_dir(tmp_path, "1_s1", {"a.php": "<?php echo 1;", "b.php": b"\xff\xfe"})
     plan = gr.plan_run(tmp_path, [_row("1", "s1")], done_keys=set())

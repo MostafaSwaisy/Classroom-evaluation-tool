@@ -42,7 +42,7 @@ REASON_UNREADABLE = "ملفات الكود ما بتنفتح (ترميز غير 
 
 #: after this many Claude failures in a row the run pauses itself.
 MAX_CONSECUTIVE_FAILURES = 3
-_AUTH_ERROR = re.compile(r"401|invalid_grant|unauthori[sz]ed|authentication|"
+_AUTH_ERROR = re.compile(r"\b401\b|invalid_grant|unauthori[sz]ed|authentication|"
                          r"not logged in|please log in", re.IGNORECASE)
 FLAG_PARTIAL_READ = "بعض الملفات ما انفتحت"
 
