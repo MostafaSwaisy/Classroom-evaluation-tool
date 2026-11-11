@@ -238,3 +238,48 @@ def test_no_forbidden_tokens_in_source():
     src = Path(mod.__file__).read_text(encoding="utf-8")
     for bad in ("push", "upload", "--confirm", "write_grades", "_grading_state"):
         assert bad not in src
+
+
+def test_resumed_flagged_entry_counts_as_attention(qtbot, env, monkeypatch):
+    monkeypatch.setattr(mod, "provider_state", lambda _cfg: "ready")
+    wd, rub = env
+    store.save_entry(wd, "1", {"scores": {"a": 5}, "feedback": "", "flags": [],
+                               "error": None, "duration_s": 12})
+    store.save_entry(wd, "2", {"scores": {"a": 3}, "feedback": "",
+                               "flags": ["يحتاج مراجعة شفوية"], "error": None})
+    s = Screen(_Services(wd, rub))
+    qtbot.addWidget(s)
+    s.load()
+    assert s._cards["graded"]._value.text() == "1"
+    assert s._cards["attention"]._value.text() == "1"
+    assert s._cards["remaining"]._value.text() == "0"
+    assert s._log.row_count == 3          # 2 resumed + 1 skipped, log not wiped
+
+
+def test_context_switch_mid_run_is_deferred(screen, env, qtbot, tmp_path):
+    wd, rub = env
+    other = tmp_path / "submissions" / "PHP2026" / "HW02"
+    (other / "extracted" / "9_نور").mkdir(parents=True)
+    (other / "extracted" / "9_نور" / "a.php").write_text("<?php", encoding="utf-8")
+    _roster(other / "_roster.xlsx")
+    screen._start()
+    _done(screen, "1", "سارة", "graded")
+    screen.apply_context({"work_dir": str(other)})
+    with qtbot.waitSignal(screen.navigation_requested) as sig:
+        screen._open_row(screen._log.model().index(0, 0))
+    assert sig.args[1]["work_dir"] == str(wd)
+    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    assert "HW02" in screen._header.text()
+    assert screen._work_dir == other
+
+
+def test_elapsed_label_freezes_when_run_ends(screen):
+    screen._start()
+    screen._seg_t0 -= 75
+    screen._on_tick()
+    assert "1:15" in screen._elapsed_label.text()
+    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    frozen = screen._elapsed_label.text()
+    assert "1:15" in frozen
+    screen._on_tick()
+    assert screen._elapsed_label.text() == frozen

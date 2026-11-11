@@ -24,7 +24,15 @@ from PySide6.QtWidgets import (
 )
 
 from classroom_tool import config, suggestions_store
-from classroom_tool.grading_run import ATTENTION, GRADED, SKIPPED, EtaTracker, plan_run
+from classroom_tool.grading_run import (
+    ATTENTION,
+    GRADED,
+    SKIPPED,
+    EtaTracker,
+    _total,
+    entry_key,
+    plan_run,
+)
 from gui.grading_ai import ai_run_job, provider_state
 from gui.grading_io import read_roster, resolve_rubric
 from gui.screens.base import ScreenBase
@@ -62,6 +70,10 @@ def _fmt_secs(secs: float) -> str:
     return f"{s // 60}:{s % 60:02d}"
 
 
+def _elapsed_text(secs: float) -> str:
+    return "الوقت المنقضي " + _fmt_secs(secs)
+
+
 class Screen(ScreenBase):
     title = "تشغيل التصحيح"
     empty_text = "لا يوجد واجب مُحضَّر بعد — اسحب الواجب وحضّره أولاً."
@@ -92,7 +104,12 @@ class Screen(ScreenBase):
             b.worker.cancelled.connect(self._on_cancelled)
         self._tick = QTimer(self)
         self._tick.setInterval(1000)
-        self._tick.timeout.connect(self._render_stage)
+        self._tick.timeout.connect(self._on_tick)
+        self._loaded_dir: Path | None = None    # folder _rows/_rubric belong to
+        self._run_dir: Path | None = None       # folder of the run in flight
+        self._pending_dir: Path | None = None   # context received mid-run
+        self._elapsed_total = 0.0               # accumulated across segments
+        self._seg_t0 = 0.0
         self.state_view.set_content(self._build_page())
 
     # --- public -------------------------------------------------
@@ -102,7 +119,11 @@ class Screen(ScreenBase):
 
     def apply_context(self, ctx: object) -> None:
         if isinstance(ctx, dict) and ctx.get("work_dir"):
-            self._work_dir = Path(ctx["work_dir"])
+            if self._running:
+                # the live run keeps its own folder; switch after it ends
+                self._pending_dir = Path(ctx["work_dir"])
+            else:
+                self._work_dir = Path(ctx["work_dir"])
 
     @Slot()
     def load(self) -> None:
@@ -124,7 +145,11 @@ class Screen(ScreenBase):
         except Exception as exc:  # noqa: BLE001 - surface as a state
             self.state_view.set_error(f"تعذّر قراءة الكشف: {exc}")
             return
+        if wd != self._loaded_dir:
+            self._elapsed_total = 0.0
+            self._elapsed_label.setText(_elapsed_text(0.0))
         self._work_dir = wd
+        self._loaded_dir = wd
         self._header.setText(f"تشغيل التصحيح — {wd.parent.name} / {wd.name}")
         self._replan()
         self.state_view.set_state("ok")
@@ -190,9 +215,15 @@ class Screen(ScreenBase):
 
         self._progress = ProgressPanel(cancellable=False)
         lay.addWidget(self._progress)
+        times = QHBoxLayout()
+        self._elapsed_label = QLabel(_elapsed_text(0.0))
+        self._elapsed_label.setProperty("role", "muted")
+        times.addWidget(self._elapsed_label)
         self._eta_label = QLabel("الوقت المتبقي ≈ —")
         self._eta_label.setProperty("role", "muted")
-        lay.addWidget(self._eta_label)
+        times.addWidget(self._eta_label)
+        times.addStretch(1)
+        lay.addLayout(times)
 
         now = Card("الطالب الحالي")
         self._now_name = QLabel("—")
@@ -223,17 +254,33 @@ class Screen(ScreenBase):
     def _replan(self) -> None:
         if self._work_dir is None or self._running:
             return
-        done = suggestions_store.done_keys(suggestions_store.load(self._work_dir))
+        data = suggestions_store.load(self._work_dir)
+        done = suggestions_store.done_keys(data)
         self._plan = plan_run(self._work_dir, self._rows, done_keys=done,
                               regrade_all=self._regrade_cb.isChecked())
+        # resumed entries: flagged ones count as "needs attention", like live ones
+        names = {entry_key(r): str(r.get("name") or entry_key(r)) for r in self._rows}
+        prev_rows: list[tuple[str, list[str]]] = []
+        n_attn = 0
+        for k in self._plan.already_done:
+            ent = data.get(k) or {}
+            flags = [str(f) for f in (ent.get("flags") or [])]
+            bucket = ATTENTION if flags else GRADED
+            n_attn += bucket == ATTENTION
+            scores = ent.get("scores")
+            total = _total(scores) if isinstance(scores, dict) else None
+            dur = ent.get("duration_s")
+            prev_rows.append((k, [_ICON[bucket], names.get(k, k), _trim(total),
+                                  "، ".join(flags),
+                                  f"{int(dur)} ث" if isinstance(dur, (int, float)) else "—"]))
         self._counts = {
-            "graded": len(self._plan.already_done), "attention": 0,
+            "graded": len(self._plan.already_done) - n_attn, "attention": n_attn,
             "skipped": len(self._plan.skipped),
             "not_submitted": len(self._plan.not_submitted),
             "remaining": len(self._plan.queue),
         }
-        self._log_rows = [(s.key, ["⤼", s.name, s.reason, "", "—"])
-                          for s in self._plan.skipped]
+        self._log_rows = prev_rows + [(s.key, ["⤼", s.name, s.reason, "", "—"])
+                                      for s in self._plan.skipped]
         self._render_counts()
         self._log.set_rows(_LOG_HEADERS, [r for _k, r in self._log_rows],
                            [k for k, _r in self._log_rows])
@@ -249,7 +296,11 @@ class Screen(ScreenBase):
     # --- controls -------------------------------------------------
     @Slot()
     def _start(self) -> None:
-        if self._running or self._plan is None or self._work_dir is None:
+        if self._running or self._work_dir is None:
+            return
+        if self._loaded_dir != self._work_dir:
+            self.load()                 # roster/rubric belong to another folder
+        if self._plan is None or self._loaded_dir != self._work_dir:
             return
         state = provider_state(self._cfg())
         if state != "ready":
@@ -270,6 +321,8 @@ class Screen(ScreenBase):
         self._pause_flag.clear()
         self._eta = EtaTracker()
         self._running = True
+        self._run_dir = self._work_dir
+        self._seg_t0 = time.monotonic()
         self._set_controls()
         self._progress.start("جارٍ التصحيح — طالب واحد لكل نداء…")
         self._progress.update_progress("", 0, len(self._plan.queue))
@@ -312,6 +365,13 @@ class Screen(ScreenBase):
             self._show_banner(f"توقّف التشغيل تلقائياً بعد أخطاء متكررة: {e.get('reason')}")
         elif kind == "finished":
             self._show_banner("خلص التشغيل — راجع المقترحات في مساحة التصحيح.")
+
+    @Slot()
+    def _on_tick(self) -> None:
+        self._render_stage()
+        if self._running:
+            self._elapsed_label.setText(_elapsed_text(
+                self._elapsed_total + time.monotonic() - self._seg_t0))
 
     def _set_stage(self, stage: str, files: object) -> None:
         self._stage = stage
@@ -381,6 +441,9 @@ class Screen(ScreenBase):
             self._end_run("أُلغي التشغيل — المقترحات اللي خلصت محفوظة.")
 
     def _end_run(self, banner: str) -> None:
+        if self._running:           # freeze elapsed (accumulates across segments)
+            self._elapsed_total += time.monotonic() - self._seg_t0
+            self._elapsed_label.setText(_elapsed_text(self._elapsed_total))
         self._running = False
         self._tick.stop()
         self._stage = ""
@@ -390,15 +453,20 @@ class Screen(ScreenBase):
         if banner:
             self._show_banner(banner)
         self._set_controls()
+        self._run_dir = None
+        if self._pending_dir is not None:
+            self._work_dir, self._pending_dir = self._pending_dir, None
+            self.load()
 
     # --- log -> workspace -------------------------------------
     @Slot(QModelIndex)
     def _open_row(self, index: QModelIndex) -> None:
         item = self._log.model().index(index.row(), 0)
         key = item.data(Qt.ItemDataRole.UserRole)
-        if key and self._work_dir is not None:
+        target = self._run_dir or self._work_dir
+        if key and target is not None:
             self.navigation_requested.emit(
-                "grading_workspace", {"work_dir": str(self._work_dir), "student_key": key})
+                "grading_workspace", {"work_dir": str(target), "student_key": key})
 
 
 def _trim(x: object) -> str:
