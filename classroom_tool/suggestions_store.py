@@ -6,11 +6,14 @@
 
 الكتابة ذرّية (ملف مؤقت + replace) فانقطاع الكهرباء أو إغلاق التطبيق في منتصف
 الكتابة لا يتلف الملف. ملف تالف → يُنقل إلى `.corrupt` ونبدأ فارغين.
+يفترض المخزن عملية كاتبة واحدة فقط (القفل داخل العملية).
 """
 from __future__ import annotations
 
 import json
+import os
 import threading
+import time
 from pathlib import Path
 
 from .fsutil import replace_with_retry
@@ -24,16 +27,37 @@ def _path(work_dir: str | Path) -> Path:
     return Path(work_dir) / FILENAME
 
 
+def _read_text_retry(p: Path, attempts: int = 5) -> str:
+    """read_text, retried on transient OSError (Windows sharing violation)."""
+    for i in range(attempts):
+        try:
+            return p.read_text(encoding="utf-8")
+        except OSError:
+            if i == attempts - 1:
+                raise
+            time.sleep(0.05 * (i + 1))
+    raise AssertionError("unreachable")
+
+
+def _quarantine(p: Path) -> None:
+    replace_with_retry(p, p.with_name(p.name + ".corrupt"))
+
+
 def load(work_dir: str | Path) -> dict[str, dict]:
+    """Bad content is set aside; a failed read raises (never returns {})."""
     p = _path(work_dir)
     if not p.exists():
         return {}
+    text = _read_text_retry(p)
     try:
-        data = json.loads(p.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
-        p.replace(p.with_name(p.name + ".corrupt"))
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        _quarantine(p)
         return {}
-    return data if isinstance(data, dict) else {}
+    if not isinstance(data, dict):
+        _quarantine(p)
+        return {}
+    return data
 
 
 def save_entry(work_dir: str | Path, key: str, entry: dict) -> None:
@@ -43,8 +67,10 @@ def save_entry(work_dir: str | Path, key: str, entry: dict) -> None:
         data[str(key)] = entry
         p = _path(work_dir)
         tmp = p.with_name(p.name + ".tmp")
-        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2),
-                       encoding="utf-8")
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(json.dumps(data, ensure_ascii=False, indent=2))
+            f.flush()
+            os.fsync(f.fileno())
         replace_with_retry(tmp, p)
 
 

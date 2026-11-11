@@ -56,3 +56,43 @@ def test_failed_write_leaves_the_old_file_intact(tmp_path, monkeypatch):
 def test_done_keys_excludes_errors():
     data = {"a": _entry(), "b": _entry(error="ردّ غير صالح"), "c": "junk"}
     assert store.done_keys(data) == {"a"}
+
+
+def test_transient_read_error_does_not_quarantine(tmp_path, monkeypatch):
+    from pathlib import Path
+    store.save_entry(tmp_path, "a", _entry())
+    real = Path.read_text
+    calls = {"n": 0}
+
+    def flaky(self, *a, **k):
+        if calls["n"] == 0:
+            calls["n"] += 1
+            raise PermissionError("sharing violation")
+        return real(self, *a, **k)
+
+    monkeypatch.setattr(Path, "read_text", flaky)
+    store.save_entry(tmp_path, "b", _entry())
+    monkeypatch.undo()
+    assert not (tmp_path / (store.FILENAME + ".corrupt")).exists()
+    assert set(store.load(tmp_path)) == {"a", "b"}
+
+
+def test_persistent_read_error_raises_without_quarantine(tmp_path, monkeypatch):
+    from pathlib import Path
+    store.save_entry(tmp_path, "a", _entry())
+
+    def always(self, *a, **k):
+        raise PermissionError("locked")
+
+    monkeypatch.setattr(Path, "read_text", always)
+    with pytest.raises(PermissionError):
+        store.load(tmp_path)
+    monkeypatch.undo()
+    assert not (tmp_path / (store.FILENAME + ".corrupt")).exists()
+    assert set(store.load(tmp_path)) == {"a"}
+
+
+def test_non_dict_json_is_quarantined(tmp_path):
+    (tmp_path / store.FILENAME).write_text("[]", encoding="utf-8")
+    assert store.load(tmp_path) == {}
+    assert (tmp_path / (store.FILENAME + ".corrupt")).exists()
