@@ -157,3 +157,66 @@ class EtaTracker:
         if len(self._d) < self._min:
             return None
         return sum(self._d) / len(self._d) * max(remaining, 0)
+
+
+# --- the run --------------------------------------------------------------
+EventFn = Callable[[dict], None]
+
+
+def _total(scores: dict) -> float | None:
+    vals = [v for v in scores.values() if isinstance(v, (int, float))]
+    return round(sum(vals), 2) if vals else None
+
+
+def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
+        work_dir: str | Path, on_event: EventFn,
+        should_cancel: Callable[[], bool], should_pause: Callable[[], bool],
+        instructions: str = "",
+        clock: Callable[[], float] = time.monotonic) -> None:
+    """Grade every student in `plan.queue`; emit events; save each result.
+
+    Stops between students only (one Claude call can't be interrupted):
+    cancel → raises OperationCancelled; pause → emits `paused` and returns;
+    3 failures in a row or an auth error → emits `auto_paused` and returns.
+    """
+    max_points = rubric.get("max_points")
+    total = len(plan.queue)
+    streak = 0
+    for i, st in enumerate(plan.queue):
+        if should_cancel():
+            raise OperationCancelled
+        if should_pause():
+            on_event({"type": "paused"})
+            return
+        t0 = clock()
+        base = {"key": st.key, "name": st.name}
+        on_event({"type": "student_started", **base, "index": i, "total": total})
+        on_event({"type": "stage", **base, "stage": "reading"})
+        files = read_code_files(st.folder) if st.folder else {}
+        if not files:
+            on_event({"type": "student_done", **base, "bucket": SKIPPED,
+                      "reason": REASON_UNREADABLE, "total": None, "max": max_points,
+                      "flags": [], "error": None, "duration_s": clock() - t0})
+            continue
+        n_files = len(files)
+        sugg = suggest(files, rubric, client, instructions=instructions,
+                       on_stage=lambda s, b=base: on_event(
+                           {"type": "stage", **b, "stage": s, "files": n_files}))
+        on_event({"type": "stage", **base, "stage": "saving", "files": n_files})
+        duration = clock() - t0
+        entry = {**asdict(sugg), "duration_s": round(duration, 1),
+                 "finished_at": datetime.now().isoformat(timespec="seconds")}
+        suggestions_store.save_entry(work_dir, st.key, entry)
+        bucket = ATTENTION if (sugg.error or sugg.flags) else GRADED
+        on_event({"type": "student_done", **base, "bucket": bucket, "reason": "",
+                  "total": _total(sugg.scores), "max": max_points,
+                  "flags": list(sugg.flags), "error": sugg.error,
+                  "duration_s": duration})
+        if sugg.error:
+            streak += 1
+            if _AUTH_ERROR.search(sugg.error) or streak >= MAX_CONSECUTIVE_FAILURES:
+                on_event({"type": "auto_paused", "reason": sugg.error})
+                return
+        else:
+            streak = 0
+    on_event({"type": "finished"})

@@ -91,3 +91,126 @@ def test_plan_regrade_all_ignores_done_keys(tmp_path):
     plan = gr.plan_run(tmp_path, [_row("1", "a")], done_keys={"1"}, regrade_all=True)
     assert [q.key for q in plan.queue] == ["1"]
     assert plan.already_done == []
+
+
+# --- EtaTracker ------------------------------------------------
+def test_eta_hidden_until_two_samples_then_rolling_mean():
+    t = gr.EtaTracker()
+    assert t.eta(10) is None
+    t.add(10)
+    assert t.eta(10) is None
+    t.add(20)
+    assert t.eta(10) == 150
+    for _ in range(5):
+        t.add(30)                      # window of 5 drops the 10 and 20
+    assert t.eta(2) == 60
+
+
+# --- run --------------------------------------------------------
+class _Client:
+    def __init__(self, *replies):
+        self.replies = list(replies)
+
+    def complete(self, system, messages, tools=None):  # noqa: ANN001
+        r = self.replies.pop(0) if self.replies else "{}"
+        if isinstance(r, Exception):
+            raise r
+        return r
+
+
+def _good(flags=()):
+    return json.dumps({"scores": {"correctness": 5, "style": 3},
+                       "feedback": "تمام", "flags": list(flags)}, ensure_ascii=False)
+
+
+def _plan_for(tmp_path, n, *, unreadable=()):
+    rows = []
+    for i in range(1, n + 1):
+        body = b"\xff\xfe" if i in unreadable else "<?php echo 1;"
+        _student_dir(tmp_path, f"{i}_s{i}", {"a.php": body})
+        rows.append(_row(str(i), f"s{i}"))
+    return gr.plan_run(tmp_path, rows, done_keys=set())
+
+
+def _go(tmp_path, plan, client, *, pause_after=None, cancel_after=None):
+    events = []
+    done = {"n": 0}
+
+    def on_event(e):
+        events.append(e)
+        if e["type"] == "student_done":
+            done["n"] += 1
+
+    gr.run(plan, _RUBRIC, client, work_dir=tmp_path, on_event=on_event,
+           should_cancel=lambda: cancel_after is not None and done["n"] >= cancel_after,
+           should_pause=lambda: pause_after is not None and done["n"] >= pause_after,
+           clock=iter(range(0, 10_000, 5)).__next__)
+    return events
+
+
+def test_event_order_for_one_student(tmp_path):
+    ev = _go(tmp_path, _plan_for(tmp_path, 1), _Client(_good()))
+    assert [e["type"] for e in ev] == [
+        "student_started", "stage", "stage", "stage", "stage", "student_done", "finished"]
+    assert [e["stage"] for e in ev if e["type"] == "stage"] == [
+        "reading", "waiting", "parsing", "saving"]
+    done = ev[5]
+    assert done["bucket"] == gr.GRADED and done["total"] == 8.0 and done["max"] == 10
+    assert done["duration_s"] > 0
+    assert "1" in store.load(tmp_path)
+
+
+def test_flags_make_it_needs_attention(tmp_path):
+    ev = _go(tmp_path, _plan_for(tmp_path, 1), _Client(_good(["يحتاج مراجعة شفوية"])))
+    done = next(e for e in ev if e["type"] == "student_done")
+    assert done["bucket"] == gr.ATTENTION
+    assert done["flags"] == ["يحتاج مراجعة شفوية"]
+
+
+def test_unreadable_files_are_skipped_without_calling_claude(tmp_path):
+    client = _Client()
+    ev = _go(tmp_path, _plan_for(tmp_path, 1, unreadable={1}), client)
+    done = next(e for e in ev if e["type"] == "student_done")
+    assert done["bucket"] == gr.SKIPPED and done["reason"] == gr.REASON_UNREADABLE
+    assert store.load(tmp_path) == {}
+
+
+def test_failure_is_attention_and_saved_with_its_error(tmp_path):
+    ev = _go(tmp_path, _plan_for(tmp_path, 1), _Client("garbage", "garbage"))
+    done = next(e for e in ev if e["type"] == "student_done")
+    assert done["bucket"] == gr.ATTENTION and done["error"]
+    assert store.load(tmp_path)["1"]["error"]
+
+
+def test_three_failures_in_a_row_auto_pause(tmp_path):
+    client = _Client(*(["garbage"] * 8))
+    ev = _go(tmp_path, _plan_for(tmp_path, 5), client)
+    assert ev[-1]["type"] == "auto_paused"
+    assert sum(e["type"] == "student_done" for e in ev) == 3
+
+
+def test_a_success_resets_the_failure_streak(tmp_path):
+    client = _Client("g", "g", "g", "g", _good(), "g", "g", "g", "g")
+    ev = _go(tmp_path, _plan_for(tmp_path, 4), client)
+    assert ev[-1]["type"] == "finished"
+
+
+def test_auth_error_auto_pauses_immediately(tmp_path):
+    client = _Client(RuntimeError("HTTP 401 Unauthorized"))
+    ev = _go(tmp_path, _plan_for(tmp_path, 3), client)
+    assert ev[-1]["type"] == "auto_paused"
+    assert sum(e["type"] == "student_done" for e in ev) == 1
+
+
+def test_pause_stops_between_students(tmp_path):
+    ev = _go(tmp_path, _plan_for(tmp_path, 3), _Client(_good(), _good(), _good()),
+             pause_after=1)
+    assert ev[-1]["type"] == "paused"
+    assert sum(e["type"] == "student_done" for e in ev) == 1
+
+
+def test_cancel_raises_between_students_and_keeps_what_finished(tmp_path):
+    with pytest.raises(OperationCancelled):
+        _go(tmp_path, _plan_for(tmp_path, 3), _Client(_good(), _good(), _good()),
+            cancel_after=1)
+    assert set(store.load(tmp_path)) == {"1"}
