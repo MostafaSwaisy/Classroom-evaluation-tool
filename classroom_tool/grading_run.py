@@ -208,8 +208,8 @@ def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
             continue
         n_files = len(files)
         sugg = suggest(files, rubric, client, instructions=instructions,
-                       on_stage=lambda s, b=base: on_event(
-                           {"type": "stage", **b, "stage": s, "files": n_files}))
+                       on_stage=lambda s, b=base, n=n_files: on_event(
+                           {"type": "stage", **b, "stage": s, "files": n}))
         on_event({"type": "stage", **base, "stage": "saving", "files": n_files})
         if failed and not sugg.error:
             sugg.flags.append(FLAG_PARTIAL_READ)

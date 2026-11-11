@@ -39,7 +39,7 @@ def test_entry_key_prefers_student_id():
 
 def test_submitted_labels_match_pull():
     from classroom_tool.pull import STATE_AR, SUBMITTED_STATES
-    assert gr.SUBMITTED_LABELS == {STATE_AR[s] for s in SUBMITTED_STATES}
+    assert {STATE_AR[s] for s in SUBMITTED_STATES} == gr.SUBMITTED_LABELS
 
 
 def test_find_student_dir_by_id_then_by_name(tmp_path):

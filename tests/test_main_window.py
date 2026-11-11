@@ -1,4 +1,4 @@
-"""P0-U5 done conditions: the shell builds, all 13 screens navigate, RTL, no h-scroll."""
+"""P0-U5 done conditions: the shell builds, all 14 screens navigate, RTL, no h-scroll."""
 from __future__ import annotations
 
 import pytest
@@ -19,8 +19,8 @@ def win(qtbot):
     w.services.backend.shutdown(2000)
 
 
-def test_thirteen_screens_registered(win):
-    assert len(win._screens) == 13
+def test_fourteen_screens_registered(win):
+    assert len(win._screens) == 14
     assert set(win._screens) == set(KEYS)
 
 
