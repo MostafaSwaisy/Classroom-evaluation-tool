@@ -16,6 +16,8 @@ Contract:
     by cooperative backends; on True they raise `OperationCancelled`.
     `ctx.log(line)` and anything the job prints/`print`s to stderr both go out on
     the `log` signal.
+    `ctx.event(dict)` is **not** throttled — it is for low-rate structured
+    events (a few per student in a grading run) that must all arrive.
   * Cancellation is **monotonic by generation**: every `submit` gets an
     increasing generation; `cancel()` marks every generation submitted so far as
     cancelled and never un-marks. A job whose generation is already cancelled when
@@ -38,7 +40,7 @@ import threading
 import time
 import traceback
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from PySide6.QtCore import QCoreApplication, QObject, QThread, Signal, Slot
 
@@ -53,11 +55,16 @@ _SHUTDOWN_WAIT_MS = 5000
 _LIVE: set[BackendThread] = set()
 
 
+def _no_event(_e: dict) -> None:
+    pass
+
+
 @dataclass(frozen=True)
 class JobContext:
     progress: Callable[[str, int, int], None]
     cancelled: Callable[[], bool]
     log: Callable[[str], None]
+    event: Callable[[dict], None] = field(default=_no_event)
 
 
 class _LogShim(io.TextIOBase):
@@ -101,6 +108,7 @@ class _LogShim(io.TextIOBase):
 class BackendWorker(QObject):
     progress = Signal(str, int, int)          # message, current, total
     log = Signal(str)                         # a stdout/stderr/ctx.log line
+    event = Signal(object)                    # a structured dict, unthrottled
     finished = Signal(str, object)            # job_id, result
     failed = Signal(str, str, str, str)       # job_id, exc_type, message, traceback
     cancelled = Signal(str)                   # job_id
@@ -156,6 +164,7 @@ class BackendWorker(QObject):
             progress=self._emit_progress,
             cancelled=lambda: self._shutdown or generation <= self._cancel_through,
             log=self.log.emit,
+            event=self.event.emit,
         )
         shim = _LogShim(self.log.emit)
         self._busy.set()

@@ -213,3 +213,18 @@ def test_backend_call_runs_off_the_gui_thread(qtbot, bt, monkeypatch):
     with qtbot.waitSignal(bt.worker.finished, timeout=5000):
         bt.submit("auth", job)
     assert seen["ident"] != MAIN_IDENT
+
+
+def test_events_arrive_unthrottled_and_in_order(qtbot, bt):
+    got = []
+    bt.worker.event.connect(got.append)
+
+    def job(ctx):
+        for i in range(50):
+            ctx.event({"type": "tick", "i": i})
+        return "ok"
+
+    with qtbot.waitSignal(bt.worker.finished, timeout=5000):
+        bt.submit("ev", job)
+    qtbot.waitUntil(lambda: len(got) == 50, timeout=2000)
+    assert [e["i"] for e in got] == list(range(50))
