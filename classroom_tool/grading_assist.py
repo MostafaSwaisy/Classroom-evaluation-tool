@@ -25,6 +25,10 @@ _SHAPE = (
 )
 
 
+#: بادئة خطأ فشل النداء نفسه (مقابل ردّ غير صالح).
+CALL_ERROR_PREFIX = "تعذّر نداء Claude:"
+
+
 @dataclass(frozen=True)
 class Suggestion:
     scores: dict[str, float | None] = field(default_factory=dict)
@@ -112,7 +116,7 @@ def suggest(student_files: dict[str, str], rubric: dict, client,  # noqa: ANN001
         except OperationCancelled:
             raise
         except Exception as exc:  # noqa: BLE001 - surface as a sentinel, never leak
-            return Suggestion(error=f"تعذّر نداء Claude: {exc}")
+            return Suggestion(error=f"{CALL_ERROR_PREFIX} {exc}")
         stage("parsing")
         last = reply or ""
         data = _extract_json(last)

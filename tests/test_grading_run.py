@@ -214,3 +214,29 @@ def test_cancel_raises_between_students_and_keeps_what_finished(tmp_path):
         _go(tmp_path, _plan_for(tmp_path, 3), _Client(_good(), _good(), _good()),
             cancel_after=1)
     assert set(store.load(tmp_path)) == {"1"}
+
+
+def test_invalid_reply_mentioning_login_does_not_auto_pause(tmp_path):
+    bad = "login.php LoginController 120240101"
+    ev = _go(tmp_path, _plan_for(tmp_path, 2), _Client(bad, bad, _good(), _good()))
+    assert ev[-1]["type"] == "finished"
+
+
+def test_client_401_exception_auto_pauses(tmp_path):
+    ev = _go(tmp_path, _plan_for(tmp_path, 3), _Client(RuntimeError("401 Unauthorized")))
+    assert ev[-1]["type"] == "auto_paused"
+
+
+def test_partial_read_is_flagged_as_attention(tmp_path):
+    _student_dir(tmp_path, "1_s1", {"a.php": "<?php echo 1;", "b.php": b"\xff\xfe"})
+    plan = gr.plan_run(tmp_path, [_row("1", "s1")], done_keys=set())
+    ev = _go(tmp_path, plan, _Client(_good()))
+    done = next(e for e in ev if e["type"] == "student_done")
+    assert done["bucket"] == gr.ATTENTION and gr.FLAG_PARTIAL_READ in done["flags"]
+    assert gr.FLAG_PARTIAL_READ in store.load(tmp_path)["1"]["flags"]
+
+
+def test_duration_rounded_same_in_event_and_store(tmp_path):
+    ev = _go(tmp_path, _plan_for(tmp_path, 1), _Client(_good()))
+    done = next(e for e in ev if e["type"] == "student_done")
+    assert done["duration_s"] == store.load(tmp_path)["1"]["duration_s"]

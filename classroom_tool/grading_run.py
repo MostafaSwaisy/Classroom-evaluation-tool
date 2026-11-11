@@ -20,7 +20,7 @@ from pathlib import Path
 
 from . import suggestions_store
 from .errors import OperationCancelled
-from .grading_assist import suggest
+from .grading_assist import CALL_ERROR_PREFIX, suggest
 from .naming import normalize_arabic
 
 #: Arabic roster states that count as "submitted" — mirrors
@@ -42,8 +42,9 @@ REASON_UNREADABLE = "ملفات الكود ما بتنفتح (ترميز غير 
 
 #: after this many Claude failures in a row the run pauses itself.
 MAX_CONSECUTIVE_FAILURES = 3
-_AUTH_ERROR = re.compile(r"401|invalid_grant|unauthori[sz]ed|authentication|"
-                         r"not logged in|login", re.IGNORECASE)
+_AUTH_ERROR = re.compile(r"401|invalid_grant|unauthori[sz]ed|authentication|"
+                         r"not logged in|please log in", re.IGNORECASE)
+FLAG_PARTIAL_READ = "بعض الملفات ما انفتحت"
 
 
 # --- shared student helpers (also used by the Grading Workspace) ----------
@@ -85,14 +86,21 @@ def _code_paths(folder: Path) -> list[Path]:
             if f.is_file() and f.suffix.lower() in CODE_SUFFIXES]
 
 
-def read_code_files(folder: Path) -> dict[str, str]:
+def read_code_files_ex(folder: Path) -> tuple[dict[str, str], list[str]]:
+    """(files that decoded, names of those that failed)."""
     files: dict[str, str] = {}
+    failed: list[str] = []
     for f in _code_paths(folder):
+        rel = str(f.relative_to(folder).as_posix())
         try:
-            files[str(f.relative_to(folder).as_posix())] = f.read_text(encoding="utf-8")
+            files[rel] = f.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
-            continue
-    return files
+            failed.append(rel)
+    return files, failed
+
+
+def read_code_files(folder: Path) -> dict[str, str]:
+    return read_code_files_ex(folder)[0]
 
 
 # --- planning -------------------------------------------------------------
@@ -192,7 +200,7 @@ def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
         base = {"key": st.key, "name": st.name}
         on_event({"type": "student_started", **base, "index": i, "total": total})
         on_event({"type": "stage", **base, "stage": "reading"})
-        files = read_code_files(st.folder) if st.folder else {}
+        files, failed = read_code_files_ex(st.folder) if st.folder else ({}, [])
         if not files:
             on_event({"type": "student_done", **base, "bucket": SKIPPED,
                       "reason": REASON_UNREADABLE, "total": None, "max": max_points,
@@ -203,8 +211,10 @@ def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
                        on_stage=lambda s, b=base: on_event(
                            {"type": "stage", **b, "stage": s, "files": n_files}))
         on_event({"type": "stage", **base, "stage": "saving", "files": n_files})
-        duration = clock() - t0
-        entry = {**asdict(sugg), "duration_s": round(duration, 1),
+        if failed and not sugg.error:
+            sugg.flags.append(FLAG_PARTIAL_READ)
+        duration = round(clock() - t0, 1)
+        entry = {**asdict(sugg), "duration_s": duration,
                  "finished_at": datetime.now().isoformat(timespec="seconds")}
         suggestions_store.save_entry(work_dir, st.key, entry)
         bucket = ATTENTION if (sugg.error or sugg.flags) else GRADED
@@ -214,7 +224,8 @@ def run(plan: RunPlan, rubric: dict, client, *,  # noqa: ANN001
                   "duration_s": duration})
         if sugg.error:
             streak += 1
-            if _AUTH_ERROR.search(sugg.error) or streak >= MAX_CONSECUTIVE_FAILURES:
+            is_call_failure = sugg.error.startswith(CALL_ERROR_PREFIX)
+            if (is_call_failure and _AUTH_ERROR.search(sugg.error)) or streak >= MAX_CONSECUTIVE_FAILURES:
                 on_event({"type": "auto_paused", "reason": sugg.error})
                 return
         else:
