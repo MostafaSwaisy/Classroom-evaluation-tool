@@ -22,6 +22,7 @@ from classroom_tool.claude_provider import (
     get_client,
     provider_status,
 )
+from classroom_tool.errors import OperationCancelled
 
 SRC = Path(__file__).resolve().parent.parent / "classroom_tool" / "claude_provider.py"
 
@@ -29,6 +30,25 @@ SRC = Path(__file__).resolve().parent.parent / "classroom_tool" / "claude_provid
 def _completed(returncode: int, stdout: str = "", stderr: str = ""):
     return subprocess.CompletedProcess(
         args=["claude"], returncode=returncode, stdout=stdout, stderr=stderr)
+
+
+def _fake_popen(returncode: int, stdout: str = "", stderr: str = "", seen=None):
+    """A `subprocess.Popen` stand-in for `_CliClient.complete`."""
+
+    class _P:
+        def __init__(self, cmd, **kwargs):
+            if seen is not None:
+                seen["cmd"] = cmd
+                seen.update(kwargs)
+            self.returncode = returncode
+
+        def communicate(self, timeout=None):
+            return stdout, stderr
+
+        def kill(self):
+            pass
+
+    return _P
 
 
 def _ok_json(result: str = "hi"):
@@ -134,12 +154,8 @@ def test_get_client_raises_when_provider_none():
 
 def test_complete_parses_the_result_field(monkeypatch):
     seen = {}
-
-    def fake_run(cmd, **kwargs):
-        seen["cmd"] = cmd
-        return _completed(0, _ok_json("الدرجة 8/10"))
-
-    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setattr(subprocess, "Popen",
+                        _fake_popen(0, _ok_json("الدرجة 8/10"), seen=seen))
     client = get_client({"ai_provider": "claude_cli"}, which=lambda _n: "/usr/bin/claude")
     out = client.complete("انت مصحح", [{"role": "user", "content": "صحّح"}], None)
     assert out == "الدرجة 8/10"
@@ -149,8 +165,7 @@ def test_complete_parses_the_result_field(monkeypatch):
 
 
 def test_complete_raises_on_nonzero_exit(monkeypatch):
-    monkeypatch.setattr(subprocess, "run",
-                        lambda *a, **k: _completed(1, stderr="boom"))
+    monkeypatch.setattr(subprocess, "Popen", _fake_popen(1, stderr="boom"))
     client = get_client({"ai_provider": "claude_cli"}, which=lambda _n: "/usr/bin/claude")
     with pytest.raises(ProviderNotConfigured):
         client.complete("s", [{"role": "user", "content": "x"}], None)
@@ -158,8 +173,8 @@ def test_complete_raises_on_nonzero_exit(monkeypatch):
 
 def test_complete_raises_on_is_error_true(monkeypatch):
     monkeypatch.setattr(
-        subprocess, "run",
-        lambda *a, **k: _completed(0, json.dumps(
+        subprocess, "Popen",
+        _fake_popen(0, json.dumps(
             {"type": "result", "subtype": "error_during_execution", "is_error": True,
              "result": "rate limited"})))
     client = get_client({"ai_provider": "claude_cli"}, which=lambda _n: "/usr/bin/claude")
@@ -169,8 +184,7 @@ def test_complete_raises_on_is_error_true(monkeypatch):
 
 def test_complete_runs_in_the_given_cwd(monkeypatch):
     seen = {}
-    monkeypatch.setattr(subprocess, "run",
-                        lambda cmd, **k: seen.update(k) or _completed(0, _ok_json()))
+    monkeypatch.setattr(subprocess, "Popen", _fake_popen(0, _ok_json(), seen=seen))
     client = get_client({"ai_provider": "claude_cli"}, which=lambda _n: "/usr/bin/claude",
                         cwd="/tmp/hermetic")
     client.complete("s", [{"role": "user", "content": "x"}], None)
@@ -212,6 +226,32 @@ def test_timeout_raises_provider_timeout_and_kills_the_child(tmp_path, monkeypat
     assert time.monotonic() - t0 < 10          # returned promptly, didn't wait 30s
     time.sleep(0.6)
     assert not marker.exists()                  # child was killed mid-sleep
+
+
+def test_should_cancel_kills_the_child_and_raises_operation_cancelled(
+        tmp_path, monkeypatch):
+    stub = tmp_path / "stub_claude.py"
+    stub.write_text(_STUB, encoding="utf-8")
+    marker = tmp_path / "finished.txt"
+    monkeypatch.setenv("STUB_MARKER", str(marker))
+    t0 = time.monotonic()
+    client = _CliClient([sys.executable, str(stub)], DEFAULT_MODEL,
+                        should_cancel=lambda: time.monotonic() - t0 > 0.5)
+
+    with pytest.raises(OperationCancelled):
+        client.complete("", [{"role": "user", "content": "SLEEP"}])
+    assert time.monotonic() - t0 < 2.5          # not the 30s sleep, not 180s timeout
+    time.sleep(0.6)
+    assert not marker.exists()                  # child was killed mid-sleep
+
+
+def test_should_cancel_false_still_returns_the_result(tmp_path):
+    stub = tmp_path / "stub_claude.py"
+    stub.write_text(_STUB, encoding="utf-8")
+    client = _CliClient([sys.executable, str(stub)], DEFAULT_MODEL,
+                        should_cancel=lambda: False)
+    out = client.complete("", [{"role": "user", "content": "صحّح"}])
+    assert out == "من الستَب: صحّح"
 
 
 # --- guardrails ---------------------------------------------

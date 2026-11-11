@@ -389,8 +389,9 @@ class Screen(ScreenBase):
             self._ai_show("error", "لا يوجد عامل خلفية.")
             return
         if getattr(b, "is_busy", False):
-            # one worker: queuing here would be cancelled together with a run
-            self._ai_show("error", "تشغيل التصحيح جارٍ — جرّب بعد انتهائه.")
+            # the main worker is shared with pull/prepare/etc.: don't queue
+            # behind (or be cancelled together with) another job
+            self._ai_show("error", "في عملية تانية شغّالة — جرّب بعد انتهائها.")
             return
         row = self._row_for_key(self._current_key)
         files = self._read_student_files(row) if row else {}

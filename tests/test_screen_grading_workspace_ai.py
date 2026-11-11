@@ -301,7 +301,9 @@ def test_suggest_is_refused_while_the_worker_is_busy(screen):
     screen._run_ai()
     assert screen.services.backend.jobs == []
     assert _ai_state(screen) == "error"
-    assert "تشغيل التصحيح جارٍ" in screen._ai_msgs["error"].text()
+    # the main worker serves pull/prepare/etc. too -- a generic message
+    assert "في عملية تانية شغّالة" in screen._ai_msgs["error"].text()
+    assert "تشغيل التصحيح" not in screen._ai_msgs["error"].text()
 
 
 def test_suggestion_lands_in_the_folder_it_was_started_for(screen, tmp_path):

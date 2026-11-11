@@ -79,6 +79,9 @@ class Screen(ScreenBase):
     empty_text = "لا يوجد واجب مُحضَّر بعد — اسحب الواجب وحضّره أولاً."
 
     navigation_requested = Signal(str, object)
+    #: a run just ended (finished / failed / cancelled) -- MainWindow's
+    #: close-after-run flow listens for it.
+    run_ended = Signal()
 
     def __init__(self, services: object | None = None,
                  parent: QWidget | None = None) -> None:
@@ -96,7 +99,7 @@ class Screen(ScreenBase):
         self._stage = ""
         self._stage_files: int | None = None
         self._stage_t0 = 0.0
-        b = self._backend()
+        b = self._run_backend()
         if b is not None:
             b.worker.event.connect(self._on_event)
             b.worker.finished.connect(self._on_finished)
@@ -157,7 +160,16 @@ class Screen(ScreenBase):
         self._replan()
         self.state_view.set_state("ok")
 
+    def request_stop(self) -> None:
+        """Cancel the run in flight (the window's close flow). `run_ended` follows."""
+        self._cancel()
+
     # --- context helpers -----------------------------------------
+    def _run_backend(self):  # noqa: ANN202
+        """The run's own worker: a run's Cancel never touches pull/prepare jobs
+        (and theirs never touch the run), and other screens don't queue behind it."""
+        return getattr(self.services, "run_backend", None)
+
     def _resolve_work_dir(self) -> Path | None:
         if self._work_dir is not None:
             return self._work_dir
@@ -313,7 +325,7 @@ class Screen(ScreenBase):
         if state != "ready":
             self._show_banner(_NOT_READY.get(state, f"Claude غير جاهز ({state})."))
             return
-        b = self._backend()
+        b = self._run_backend()
         if b is None:
             self._show_banner("لا يوجد عامل خلفية.")
             return
@@ -350,7 +362,7 @@ class Screen(ScreenBase):
 
     @Slot()
     def _cancel(self) -> None:
-        b = self._backend()
+        b = self._run_backend()
         if self._running and b is not None:
             b.cancel()
             self._show_banner("جارٍ الإلغاء — بعد الطالب الحالي. اللي خلص محفوظ.")
@@ -469,6 +481,7 @@ class Screen(ScreenBase):
         if self._pending_dir is not None:
             self._work_dir, self._pending_dir = self._pending_dir, None
             self.load()
+        self.run_ended.emit()
 
     # --- log -> workspace -------------------------------------
     @Slot(QModelIndex)

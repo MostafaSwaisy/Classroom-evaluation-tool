@@ -117,3 +117,29 @@ def test_provider_state_swallows_probe_errors(monkeypatch):
 
     monkeypatch.setattr(mod.claude_provider, "provider_status", boom)
     assert mod.provider_state({}) == "not_installed"
+
+
+def test_jobs_hand_ctx_cancelled_to_the_cli_client(monkeypatch, tmp_path):
+    """A Cancel / window close must reach an in-flight `claude -p` call."""
+    from classroom_tool.claude_provider import _CliClient
+    from classroom_tool.grading_run import plan_run
+
+    seen = []
+    monkeypatch.setattr(mod, "get_client", lambda *a, **k: _CliClient("claude"))
+    monkeypatch.setattr(mod, "suggest_batch",
+                        lambda students, rubric, client, **k: seen.append(client) or {})
+    ctx = _Ctx()
+    mod.ai_suggest_job({"s1": {"a.py": "x"}}, _RUBRIC)(ctx)
+    assert seen[-1].should_cancel == ctx.cancelled
+
+    import classroom_tool.grading_run as gr
+    monkeypatch.setattr(gr, "run", lambda plan, rubric, client, **k: seen.append(client))
+    ctx.event = lambda _e: None
+    mod.ai_run_job(plan_run(tmp_path, [], done_keys=set()), _RUBRIC, work_dir=tmp_path,
+                   should_pause=lambda: False)(ctx)
+    assert seen[-1].should_cancel == ctx.cancelled
+
+
+def test_non_cli_clients_are_passed_through_unchanged(patch_client):
+    c = patch_client(_good())
+    assert mod._cancellable(c, lambda: True) is c

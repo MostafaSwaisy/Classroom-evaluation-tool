@@ -96,6 +96,9 @@ def run(argv: list[str] | None = None) -> int:
         app.exec()
         if hasattr(window, "services"):
             window.services.backend.shutdown()
+            run_backend = getattr(window.services, "run_backend", None)
+            if run_backend is not None:
+                run_backend.shutdown()
         return 0
 
     return app.exec()

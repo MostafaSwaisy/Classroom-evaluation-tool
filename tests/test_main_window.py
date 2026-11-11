@@ -17,6 +17,7 @@ def win(qtbot):
     qtbot.addWidget(w)
     yield w
     w.services.backend.shutdown(2000)
+    w.services.run_backend.shutdown(2000)
 
 
 def test_fourteen_screens_registered(win):
@@ -182,12 +183,54 @@ def test_close_during_a_grading_run_asks_and_can_be_refused(win, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
     screen = win._screens["grading_run"]
     monkeypatch.setattr(type(screen), "is_running", property(lambda _s: True))
+    stops = []
+    monkeypatch.setattr(screen, "request_stop", lambda: stops.append(1))
     asked = []
     monkeypatch.setattr(QMessageBox, "question",
                         lambda *a, **k: asked.append(1) or QMessageBox.StandardButton.No)
-    win.close()
+    win.show()
+    assert win.close() is False                       # close event ignored
     assert asked
-    assert win.services.backend.is_running            # close refused
+    assert win.isVisible()
+    assert stops == []                                # No: the run keeps going
+    assert win._close_after_run is False
+
+
+def test_close_yes_mid_run_stops_the_run_then_closes_on_run_ended(
+        win, monkeypatch, qtbot):
+    from PySide6.QtWidgets import QMessageBox
+    screen = win._screens["grading_run"]
+    running = {"on": True}
+    monkeypatch.setattr(type(screen), "is_running",
+                        property(lambda _s: running["on"]))
+    stops = []
+    monkeypatch.setattr(screen, "request_stop", lambda: stops.append(1))
+    asked = []
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: asked.append(1) or QMessageBox.StandardButton.Yes)
+    win.show()
+
+    assert win.close() is False                       # not blocking: ignored for now
+    assert asked == [1] and stops == [1]
+    assert win.isVisible()
+    assert "إيقاف التشغيل" in win.statusBar().currentMessage()
+    assert win.services.backend.is_running            # nothing shut down yet
+
+    assert win.close() is False                       # a second X while stopping
+    assert asked == [1] and stops == [1]              # doesn't ask again
+
+    running["on"] = False
+    screen.run_ended.emit()
+    qtbot.waitUntil(lambda: not win.isVisible(), timeout=10000)
+    assert win.services.backend.is_running is False
+    assert win.services.run_backend.is_running is False
+
+
+def test_run_ended_without_a_pending_close_keeps_the_window(win, qtbot):
+    win.show()
+    win._screens["grading_run"].run_ended.emit()
+    qtbot.wait(50)
+    assert win.isVisible()
 
 
 def test_close_without_a_run_does_not_ask(win, monkeypatch):
@@ -196,3 +239,4 @@ def test_close_without_a_run_does_not_ask(win, monkeypatch):
                         lambda *a, **k: pytest.fail("should not ask"))
     win.close()
     assert win.services.backend.is_running is False
+    assert win.services.run_backend.is_running is False

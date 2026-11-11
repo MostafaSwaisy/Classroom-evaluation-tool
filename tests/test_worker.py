@@ -228,3 +228,24 @@ def test_events_arrive_unthrottled_and_in_order(qtbot, bt):
         bt.submit("ev", job)
     qtbot.waitUntil(lambda: len(got) == 50, timeout=2000)
     assert [e["i"] for e in got] == list(range(50))
+
+
+def test_cancelling_one_backend_leaves_a_second_backends_job_running(qtbot, bt):
+    """The grading run has its own BackendThread: Cancel on pull/prepare (the
+    main backend) must not cancel the run, and vice versa."""
+    other = BackendThread()
+    try:
+        def job(ctx: JobContext):
+            for _ in range(30):
+                if ctx.cancelled():
+                    raise OperationCancelled
+                time.sleep(0.01)
+            return "done"
+
+        with qtbot.waitSignal(other.worker.finished, timeout=5000) as sig:
+            other.submit("run", job)
+            QThread.msleep(60)
+            bt.cancel()
+        assert sig.args == ["run", "done"]
+    finally:
+        assert other.shutdown(3000) is True

@@ -19,9 +19,12 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
+
+from .errors import OperationCancelled
 
 #: معرّف النموذج — بالضبط، بلا لاحقة تاريخ.
 DEFAULT_MODEL = "claude-opus-5"
@@ -32,6 +35,8 @@ DEFAULT_MODEL = "claude-opus-5"
 #: The real call (_CALL_TIMEOUT) always runs inside a worker job.
 _PROBE_TIMEOUT = 8.0
 _CALL_TIMEOUT = 180.0
+#: how often a running `claude -p` checks should_cancel / the deadline.
+_POLL_INTERVAL = 0.25
 
 
 class ProviderNotConfigured(RuntimeError):
@@ -79,6 +84,9 @@ class _CliClient:
     model: str = DEFAULT_MODEL
     cwd: str | None = None
     timeout: float = _CALL_TIMEOUT
+    #: polled while the child runs; True kills the child and raises
+    #: OperationCancelled (a grading run's Cancel / closing the window).
+    should_cancel: Callable[[], bool] | None = None
 
     def _argv(self, prompt: str) -> list[str]:
         prefix = list(self.exe) if isinstance(self.exe, (list, tuple)) else [self.exe]
@@ -89,25 +97,36 @@ class _CliClient:
                  tools: list[dict] | None = None) -> str:
         # tools: Provider B (`-p`) has no tool-definition channel — ignored.
         prompt = _flatten_prompt(system, messages)
-        try:
-            proc = subprocess.run(
-                self._argv(prompt),
-                capture_output=True, text=True, encoding="utf-8",
-                errors="replace", timeout=self.timeout, cwd=self.cwd,
-            )
-        except subprocess.TimeoutExpired as exc:
-            # subprocess.run already TerminateProcess/kill'd *only* this child.
-            raise ProviderTimeout(
-                f"claude -p تجاوز المهلة ({self.timeout}s)") from exc
+        proc = subprocess.Popen(
+            self._argv(prompt),
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            encoding="utf-8", errors="replace", cwd=self.cwd,
+        )
+        deadline = time.monotonic() + self.timeout
+        while True:
+            try:
+                stdout, stderr = proc.communicate(timeout=_POLL_INTERVAL)
+                break
+            except subprocess.TimeoutExpired:
+                if self.should_cancel is not None and self.should_cancel():
+                    # kill *only* this child, then reap it
+                    proc.kill()
+                    proc.communicate()
+                    raise OperationCancelled from None
+                if time.monotonic() >= deadline:
+                    proc.kill()
+                    proc.communicate()
+                    raise ProviderTimeout(
+                        f"claude -p تجاوز المهلة ({self.timeout}s)") from None
         if proc.returncode != 0:
             raise ProviderNotConfigured(
                 f"claude -p خرج برمز {proc.returncode}: "
-                f"{(proc.stderr or '').strip()[:200]}")
+                f"{(stderr or '').strip()[:200]}")
         try:
-            data = json.loads(proc.stdout)
+            data = json.loads(stdout)
         except json.JSONDecodeError as exc:
             raise ProviderNotConfigured(
-                f"إخراج claude غير صالح JSON: {proc.stdout[:200]}") from exc
+                f"إخراج claude غير صالح JSON: {(stdout or '')[:200]}") from exc
         if data.get("is_error") or data.get("subtype") != "success":
             raise ProviderNotConfigured(
                 f"claude -p ردّ بخطأ: {data.get('result') or data.get('subtype')}")

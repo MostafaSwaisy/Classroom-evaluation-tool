@@ -57,7 +57,8 @@ class _Services:
         self.active_assignment_dir = str(wd)
         self.rubrics_dir = str(rub)
         self.config_path = None
-        self.backend = _FakeBackend()
+        self.backend = _FakeBackend()        # other screens' worker
+        self.run_backend = _FakeBackend()    # the run's own worker
 
 
 @pytest.fixture
@@ -85,7 +86,7 @@ def screen(qtbot, env, monkeypatch):
 
 
 def _emit(s, **e):
-    s.services.backend.worker.event.emit(e)
+    s.services.run_backend.worker.event.emit(e)
 
 
 def _done(s, key, name, bucket, **kw):
@@ -122,7 +123,7 @@ def test_not_prepared_offers_prepare(qtbot, env, tmp_path):
 
 def test_start_submits_the_run_job(screen):
     screen._start()
-    job_id, _fn = screen.services.backend.jobs[-1]
+    job_id, _fn = screen.services.run_backend.jobs[-1]
     assert job_id == _JOB_RUN
     assert screen.is_running
     assert not screen._start_btn.isEnabled()
@@ -132,14 +133,14 @@ def test_start_submits_the_run_job(screen):
 def test_start_blocked_when_claude_not_ready(screen, monkeypatch):
     monkeypatch.setattr(mod, "provider_state", lambda _cfg: "not_logged_in")
     screen._start()
-    assert screen.services.backend.jobs == []
+    assert screen.services.run_backend.jobs == []
     assert not screen._banner.isHidden()
 
 
 def test_start_blocked_when_backend_busy(screen):
-    screen.services.backend.is_busy = True
+    screen.services.run_backend.is_busy = True
     screen._start()
-    assert screen.services.backend.jobs == []
+    assert screen.services.run_backend.jobs == []
     assert not screen._banner.isHidden()
 
 
@@ -174,7 +175,7 @@ def test_pause_sets_the_flag_and_paused_event_resets_controls(screen):
     screen._pause()
     assert screen._pause_flag.is_set()
     _emit(screen, type="paused")
-    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen.services.run_backend.worker.finished.emit(_JOB_RUN, None)
     assert not screen.is_running
     assert screen._start_btn.isEnabled()
     # the worker's trailing `finished` must not wipe the paused message
@@ -185,14 +186,14 @@ def test_auto_pause_shows_the_reason(screen):
     screen._start()
     _emit(screen, type="auto_paused", reason="HTTP 401")
     assert "401" in screen._banner.text()
-    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen.services.run_backend.worker.finished.emit(_JOB_RUN, None)
     assert "401" in screen._banner.text()
     assert not screen.is_running
 
 
 def test_failure_before_any_event_shows_error_and_reenables_start(screen):
     screen._start()
-    screen.services.backend.worker.failed.emit(_JOB_RUN, "RuntimeError", "no provider", "")
+    screen.services.run_backend.worker.failed.emit(_JOB_RUN, "RuntimeError", "no provider", "")
     assert not screen.is_running
     assert screen._start_btn.isEnabled()
     assert "no provider" in screen._banner.text()
@@ -201,15 +202,38 @@ def test_failure_before_any_event_shows_error_and_reenables_start(screen):
 def test_cancel_asks_the_backend(screen):
     screen._start()
     screen._cancel()
-    assert screen.services.backend.cancel_calls == 1
-    screen.services.backend.worker.cancelled.emit(_JOB_RUN)
+    assert screen.services.run_backend.cancel_calls == 1
+    screen.services.run_backend.worker.cancelled.emit(_JOB_RUN)
     assert not screen.is_running
     assert "أُلغي" in screen._banner.text()
 
 
+def test_run_uses_its_own_worker_not_the_main_backend(screen):
+    main = screen.services.backend
+    main.is_busy = True                     # a pull/prepare job doesn't block a run
+    screen._start()
+    assert screen.services.run_backend.jobs[-1][0] == _JOB_RUN
+    assert main.jobs == []
+    screen._cancel()
+    assert main.cancel_calls == 0           # the run's Cancel leaves other jobs alone
+    # the main worker's signals are not the run's
+    main.worker.cancelled.emit(_JOB_RUN)
+    main.worker.finished.emit(_JOB_RUN, None)
+    assert screen.is_running
+
+
+def test_request_stop_cancels_and_run_ended_fires_when_it_ends(screen, qtbot):
+    screen._start()
+    screen.request_stop()
+    assert screen.services.run_backend.cancel_calls == 1
+    with qtbot.waitSignal(screen.run_ended, timeout=1000):
+        screen.services.run_backend.worker.cancelled.emit(_JOB_RUN)
+    assert not screen.is_running
+
+
 def test_other_jobs_are_ignored(screen):
     screen._start()
-    screen.services.backend.worker.finished.emit("something.else", None)
+    screen.services.run_backend.worker.finished.emit("something.else", None)
     assert screen.is_running
 
 
@@ -268,7 +292,7 @@ def test_context_switch_mid_run_is_deferred(screen, env, qtbot, tmp_path):
     with qtbot.waitSignal(screen.navigation_requested) as sig:
         screen._open_row(screen._log.model().index(0, 0))
     assert sig.args[1]["work_dir"] == str(wd)
-    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen.services.run_backend.worker.finished.emit(_JOB_RUN, None)
     assert "HW02" in screen._header.text()
     assert screen._work_dir == other
 
@@ -278,7 +302,7 @@ def test_elapsed_label_freezes_when_run_ends(screen):
     screen._seg_t0 -= 75
     screen._on_tick()
     assert "1:15" in screen._elapsed_label.text()
-    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen.services.run_backend.worker.finished.emit(_JOB_RUN, None)
     frozen = screen._elapsed_label.text()
     assert "1:15" in frozen
     screen._on_tick()
@@ -309,7 +333,7 @@ def test_pending_folder_applied_after_cancelled_run(screen, env, tmp_path):
     _roster(other / "_roster.xlsx")
     screen._start()
     screen.apply_context({"work_dir": str(other)})
-    screen.services.backend.worker.cancelled.emit(_JOB_RUN)
+    screen.services.run_backend.worker.cancelled.emit(_JOB_RUN)
     assert screen._work_dir == other and "HW02" in screen._header.text()
 
 
@@ -317,9 +341,9 @@ def test_elapsed_accumulates_across_pause_but_resets_on_fresh_run(screen):
     screen._start()
     screen._seg_t0 -= 60
     _emit(screen, type="paused")
-    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen.services.run_backend.worker.finished.emit(_JOB_RUN, None)
     screen._start()                      # resume after pause
     assert screen._elapsed_total >= 60
-    screen.services.backend.worker.finished.emit(_JOB_RUN, None)
+    screen.services.run_backend.worker.finished.emit(_JOB_RUN, None)
     screen._start()                      # fresh run after a normal finish
     assert screen._elapsed_total == 0.0

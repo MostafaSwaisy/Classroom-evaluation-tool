@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, QTimer, Slot
 from PySide6.QtWidgets import (
     QApplication,
     QFrame,
@@ -37,6 +37,11 @@ _AUTH_FAILURE = re.compile(r"invalid_grant|RefreshError|\b401\b|Token has been e
                            re.IGNORECASE)
 
 
+def _stop(backend) -> bool:  # noqa: ANN001 - BackendThread or a test fake
+    """Shut a worker down; one retry. False => its thread is still alive."""
+    return bool(backend.shutdown() or backend.shutdown(3000))
+
+
 def _reconnect_job():
     def run(_ctx) -> dict:  # noqa: ANN001 - JobContext
         from classroom_tool.auth import authorize
@@ -50,6 +55,9 @@ class AppServices:
 
     def __init__(self) -> None:
         self.backend = BackendThread()
+        # the grading run's own worker: a 30-minute run must not queue every
+        # other screen's job behind it, and Cancel on one must not cancel the other.
+        self.run_backend = BackendThread()
         self.config_path = None            # None -> config module uses the repo default
         self.active_course_id = None       # set by the dashboard course selector (P2-U5)
         self.active_assignment_dir = None  # set by the assignments / pull flow (P2)
@@ -97,6 +105,8 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("جاهز")
 
         self._screens: dict[str, QWidget] = {}
+        #: the user said Yes to closing mid-run; close again on `run_ended`.
+        self._close_after_run = False
         for key in KEYS:
             screen = screen_class(key)(services=self.services)
             self._screens[key] = screen
@@ -107,6 +117,9 @@ class MainWindow(QMainWindow):
             course_signal = getattr(screen, "course_changed", None)
             if course_signal is not None:
                 course_signal.connect(self._on_course_changed)
+            run_ended = getattr(screen, "run_ended", None)
+            if run_ended is not None:
+                run_ended.connect(self._on_run_ended)
 
         # spec §8 criterion 5 — expired-token toast + working Reconnect
         self._reconnect_toast: Toast | None = None
@@ -315,6 +328,9 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
         run = self._screens.get("grading_run")
         if getattr(run, "is_running", False):
+            if self._close_after_run:       # already stopping; wait for run_ended
+                event.ignore()
+                return
             answer = QMessageBox.question(
                 self, "تشغيل التصحيح شغّال",
                 "في تشغيل تصحيح شغّال. المقترحات اللي خلصت محفوظة، والطالب "
@@ -322,10 +338,29 @@ class MainWindow(QMainWindow):
             if answer != QMessageBox.StandardButton.Yes:
                 event.ignore()
                 return
-        # If the worker won't stop, refuse the close rather than let a running
+            # Don't block the GUI thread on the run: cancel it (this also kills
+            # an in-flight `claude -p`), then close again once `run_ended` fires.
+            self._close_after_run = True
+            run.request_stop()
+            self.statusBar().showMessage("جارٍ إيقاف التشغيل…")
+            event.ignore()
+            return
+        # If a worker won't stop, refuse the close rather than let a running
         # QThread be destroyed at interpreter shutdown (abort). A proper blocking
         # "جاري الإلغاء…" dialog is P5-U4; this is the safe interim.
-        if self.services.backend.shutdown() or self.services.backend.shutdown(3000):
+        self._close_after_run = False
+        stopped = [_stop(b) for b in self._backends()]   # try every one
+        if all(stopped):
             super().closeEvent(event)
         else:
             event.ignore()
+
+    def _backends(self) -> list:
+        return [b for b in (getattr(self.services, "backend", None),
+                            getattr(self.services, "run_backend", None))
+                if b is not None]
+
+    @Slot()
+    def _on_run_ended(self) -> None:
+        if self._close_after_run:
+            QTimer.singleShot(0, self.close)
