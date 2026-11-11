@@ -66,12 +66,17 @@ def scan_extracted(work_dir: str | Path) -> dict[str, Path]:
 
 def find_student_dir(extracted: dict[str, Path], row: dict) -> Path | None:
     name_norm = normalize_arabic(str(row.get("name") or ""))
-    sid = str(row.get("student_id") or "")
-    for norm, path in extracted.items():
-        if sid and sid in path.name:
-            return path
-        if name_norm and name_norm in norm:
-            return path
+    sid = str(row.get("student_id") or "").strip()
+    # ID first (exact identifier), name only as a fallback — otherwise a name
+    # hit on an earlier folder could win over the right student's ID folder.
+    if sid:
+        for path in extracted.values():
+            if sid in path.name:
+                return path
+    if name_norm:
+        for norm, path in extracted.items():
+            if name_norm in norm:
+                return path
     return None
 
 

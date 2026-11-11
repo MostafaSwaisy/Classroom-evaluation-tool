@@ -51,6 +51,19 @@ def test_find_student_dir_by_id_then_by_name(tmp_path):
     assert gr.find_student_dir(ex, _row("999", "مش موجود")) is None
 
 
+def test_find_student_dir_id_beats_earlier_name_match(tmp_path):
+    _student_dir(tmp_path, "1199_علي حسن", {"a.php": "<?php"})
+    b = _student_dir(tmp_path, "1200_علي", {"b.php": "<?php"})
+    ex = gr.scan_extracted(tmp_path)
+    assert gr.find_student_dir(ex, _row("1200", "علي")) == b
+
+
+def test_find_student_dir_strips_sid(tmp_path):
+    a = _student_dir(tmp_path, "777_زيد", {"a.php": "<?php"})
+    ex = gr.scan_extracted(tmp_path)
+    assert gr.find_student_dir(ex, _row(" 777 ", "غير مهم")) == a
+
+
 def test_read_code_files_skips_undecodable_and_non_code(tmp_path):
     d = _student_dir(tmp_path, "s", {"ok.php": "<?php echo 1;",
                                     "bad.php": b"\xff\xfe\x00bad",
